@@ -267,3 +267,4 @@ cython_debug/
 *.tiff
 *.tif
 *.webp
+Output/
