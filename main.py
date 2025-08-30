@@ -2,6 +2,7 @@ import argparse
 from file_management import *
 from remove_background import *
 from scale_image import *
+from flip_image import *
 import glob
 from pathlib import Path
 
@@ -11,11 +12,12 @@ def main():
     parser.add_argument('-bg', '--remove-background', action='store_true', help='remove image background')
     parser.add_argument('-s', '--scale', nargs='+', help='scale image by factor (e.g., 1.5x) or to fit within a bounding box (e.g., 400px 300px)')
     parser.add_argument('--resample', type=str, default='bilinear', choices=['nearest', 'bilinear', 'bicubic', 'lanczos'], help='resampling filter to use for scaling')
+    parser.add_argument('--flip', type=str, choices=['horizontal', 'vertical', 'both'], help='flip image horizontally, vertically, or both')
     args = parser.parse_args()
 
     # TODO: If no arguments are passed, switch to a menu
 
-    if not args.remove_background and not args.scale:
+    if not args.remove_background and not args.scale and not args.flip:
         print('No actions specified. Exiting...')
         exit()
 
@@ -50,6 +52,10 @@ def main():
         output_image = image[1]
 
         # Execute selected commands
+        if args.flip:
+            print(f'Flipping "{image[0]}" {args.flip}...')
+            output_image = flip_image(output_image, args.flip)
+
         if args.scale:
             scale_params = args.scale
             scale_factor = None
