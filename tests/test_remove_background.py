@@ -11,6 +11,11 @@ from remove_background import remove_background, trim
 
 class TestRemoveBackground(unittest.TestCase):
 
+    def setUp(self):
+        """Set up the test environment."""
+        self.test_images_dir = "tests/test_images"
+        self.test_image_path = os.path.join(self.test_images_dir, "Tree Clear Sky 1.png")
+
     def test_trim(self):
         """Test that the trim function removes borders from an image."""
         # Create an image with a black border
@@ -31,11 +36,12 @@ class TestRemoveBackground(unittest.TestCase):
     @patch('remove_background.remove')
     def test_remove_background_with_mock(self, mock_remove):
         """Test the remove_background function with a mocked rembg.remove."""
-        # Create a dummy image
-        img = Image.new('RGB', (100, 100), color = 'blue')
+        # Open a test image
+        img = Image.open(self.test_image_path)
+        original_size = img.size
 
         # Configure the mock to return a specific image
-        mock_output_img = Image.new('RGBA', (120, 120), color = (0, 0, 0, 0))
+        mock_output_img = Image.new('RGBA', (original_size[0] + 20, original_size[1] + 20), color = (0, 0, 0, 0))
         mock_remove.return_value = mock_output_img
 
         # Call the function with a border
@@ -44,7 +50,7 @@ class TestRemoveBackground(unittest.TestCase):
         # Check that rembg.remove was called with the correct image size
         mock_remove.assert_called_once()
         called_img = mock_remove.call_args[0][0]
-        self.assertEqual(called_img.size, (120, 120))
+        self.assertEqual(called_img.size, (original_size[0] + 20, original_size[1] + 20))
 
         # Check that the output is the (mocked) trimmed image
         # Since we are mocking trim as well (as part of the test), we can't check the final output
@@ -56,7 +62,7 @@ class TestRemoveBackground(unittest.TestCase):
     def test_remove_background_integration(self):
         """Integration test for the remove_background function."""
         # Load the test image
-        img = Image.open("tests/test_image.png")
+        img = Image.open(self.test_image_path)
 
         # Process the image
         output_img = remove_background(img)
