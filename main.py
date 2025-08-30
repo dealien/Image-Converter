@@ -1,6 +1,7 @@
 import argparse
 from file_management import *
 from remove_background import *
+from scale_image import *
 import glob
 from pathlib import Path
 
@@ -8,9 +9,15 @@ def main():
     parser = argparse.ArgumentParser(description="Process command line arguments.")
     parser.add_argument('file', type=str, nargs='?', default=None, help='the image file path')
     parser.add_argument('-bg', '--remove-background', action='store_true', help='remove image background')
+    parser.add_argument('-s', '--scale', nargs='+', help='scale image by factor (e.g., 1.5x) or to fit within a bounding box (e.g., 400px 300px)')
+    parser.add_argument('--resample', type=str, default='bilinear', choices=['nearest', 'bilinear', 'bicubic', 'lanczos'], help='resampling filter to use for scaling')
     args = parser.parse_args()
 
     # TODO: If no arguments are passed, switch to a menu
+
+    if not args.remove_background and not args.scale:
+        print('No actions specified. Exiting...')
+        exit()
 
     # Move images to the Base Images directory
     move_images_to_subdirectory('Base Images')
@@ -42,14 +49,37 @@ def main():
             exit()
 
     for image in images:
-        # print(image)
+        output_image = image[1]
+
         # Execute selected commands
+        if args.scale:
+            scale_params = args.scale
+            scale_factor = None
+            new_size = None
+            if len(scale_params) == 1 and scale_params[0].lower().endswith('x'):
+                try:
+                    scale_factor = float(scale_params[0][:-1])
+                except ValueError:
+                    print(f"Invalid scale factor: {scale_params[0]}")
+                    continue
+            elif len(scale_params) == 2:
+                try:
+                    width = int(scale_params[0].lower().replace('px', ''))
+                    height = int(scale_params[1].lower().replace('px', ''))
+                    new_size = (width, height)
+                except ValueError:
+                    print(f"Invalid size format: {scale_params}")
+                    continue
+            else:
+                print("Invalid format for --scale argument. Use '1.5x' or '400px 300px'.")
+                continue
+
+            print(f'Scaling "{image[0]}"...')
+            output_image = scale_image(output_image, scale_factor=scale_factor, new_size=new_size, resample_filter=args.resample)
+
         if args.remove_background:
             print(f'Removing background of "{image[0]}"...')
-            output_image = remove_background(image[1])
-        else:
-            print('No actions specified. Exiting...')
-            exit()
+            output_image = remove_background(output_image)
 
         # Saves final output image
         if not os.path.exists('Output/'):
