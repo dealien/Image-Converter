@@ -28,3 +28,4 @@ def trim(image):
     bbox = diff.getbbox()
     if bbox:
         return image.crop(bbox)
+    return image
