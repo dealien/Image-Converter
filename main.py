@@ -22,11 +22,6 @@ def main():
     # Move images to the Base Images directory
     move_images_to_subdirectory('Base Images')
 
-    # Parse arguments
-    # print(args)
-    # print(f"File: {args.file}")
-    # print(f"Remove background: {args.remove_background}")
-
     if not args.file or args.file == '*':  # For all files in "Base Images" directory
         images = []
         for root, dirs, files in os.walk('Base Images/'):
