@@ -3,6 +3,7 @@ from file_management import *
 from remove_background import *
 from scale_image import *
 from image_filters import *
+from flip_image import *
 import glob
 from pathlib import Path
 
@@ -14,11 +15,12 @@ def main():
     parser.add_argument('--resample', type=str, default='bilinear', choices=['nearest', 'bilinear', 'bicubic', 'lanczos'], help='resampling filter to use for scaling')
     parser.add_argument('-i', '--invert', action='store_true', help='inverts the colors of an image')
     parser.add_argument('-g', '--grayscale', action='store_true', help='converts an image to grayscale')
+    parser.add_argument('--flip', type=str, choices=['horizontal', 'vertical', 'both'], help='flip image horizontally, vertically, or both')
     args = parser.parse_args()
 
     # TODO: If no arguments are passed, switch to a menu
 
-    if not args.remove_background and not args.scale and not args.invert and not args.grayscale:
+    if not args.remove_background and not args.scale and not args.invert and not args.grayscale and not args.flip:
         print('No actions specified. Exiting...')
         exit()
 
@@ -53,6 +55,10 @@ def main():
         output_image = image[1]
 
         # Execute selected commands
+        if args.flip:
+            print(f'Flipping "{image[0]}" {args.flip}...')
+            output_image = flip_image(output_image, args.flip)
+
         if args.scale:
             scale_params = args.scale
             scale_factor = None
