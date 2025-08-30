@@ -31,18 +31,21 @@ def main():
         images = []
         for root, dirs, files in os.walk('Base Images/'):
             for file in files:
-                input_image = Image.open('Base Images/' + file)
-                images.append([file, input_image])
+                filepath = os.path.join(root, file)
+                with Image.open(filepath) as input_image:
+                    input_image.load()
+                    images.append([file, input_image.copy()])
                 # print([file, input_image])
     else:  # For specified file(s)
         try:
             images = []
             # Use glob to handle wildcards in the file path
             for filepath in glob.glob(args.file):
-                input_image = Image.open(filepath)
-                # Extract just the filename for display/saving purposes
-                filename = Path(filepath).name
-                images.append([filename, input_image])
+                with Image.open(filepath) as input_image:
+                    input_image.load()
+                    # Extract just the filename for display/saving purposes
+                    filename = Path(filepath).name
+                    images.append([filename, input_image.copy()])
         except Exception as e:
             # If no files are found or an error occurs, print an error and exit
             print(f'Error while loading file: {e}')
