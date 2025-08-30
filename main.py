@@ -2,6 +2,7 @@ import argparse
 from file_management import *
 from remove_background import *
 from scale_image import *
+from image_filters import *
 import glob
 from pathlib import Path
 
@@ -11,11 +12,13 @@ def main():
     parser.add_argument('-bg', '--remove-background', action='store_true', help='remove image background')
     parser.add_argument('-s', '--scale', nargs='+', help='scale image by factor (e.g., 1.5x) or to fit within a bounding box (e.g., 400px 300px)')
     parser.add_argument('--resample', type=str, default='bilinear', choices=['nearest', 'bilinear', 'bicubic', 'lanczos'], help='resampling filter to use for scaling')
+    parser.add_argument('-i', '--invert', action='store_true', help='inverts the colors of an image')
+    parser.add_argument('-g', '--grayscale', action='store_true', help='converts an image to grayscale')
     args = parser.parse_args()
 
     # TODO: If no arguments are passed, switch to a menu
 
-    if not args.remove_background and not args.scale:
+    if not args.remove_background and not args.scale and not args.invert and not args.grayscale:
         print('No actions specified. Exiting...')
         exit()
 
@@ -78,6 +81,14 @@ def main():
         if args.remove_background:
             print(f'Removing background of "{image[0]}"...')
             output_image = remove_background(output_image)
+
+        if args.invert:
+            print(f'Inverting the colors of "{image[0]}"...')
+            output_image = invert_colors(output_image)
+
+        if args.grayscale:
+            print(f'Converting "{image[0]}" to grayscale...')
+            output_image = grayscale(output_image)
 
         # Saves final output image
         if not os.path.exists('Output/'):
