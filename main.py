@@ -101,9 +101,10 @@ def main():
         if args.edge_detection:
             if args.edge_detection == 'kovalevsky':
                 print(f'Applying {args.edge_detection} edge detection to "{image[0]}" with threshold {args.threshold}...')
+                output_image = edge_detection(output_image, 'kovalevsky', args.threshold)
             else:
                 print(f'Applying {args.edge_detection} edge detection to "{image[0]}"...')
-            output_image = edge_detection(output_image, args.edge_detection, args.threshold)
+                output_image = edge_detection(output_image, args.edge_detection)
 
         # Saves final output image
         if not os.path.exists('Output/'):
