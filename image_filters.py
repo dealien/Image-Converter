@@ -167,10 +167,25 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
     """
     Adjusts the saturation of an image.
     :param image: The input image.
-    :param saturation: An integer from -100 to 100.
-    :return: The image with adjusted saturation.
-    """
-    if not isinstance(saturation, int):
+            raise ValueError("Saturation must be between -100 and 100.")
+        factor = 1.0 + (saturation / 100.0)
+
+        # No-op for grayscale images; saturation doesn't change 'L' mode
+        if image.mode == 'L':
+            return image.copy() if factor != 1.0 else image
+
+        # Preserve alpha for RGBA by enhancing only RGB bands
+        if image.mode == 'RGBA':
+            r, g, b, a = image.split()
+            rgb = Image.merge('RGB', (r, g, b))
+            enhanced = ImageEnhance.Color(rgb).enhance(factor)
+            r2, g2, b2 = enhanced.split()
+            return Image.merge('RGBA', (r2, g2, b2, a))
+
+        # Ensure a compatible mode for color enhancement
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        return ImageEnhance.Color(image).enhance(factor)
         raise TypeError("Saturation must be an integer.")
     if not -100 <= saturation <= 100:
         raise ValueError("Saturation must be between -100 and 100.")
