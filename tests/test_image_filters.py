@@ -2,7 +2,8 @@ import unittest
 import os
 import random
 from PIL import Image
-from image_filters import invert_colors, grayscale, edge_detection
+from image_filters import (invert_colors, grayscale, edge_detection,
+                           adjust_brightness, adjust_contrast, adjust_saturation)
 import numpy as np
 
 class TestImageFilters(unittest.TestCase):
@@ -122,3 +123,137 @@ class TestEdgeDetection(unittest.TestCase):
         # The vertical scan should not detect anything, as the color is constant vertically.
         # So we expect the rest of the image to be black.
         self.assertEqual(np.sum(edge_array == 255), height)
+
+
+class TestImageAdjustments(unittest.TestCase):
+    def setUp(self):
+        # Create a simple gradient image for testing
+        self.test_image = Image.new('RGB', (100, 100))
+        for x in range(100):
+            for y in range(100):
+                self.test_image.putpixel((x, y), (x, int(y/2), 128))
+
+    def test_adjust_brightness(self):
+        # Test brightening
+        brightened_image = adjust_brightness(self.test_image, 50)
+        original_pixel = self.test_image.getpixel((50, 50))
+        brightened_pixel = brightened_image.getpixel((50, 50))
+        self.assertGreater(brightened_pixel[0], original_pixel[0])
+
+        # Test darkening
+        darkened_image = adjust_brightness(self.test_image, -50)
+        darkened_pixel = darkened_image.getpixel((50, 50))
+        self.assertLess(darkened_pixel[0], original_pixel[0])
+
+        # Test no change
+        same_image = adjust_brightness(self.test_image, 0)
+        same_pixel = same_image.getpixel((50, 50))
+        self.assertEqual(same_pixel, original_pixel)
+
+        # Test invalid values
+        with self.assertRaises(ValueError):
+            adjust_brightness(self.test_image, 101)
+        with self.assertRaises(ValueError):
+            adjust_brightness(self.test_image, -101)
+        with self.assertRaises(TypeError):
+            adjust_brightness(self.test_image, "invalid")
+        with self.assertRaises(TypeError):
+            adjust_brightness(self.test_image, 50.5)
+        with self.assertRaises(TypeError):
+            adjust_brightness(self.test_image, [50])
+        with self.assertRaises(TypeError):
+            adjust_brightness(self.test_image, {"value": 50})
+        with self.assertRaises(TypeError):
+            adjust_brightness(self.test_image, None)
+
+    def test_adjust_contrast(self):
+        # Test increasing contrast
+        contrasted_image = adjust_contrast(self.test_image, 50)
+        original_pixel_1 = self.test_image.getpixel((25, 25))
+        original_pixel_2 = self.test_image.getpixel((75, 75))
+        contrasted_pixel_1 = contrasted_image.getpixel((25, 25))
+        contrasted_pixel_2 = contrasted_image.getpixel((75, 75))
+        # With increased contrast, darker pixels get darker and lighter pixels get lighter
+        self.assertLess(contrasted_pixel_1[0], original_pixel_1[0])
+        self.assertGreater(contrasted_pixel_2[0], original_pixel_2[0])
+
+
+        # Test decreasing contrast
+        decontrasted_image = adjust_contrast(self.test_image, -50)
+        decontrasted_pixel_1 = decontrasted_image.getpixel((25, 25))
+        decontrasted_pixel_2 = decontrasted_image.getpixel((75, 75))
+        # With decreased contrast, the difference between pixels should be smaller
+        self.assertGreater(decontrasted_pixel_1[0], original_pixel_1[0])
+        self.assertLess(decontrasted_pixel_2[0], original_pixel_2[0])
+
+
+        # Test no change
+        same_image = adjust_contrast(self.test_image, 0)
+        self.assertEqual(list(same_image.getdata()), list(self.test_image.getdata()))
+
+        # Test invalid values
+        with self.assertRaises(ValueError):
+            adjust_contrast(self.test_image, 101)
+        with self.assertRaises(ValueError):
+            adjust_contrast(self.test_image, -101)
+        with self.assertRaises(TypeError):
+            adjust_contrast(self.test_image, "invalid")
+        with self.assertRaises(TypeError):
+            adjust_contrast(self.test_image, 50.5)
+        with self.assertRaises(TypeError):
+            adjust_contrast(self.test_image, [50])
+        with self.assertRaises(TypeError):
+            adjust_contrast(self.test_image, {"value": 50})
+        with self.assertRaises(TypeError):
+            adjust_contrast(self.test_image, None)
+
+    def test_adjust_saturation(self):
+        # Test increasing saturation
+        saturated_image = adjust_saturation(self.test_image, 50)
+        original_pixel = self.test_image.getpixel((50, 50))
+        saturated_pixel = saturated_image.getpixel((50, 50))
+        # Saturation increases the difference between R, G, B values
+        self.assertGreater(abs(saturated_pixel[0] - saturated_pixel[1]), abs(original_pixel[0] - original_pixel[1]))
+
+        # Test decreasing saturation
+        desaturated_image = adjust_saturation(self.test_image, -50)
+        desaturated_pixel = desaturated_image.getpixel((50, 50))
+        # Saturation decreases the difference between R, G, B values
+        self.assertLess(abs(desaturated_pixel[0] - desaturated_pixel[1]), abs(original_pixel[0] - original_pixel[1]))
+
+        # Test no change
+        same_image = adjust_saturation(self.test_image, 0)
+        self.assertEqual(list(same_image.getdata()), list(self.test_image.getdata()))
+
+        # Test invalid values
+        with self.assertRaises(ValueError):
+            adjust_saturation(self.test_image, 101)
+        with self.assertRaises(ValueError):
+            adjust_saturation(self.test_image, -101)
+        with self.assertRaises(TypeError):
+            adjust_saturation(self.test_image, "invalid")
+        with self.assertRaises(TypeError):
+            adjust_saturation(self.test_image, 50.5)
+        with self.assertRaises(TypeError):
+            adjust_saturation(self.test_image, [50])
+        with self.assertRaises(TypeError):
+            adjust_saturation(self.test_image, {"value": 50})
+        with self.assertRaises(TypeError):
+            adjust_saturation(self.test_image, None)
+
+    def test_adjust_saturation_rgba(self):
+        # Create an RGBA image for testing
+        rgba_image = self.test_image.copy().convert("RGBA")
+        # Set a semi-transparent alpha channel
+        alpha = Image.new('L', rgba_image.size, 128)
+        rgba_image.putalpha(alpha)
+
+        # Adjust saturation
+        saturated_image = adjust_saturation(rgba_image, 50)
+
+        # Check that the image is still RGBA
+        self.assertEqual(saturated_image.mode, 'RGBA')
+
+        # Check that the alpha channel is preserved
+        _, _, _, new_alpha = saturated_image.split()
+        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))

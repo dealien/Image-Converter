@@ -2,7 +2,8 @@ import argparse
 from file_management import *
 from remove_background import *
 from scale_image import *
-from image_filters import *
+from image_filters import (invert_colors, grayscale, edge_detection,
+                           adjust_brightness, adjust_contrast, adjust_saturation)
 from flip_image import *
 import glob
 from pathlib import Path
@@ -18,11 +19,26 @@ def main():
     parser.add_argument('--flip', type=str, choices=['horizontal', 'vertical', 'both'], help='flip image horizontally, vertically, or both')
     parser.add_argument('--edge-detection', type=str, choices=['sobel', 'canny', 'kovalevsky'], help='apply edge detection using the specified method')
     parser.add_argument('--threshold', type=int, default=50, help='threshold for the Kovalevsky edge detection method')
+    parser.add_argument('--brightness', type=int, default=0, help='adjust brightness (-100 to 100)')
+    parser.add_argument('--contrast', type=int, default=0, help='adjust contrast (-100 to 100)')
+    parser.add_argument('--saturation', type=int, default=0, help='adjust saturation (-100 to 100)')
     args = parser.parse_args()
 
     # TODO: If no arguments are passed, switch to a menu
 
-    if not args.remove_background and not args.scale and not args.invert and not args.grayscale and not args.flip and not args.edge_detection:
+    action_specified = (
+        args.remove_background or
+        args.scale or
+        args.invert or
+        args.grayscale or
+        args.flip or
+        args.edge_detection or
+        args.brightness != 0 or
+        args.contrast != 0 or
+        args.saturation != 0
+    )
+
+    if not action_specified:
         print('No actions specified. Exiting...')
         exit()
 
@@ -105,6 +121,18 @@ def main():
             else:
                 print(f'Applying {args.edge_detection} edge detection to "{image[0]}"...')
                 output_image = edge_detection(output_image, args.edge_detection)
+
+        if args.brightness != 0:
+            print(f'Adjusting brightness of "{image[0]}" by {args.brightness}...')
+            output_image = adjust_brightness(output_image, args.brightness)
+
+        if args.contrast != 0:
+            print(f'Adjusting contrast of "{image[0]}" by {args.contrast}...')
+            output_image = adjust_contrast(output_image, args.contrast)
+
+        if args.saturation != 0:
+            print(f'Adjusting saturation of "{image[0]}" by {args.saturation}...')
+            output_image = adjust_saturation(output_image, args.saturation)
 
         # Saves final output image
         if not os.path.exists('Output/'):
