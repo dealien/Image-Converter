@@ -73,7 +73,7 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
         height, width, _ = img_array.shape
 
         # Guard against images smaller than the required 6-pixel window
-        if height < 6 and width < 6:
+        if height < 6 or width < 6:
             return Image.new('L', (width, height), 0)
 
         # Create a new black image to draw the edges onto
