@@ -40,7 +40,8 @@ def main():
 
     if not action_specified:
         print('No actions specified. Exiting...')
-        exit()
+        import sys
+        sys.exit(0)
 
     # Move images to the Base Images directory
     move_images_to_subdirectory('Base Images')
