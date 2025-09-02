@@ -16,11 +16,13 @@ def main():
     parser.add_argument('-i', '--invert', action='store_true', help='inverts the colors of an image')
     parser.add_argument('-g', '--grayscale', action='store_true', help='converts an image to grayscale')
     parser.add_argument('--flip', type=str, choices=['horizontal', 'vertical', 'both'], help='flip image horizontally, vertically, or both')
+    parser.add_argument('--edge-detection', type=str, choices=['sobel', 'canny', 'kovalevsky'], help='apply edge detection using the specified method')
+    parser.add_argument('--threshold', type=int, default=50, help='threshold for the Kovalevsky edge detection method')
     args = parser.parse_args()
 
     # TODO: If no arguments are passed, switch to a menu
 
-    if not args.remove_background and not args.scale and not args.invert and not args.grayscale and not args.flip:
+    if not args.remove_background and not args.scale and not args.invert and not args.grayscale and not args.flip and not args.edge_detection:
         print('No actions specified. Exiting...')
         exit()
 
@@ -95,6 +97,10 @@ def main():
         if args.grayscale:
             print(f'Converting "{image[0]}" to grayscale...')
             output_image = grayscale(output_image)
+
+        if args.edge_detection:
+            print(f'Applying {args.edge_detection} edge detection to "{image[0]}"...')
+            output_image = edge_detection(output_image, args.edge_detection, args.threshold)
 
         # Saves final output image
         if not os.path.exists('Output/'):
