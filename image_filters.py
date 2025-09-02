@@ -59,35 +59,42 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
         # Convert the image to a NumPy array for efficient processing
         img_array = np.array(image.convert('RGB'), dtype=np.int16)
         height, width, _ = img_array.shape
+
+        # Guard against images smaller than the required 6-pixel window
+        if height < 6 and width < 6:
+            return Image.new('L', (width, height), 0)
+
         # Create a new black image to draw the edges onto
         edge_map = np.zeros((height, width), dtype=np.uint8)
 
         # --- Horizontal Scan ---
-        for y in range(height):
-            for x in range(width - 5):
-                pixels = img_array[y, x:x+6]
-                diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
-                center_diff = diffs[2]
-                if (center_diff > threshold and
-                    center_diff > diffs[0] and
-                    center_diff > diffs[1] and
-                    center_diff > diffs[3] and
-                    center_diff > diffs[4]):
-                    edge_map[y, x + 3] = 255
+        if width >= 6:
+            for y in range(height):
+                for x in range(width - 5):
+                    pixels = img_array[y, x:x+6]
+                    diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
+                    center_diff = diffs[2]
+                    if (center_diff > threshold and
+                        center_diff > diffs[0] and
+                        center_diff > diffs[1] and
+                        center_diff > diffs[3] and
+                        center_diff > diffs[4]):
+                        edge_map[y, x + 3] = 255
 
         # --- Vertical Scan ---
-        for x in range(width):
-            for y in range(height - 5):
-                pixels = img_array[y:y+6, x]
-                diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
-                center_diff = diffs[2]
-                if (center_diff > threshold and
-                    center_diff > diffs[0] and
-                    center_diff > diffs[1] and
-                    center_diff > diffs[3] and
-                    center_diff > diffs[4]):
-                    edge_map[y + 3, x] = 255
+        if height >= 6:
+            for x in range(width):
+                for y in range(height - 5):
+                    pixels = img_array[y:y+6, x]
+                    diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
+                    center_diff = diffs[2]
+                    if (center_diff > threshold and
+                        center_diff > diffs[0] and
+                        center_diff > diffs[1] and
+                        center_diff > diffs[3] and
+                        center_diff > diffs[4]):
+                        edge_map[y + 3, x] = 255
 
         # Convert the NumPy array back to an image
-        edge_image = Image.fromarray(edge_map)
+        edge_image = Image.fromarray(edge_map, mode='L')
         return edge_image
