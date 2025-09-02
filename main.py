@@ -26,7 +26,19 @@ def main():
 
     # TODO: If no arguments are passed, switch to a menu
 
-    if not args.remove_background and not args.scale and not args.invert and not args.grayscale and not args.flip and not args.edge_detection and args.brightness == 0 and args.contrast == 0 and args.saturation == 0:
+    action_specified = (
+        args.remove_background or
+        args.scale or
+        args.invert or
+        args.grayscale or
+        args.flip or
+        args.edge_detection or
+        args.brightness != 0 or
+        args.contrast != 0 or
+        args.saturation != 0
+    )
+
+    if not action_specified:
         print('No actions specified. Exiting...')
         exit()
 
