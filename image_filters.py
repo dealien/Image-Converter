@@ -1,5 +1,6 @@
 from PIL import Image, ImageOps
 
+
 def invert_colors(image: Image.Image) -> Image.Image:
     """
     Inverts the colors of an image.
@@ -7,6 +8,7 @@ def invert_colors(image: Image.Image) -> Image.Image:
     :return: The image with inverted colors.
     """
     return ImageOps.invert(image.convert('RGB'))
+
 
 from skimage import feature, filters
 from skimage.util import img_as_ubyte
@@ -30,6 +32,14 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
     :param threshold: The sensitivity threshold for the Kovalevsky method.
     :return: The image with edges detected.
     """
+
+    try:
+        from skimage import feature, filters
+        from skimage.util import img_as_ubyte
+        import numpy as np
+    except ImportError:
+        raise ImportError("scikit-image and numpy are required for edge detection.")
+
     if method not in ['sobel', 'canny', 'kovalevsky']:
         raise ValueError("Method must be 'sobel', 'canny', or 'kovalevsky'")
 
@@ -71,28 +81,28 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
         if width >= 6:
             for y in range(height):
                 for x in range(width - 5):
-                    pixels = img_array[y, x:x+6]
+                    pixels = img_array[y, x:x + 6]
                     diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
                     center_diff = diffs[2]
                     if (center_diff > threshold and
-                        center_diff > diffs[0] and
-                        center_diff > diffs[1] and
-                        center_diff > diffs[3] and
-                        center_diff > diffs[4]):
+                            center_diff > diffs[0] and
+                            center_diff > diffs[1] and
+                            center_diff > diffs[3] and
+                            center_diff > diffs[4]):
                         edge_map[y, x + 3] = 255
 
         # --- Vertical Scan ---
         if height >= 6:
             for x in range(width):
                 for y in range(height - 5):
-                    pixels = img_array[y:y+6, x]
+                    pixels = img_array[y:y + 6, x]
                     diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
                     center_diff = diffs[2]
                     if (center_diff > threshold and
-                        center_diff > diffs[0] and
-                        center_diff > diffs[1] and
-                        center_diff > diffs[3] and
-                        center_diff > diffs[4]):
+                            center_diff > diffs[0] and
+                            center_diff > diffs[1] and
+                            center_diff > diffs[3] and
+                            center_diff > diffs[4]):
                         edge_map[y + 3, x] = 255
 
         # Convert the NumPy array back to an image
