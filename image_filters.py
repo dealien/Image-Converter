@@ -50,8 +50,7 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
         # Apply Sobel filter
         edge_map = filters.sobel(img_array)
         # Convert the result back to an image
-        edge_map_uint8 = (edge_map * 255).astype(np.uint8)
-        # Convert the result back to an image with explicit grayscale mode
+        edge_map_uint8 = np.clip(edge_map * 255, 0, 255).astype(np.uint8)
         edge_image = Image.fromarray(edge_map_uint8, mode='L')
         return edge_image
 
