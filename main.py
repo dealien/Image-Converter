@@ -99,7 +99,10 @@ def main():
             output_image = grayscale(output_image)
 
         if args.edge_detection:
-            print(f'Applying {args.edge_detection} edge detection to "{image[0]}"...')
+            if args.edge_detection == 'kovalevsky':
+                print(f'Applying {args.edge_detection} edge detection to "{image[0]}" with threshold {args.threshold}...')
+            else:
+                print(f'Applying {args.edge_detection} edge detection to "{image[0]}"...')
             output_image = edge_detection(output_image, args.edge_detection, args.threshold)
 
         # Saves final output image
