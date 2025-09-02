@@ -240,3 +240,20 @@ class TestImageAdjustments(unittest.TestCase):
             adjust_saturation(self.test_image, {"value": 50})
         with self.assertRaises(TypeError):
             adjust_saturation(self.test_image, None)
+
+    def test_adjust_saturation_rgba(self):
+        # Create an RGBA image for testing
+        rgba_image = self.test_image.copy().convert("RGBA")
+        # Set a semi-transparent alpha channel
+        alpha = Image.new('L', rgba_image.size, 128)
+        rgba_image.putalpha(alpha)
+
+        # Adjust saturation
+        saturated_image = adjust_saturation(rgba_image, 50)
+
+        # Check that the image is still RGBA
+        self.assertEqual(saturated_image.mode, 'RGBA')
+
+        # Check that the alpha channel is preserved
+        _, _, _, new_alpha = saturated_image.split()
+        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))

@@ -174,6 +174,16 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
         raise TypeError("Saturation must be an integer.")
     if not -100 <= saturation <= 100:
         raise ValueError("Saturation must be between -100 and 100.")
-    enhancer = ImageEnhance.Color(image)
     factor = 1.0 + (saturation / 100.0)
-    return enhancer.enhance(factor)
+
+    if image.mode == 'RGBA':
+        r, g, b, a = image.split()
+        rgb = Image.merge('RGB', (r, g, b))
+        enhanced = ImageEnhance.Color(rgb).enhance(factor)
+        r2, g2, b2 = enhanced.split()
+        return Image.merge('RGBA', (r2, g2, b2, a))
+
+    # Convert other modes to 'RGB'
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
+    return ImageEnhance.Color(image).enhance(factor)
