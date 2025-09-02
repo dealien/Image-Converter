@@ -157,6 +157,14 @@ class TestImageAdjustments(unittest.TestCase):
             adjust_brightness(self.test_image, -101)
         with self.assertRaises(TypeError):
             adjust_brightness(self.test_image, "invalid")
+        with self.assertRaises(TypeError):
+            adjust_brightness(self.test_image, 50.5)
+        with self.assertRaises(TypeError):
+            adjust_brightness(self.test_image, [50])
+        with self.assertRaises(TypeError):
+            adjust_brightness(self.test_image, {"value": 50})
+        with self.assertRaises(TypeError):
+            adjust_brightness(self.test_image, None)
 
     def test_adjust_contrast(self):
         # Test increasing contrast
@@ -190,6 +198,14 @@ class TestImageAdjustments(unittest.TestCase):
             adjust_contrast(self.test_image, -101)
         with self.assertRaises(TypeError):
             adjust_contrast(self.test_image, "invalid")
+        with self.assertRaises(TypeError):
+            adjust_contrast(self.test_image, 50.5)
+        with self.assertRaises(TypeError):
+            adjust_contrast(self.test_image, [50])
+        with self.assertRaises(TypeError):
+            adjust_contrast(self.test_image, {"value": 50})
+        with self.assertRaises(TypeError):
+            adjust_contrast(self.test_image, None)
 
     def test_adjust_saturation(self):
         # Test increasing saturation
@@ -216,3 +232,11 @@ class TestImageAdjustments(unittest.TestCase):
             adjust_saturation(self.test_image, -101)
         with self.assertRaises(TypeError):
             adjust_saturation(self.test_image, "invalid")
+        with self.assertRaises(TypeError):
+            adjust_saturation(self.test_image, 50.5)
+        with self.assertRaises(TypeError):
+            adjust_saturation(self.test_image, [50])
+        with self.assertRaises(TypeError):
+            adjust_saturation(self.test_image, {"value": 50})
+        with self.assertRaises(TypeError):
+            adjust_saturation(self.test_image, None)

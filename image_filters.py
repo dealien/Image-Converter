@@ -118,6 +118,8 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
     :param brightness: An integer from -100 to 100.
     :return: The image with adjusted brightness.
     """
+    if not isinstance(brightness, int):
+        raise TypeError("Brightness must be an integer.")
     if not -100 <= brightness <= 100:
         raise ValueError("Brightness must be between -100 and 100.")
     enhancer = ImageEnhance.Brightness(image)
@@ -132,6 +134,8 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
     :param contrast: An integer from -100 to 100.
     :return: The image with adjusted contrast.
     """
+    if not isinstance(contrast, int):
+        raise TypeError("Contrast must be an integer.")
     if not -100 <= contrast <= 100:
         raise ValueError("Contrast must be between -100 and 100.")
     enhancer = ImageEnhance.Contrast(image)
@@ -146,6 +150,8 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
     :param saturation: An integer from -100 to 100.
     :return: The image with adjusted saturation.
     """
+    if not isinstance(saturation, int):
+        raise TypeError("Saturation must be an integer.")
     if not -100 <= saturation <= 100:
         raise ValueError("Saturation must be between -100 and 100.")
     enhancer = ImageEnhance.Color(image)
