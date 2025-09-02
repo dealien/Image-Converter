@@ -119,12 +119,20 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
     :return: The image with adjusted brightness.
     """
     if not isinstance(brightness, int):
-        raise TypeError("Brightness must be an integer.")
-    if not -100 <= brightness <= 100:
         raise ValueError("Brightness must be between -100 and 100.")
-    enhancer = ImageEnhance.Brightness(image)
     factor = 1.0 + (brightness / 100.0)
-    return enhancer.enhance(factor)
+
+    if image.mode == 'RGBA':
+        r, g, b, a = image.split()
+        rgb = Image.merge('RGB', (r, g, b))
+        enhanced = ImageEnhance.Brightness(rgb).enhance(factor)
+        r2, g2, b2 = enhanced.split()
+        return Image.merge('RGBA', (r2, g2, b2, a))
+
+    # 'L' is supported for brightness; convert other modes to 'RGB'
+    if image.mode not in ('RGB', 'L'):
+        image = image.convert('RGB')
+    return ImageEnhance.Brightness(image).enhance(factor)
 
 
 def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
@@ -134,9 +142,21 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
     :param contrast: An integer from -100 to 100.
     :return: The image with adjusted contrast.
     """
-    if not isinstance(contrast, int):
-        raise TypeError("Contrast must be an integer.")
     if not -100 <= contrast <= 100:
+        raise ValueError("Contrast must be between -100 and 100.")
+    factor = 1.0 + (contrast / 100.0)
+
+    if image.mode == 'RGBA':
+        r, g, b, a = image.split()
+        rgb = Image.merge('RGB', (r, g, b))
+        enhanced = ImageEnhance.Contrast(rgb).enhance(factor)
+        r2, g2, b2 = enhanced.split()
+        return Image.merge('RGBA', (r2, g2, b2, a))
+
+    # 'L' is supported for contrast; convert other modes to 'RGB'
+    if image.mode not in ('RGB', 'L'):
+        image = image.convert('RGB')
+    return ImageEnhance.Contrast(image).enhance(factor)
         raise ValueError("Contrast must be between -100 and 100.")
     enhancer = ImageEnhance.Contrast(image)
     factor = 1.0 + (contrast / 100.0)
