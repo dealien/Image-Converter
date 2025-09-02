@@ -1,4 +1,4 @@
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageEnhance
 
 
 def invert_colors(image: Image.Image) -> Image.Image:
@@ -109,3 +109,45 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
         # Convert the NumPy array back to an image
         edge_image = Image.fromarray(edge_map, mode='L')
         return edge_image
+
+
+def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
+    """
+    Adjusts the brightness of an image.
+    :param image: The input image.
+    :param brightness: An integer from -100 to 100.
+    :return: The image with adjusted brightness.
+    """
+    if not -100 <= brightness <= 100:
+        raise ValueError("Brightness must be between -100 and 100.")
+    enhancer = ImageEnhance.Brightness(image)
+    factor = 1.0 + (brightness / 100.0)
+    return enhancer.enhance(factor)
+
+
+def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
+    """
+    Adjusts the contrast of an image.
+    :param image: The input image.
+    :param contrast: An integer from -100 to 100.
+    :return: The image with adjusted contrast.
+    """
+    if not -100 <= contrast <= 100:
+        raise ValueError("Contrast must be between -100 and 100.")
+    enhancer = ImageEnhance.Contrast(image)
+    factor = 1.0 + (contrast / 100.0)
+    return enhancer.enhance(factor)
+
+
+def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
+    """
+    Adjusts the saturation of an image.
+    :param image: The input image.
+    :param saturation: An integer from -100 to 100.
+    :return: The image with adjusted saturation.
+    """
+    if not -100 <= saturation <= 100:
+        raise ValueError("Saturation must be between -100 and 100.")
+    enhancer = ImageEnhance.Color(image)
+    factor = 1.0 + (saturation / 100.0)
+    return enhancer.enhance(factor)
