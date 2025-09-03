@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from file_management import move_images_to_subdirectory
 
+
 class TestFileManagement(unittest.TestCase):
 
     def setUp(self):
@@ -39,6 +40,7 @@ class TestFileManagement(unittest.TestCase):
         self.assertTrue(os.path.exists(self.moved_file_path))
         # Check that the original file is gone
         self.assertFalse(os.path.exists("Hill Castle.png"))
+
 
 if __name__ == '__main__':
     unittest.main()

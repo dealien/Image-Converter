@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from main import main
 
+
 class TestMain(unittest.TestCase):
 
     @patch('main.remove_background')

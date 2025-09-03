@@ -7,7 +7,9 @@ RESAMPLE_FILTERS = {
     "lanczos": Image.Resampling.LANCZOS,
 }
 
-def scale_image(image_input: ImageFile, scale_factor: float = None, new_size: tuple = None, resample_filter: str = "bilinear"):
+
+def scale_image(image_input: ImageFile, scale_factor: float = None, new_size: tuple = None,
+                resample_filter: str = "bilinear"):
     """
     Scale an image up or down, preserving aspect ratio.
 
@@ -31,7 +33,8 @@ def scale_image(image_input: ImageFile, scale_factor: float = None, new_size: tu
 
     resample = RESAMPLE_FILTERS.get(resample_filter.lower())
     if resample is None:
-        raise ValueError(f"Invalid resample filter: {resample_filter}. Available filters: {list(RESAMPLE_FILTERS.keys())}")
+        raise ValueError(
+            f"Invalid resample filter: {resample_filter}. Available filters: {list(RESAMPLE_FILTERS.keys())}")
 
     scaled_image = image_input.resize((new_width, new_height), resample=resample)
     return scaled_image

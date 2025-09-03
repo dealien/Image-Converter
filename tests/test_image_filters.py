@@ -6,6 +6,7 @@ from image_filters import (invert_colors, grayscale, edge_detection,
                            adjust_brightness, adjust_contrast, adjust_saturation)
 import numpy as np
 
+
 class TestImageFilters(unittest.TestCase):
     def setUp(self):
         # Create a gradient image for testing
@@ -52,6 +53,7 @@ class TestImageFilters(unittest.TestCase):
             # For a grayscale image, R=G=B, so the grayscale value is just the value of R.
             expected_grayscale = original_pixel[0]
             self.assertEqual(grayscale_pixel, expected_grayscale)
+
 
 if __name__ == '__main__':
     unittest.main()
@@ -131,7 +133,7 @@ class TestImageAdjustments(unittest.TestCase):
         self.test_image = Image.new('RGB', (100, 100))
         for x in range(100):
             for y in range(100):
-                self.test_image.putpixel((x, y), (x, int(y/2), 128))
+                self.test_image.putpixel((x, y), (x, int(y / 2), 128))
 
     def test_adjust_brightness(self):
         # Test brightening
@@ -177,7 +179,6 @@ class TestImageAdjustments(unittest.TestCase):
         self.assertLess(contrasted_pixel_1[0], original_pixel_1[0])
         self.assertGreater(contrasted_pixel_2[0], original_pixel_2[0])
 
-
         # Test decreasing contrast
         decontrasted_image = adjust_contrast(self.test_image, -50)
         decontrasted_pixel_1 = decontrasted_image.getpixel((25, 25))
@@ -185,7 +186,6 @@ class TestImageAdjustments(unittest.TestCase):
         # With decreased contrast, the difference between pixels should be smaller
         self.assertGreater(decontrasted_pixel_1[0], original_pixel_1[0])
         self.assertLess(decontrasted_pixel_2[0], original_pixel_2[0])
-
 
         # Test no change
         same_image = adjust_contrast(self.test_image, 0)

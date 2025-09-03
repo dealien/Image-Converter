@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from remove_background import remove_background, trim
 
+
 class TestRemoveBackground(unittest.TestCase):
 
     def setUp(self):
@@ -19,8 +20,8 @@ class TestRemoveBackground(unittest.TestCase):
     def test_trim(self):
         """Test that the trim function removes borders from an image."""
         # Create an image with a black border
-        img = Image.new('RGB', (100, 100), color = 'red')
-        bordered_img = Image.new('RGB', (120, 120), color = 'black')
+        img = Image.new('RGB', (100, 100), color='red')
+        bordered_img = Image.new('RGB', (120, 120), color='black')
         bordered_img.paste(img, (10, 10))
 
         # Trim the image
@@ -41,7 +42,7 @@ class TestRemoveBackground(unittest.TestCase):
         original_size = img.size
 
         # Configure the mock to return a specific image
-        mock_output_img = Image.new('RGBA', (original_size[0] + 20, original_size[1] + 20), color = (0, 0, 0, 0))
+        mock_output_img = Image.new('RGBA', (original_size[0] + 20, original_size[1] + 20), color=(0, 0, 0, 0))
         mock_remove.return_value = mock_output_img
 
         # Call the function with a border
@@ -58,7 +59,6 @@ class TestRemoveBackground(unittest.TestCase):
         # A better test would be to also mock trim, but for now this is ok.
         self.assertIsNotNone(output_img)
 
-
     def test_remove_background_integration(self):
         """Integration test for the remove_background function."""
         # Load the test image
@@ -72,6 +72,7 @@ class TestRemoveBackground(unittest.TestCase):
 
         # Check that some pixels are transparent
         self.assertTrue(any(pixel[3] == 0 for pixel in output_img.getdata()))
+
 
 if __name__ == '__main__':
     unittest.main()

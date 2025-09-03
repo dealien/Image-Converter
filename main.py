@@ -8,16 +8,22 @@ from flip_image import *
 import glob
 from pathlib import Path
 
+
 def main():
     parser = argparse.ArgumentParser(description="Process command line arguments.")
     parser.add_argument('file', type=str, nargs='?', default=None, help='the image file path')
     parser.add_argument('-bg', '--remove-background', action='store_true', help='remove image background')
-    parser.add_argument('-s', '--scale', nargs='+', help='scale image by factor (e.g., 1.5x) or to fit within a bounding box (e.g., 400px 300px)')
-    parser.add_argument('--resample', type=str, default='bilinear', choices=['nearest', 'bilinear', 'bicubic', 'lanczos'], help='resampling filter to use for scaling')
+    parser.add_argument('-s', '--scale', nargs='+',
+                        help='scale image by factor (e.g., 1.5x) or to fit within a bounding box (e.g., 400px 300px)')
+    parser.add_argument('--resample', type=str, default='bilinear',
+                        choices=['nearest', 'bilinear', 'bicubic', 'lanczos'],
+                        help='resampling filter to use for scaling')
     parser.add_argument('-i', '--invert', action='store_true', help='inverts the colors of an image')
     parser.add_argument('-g', '--grayscale', action='store_true', help='converts an image to grayscale')
-    parser.add_argument('--flip', type=str, choices=['horizontal', 'vertical', 'both'], help='flip image horizontally, vertically, or both')
-    parser.add_argument('--edge-detection', type=str, choices=['sobel', 'canny', 'kovalevsky'], help='apply edge detection using the specified method')
+    parser.add_argument('--flip', type=str, choices=['horizontal', 'vertical', 'both'],
+                        help='flip image horizontally, vertically, or both')
+    parser.add_argument('--edge-detection', type=str, choices=['sobel', 'canny', 'kovalevsky'],
+                        help='apply edge detection using the specified method')
     parser.add_argument('--threshold', type=int, default=50, help='threshold for the Kovalevsky edge detection method')
     parser.add_argument('--brightness', type=int, default=0, help='adjust brightness (-100 to 100)')
     parser.add_argument('--contrast', type=int, default=0, help='adjust contrast (-100 to 100)')
@@ -27,15 +33,15 @@ def main():
     # TODO: If no arguments are passed, switch to a menu
 
     action_specified = (
-        args.remove_background or
-        args.scale or
-        args.invert or
-        args.grayscale or
-        args.flip or
-        args.edge_detection or
-        args.brightness != 0 or
-        args.contrast != 0 or
-        args.saturation != 0
+            args.remove_background or
+            args.scale or
+            args.invert or
+            args.grayscale or
+            args.flip or
+            args.edge_detection or
+            args.brightness != 0 or
+            args.contrast != 0 or
+            args.saturation != 0
     )
 
     if not action_specified:
@@ -101,7 +107,8 @@ def main():
                 continue
 
             print(f'Scaling "{image[0]}"...')
-            output_image = scale_image(output_image, scale_factor=scale_factor, new_size=new_size, resample_filter=args.resample)
+            output_image = scale_image(output_image, scale_factor=scale_factor, new_size=new_size,
+                                       resample_filter=args.resample)
 
         if args.remove_background:
             print(f'Removing background of "{image[0]}"...')
@@ -117,7 +124,8 @@ def main():
 
         if args.edge_detection:
             if args.edge_detection == 'kovalevsky':
-                print(f'Applying {args.edge_detection} edge detection to "{image[0]}" with threshold {args.threshold}...')
+                print(
+                    f'Applying {args.edge_detection} edge detection to "{image[0]}" with threshold {args.threshold}...')
                 output_image = edge_detection(output_image, 'kovalevsky', args.threshold)
             else:
                 print(f'Applying {args.edge_detection} edge detection to "{image[0]}"...')
@@ -142,6 +150,7 @@ def main():
         filename = Path(image[0]).stem
         os.replace("Output/.tmp.png", 'Output/' + filename + '.png')
         print("Image saved successfully:", 'Output/' + filename + '.png')
+
 
 if __name__ == "__main__":
     main()
