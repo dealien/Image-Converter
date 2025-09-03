@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from scale_image import scale_image, RESAMPLE_FILTERS
 
+
 class TestScaleImage(unittest.TestCase):
 
     def setUp(self):
@@ -47,6 +48,7 @@ class TestScaleImage(unittest.TestCase):
                     scale_image(self.original_image, scale_factor=0.5, resample_filter=filter_name)
                 except Exception as e:
                     self.fail(f"scale_image failed with filter '{filter_name}': {e}")
+
 
 if __name__ == '__main__':
     unittest.main()

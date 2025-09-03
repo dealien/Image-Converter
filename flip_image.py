@@ -1,5 +1,6 @@
 from PIL import Image, ImageFile
 
+
 def flip_image(image_input: ImageFile, direction: str):
     """
     Flip an image horizontally, vertically, or both.
