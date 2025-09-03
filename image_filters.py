@@ -122,6 +122,8 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
         raise TypeError("Brightness must be an integer.")
     if not -100 <= brightness <= 100:
         raise ValueError("Brightness must be between -100 and 100.")
+    if brightness == 0:
+        return image
     factor = 1.0 + (brightness / 100.0)
 
     if image.mode == 'RGBA':
@@ -148,6 +150,8 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
         raise TypeError("Contrast must be an integer.")
     if not -100 <= contrast <= 100:
         raise ValueError("Contrast must be between -100 and 100.")
+    if contrast == 0:
+        return image
     factor = 1.0 + (contrast / 100.0)
 
     if image.mode == 'RGBA':
@@ -175,6 +179,8 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
     if not -100 <= saturation <= 100:
         raise ValueError("Saturation must be between -100 and 100.")
     factor = 1.0 + (saturation / 100.0)
+    if saturation == 0:
+        return image
 
     if image.mode == 'RGBA':
         r, g, b, a = image.split()
