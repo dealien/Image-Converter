@@ -8,6 +8,8 @@ from PIL import Image
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from main import main
+from image_filters import invert_colors, grayscale
+from PIL import Image, ImageChops
 
 
 class TestMain(unittest.TestCase):
@@ -46,6 +48,33 @@ class TestMain(unittest.TestCase):
 
         # Check that remove_background was called for each file in the directory
         self.assertEqual(mock_remove_background.call_count, 4)
+
+
+    def test_multiple_operations_in_order(self):
+        """Test that multiple operations are applied in the correct order."""
+        input_image_path = 'tests/test_images/Tree Clear Sky 1.png'
+        output_image_path = 'Output/Tree Clear Sky 1.png'
+
+        # Create the expected image by applying operations directly
+        with Image.open(input_image_path) as img:
+            # It's important to apply operations in the same order as the command
+            expected_image = grayscale(invert_colors(img.copy()))
+
+        # Run the main function with command line arguments
+        with patch.object(sys, 'argv', ['main.py', input_image_path, '--invert', '--grayscale']):
+            main()
+
+        # Check that the output file was created
+        self.assertTrue(os.path.exists(output_image_path))
+
+        # Compare the actual output with the expected image
+        with Image.open(output_image_path) as actual_image:
+            diff = ImageChops.difference(expected_image, actual_image)
+            self.assertIsNone(diff.getbbox(), "The output image is not as expected.")
+
+        # Clean up the created file
+        if os.path.exists(output_image_path):
+            os.remove(output_image_path)
 
 
 if __name__ == '__main__':
