@@ -183,6 +183,10 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
         r2, g2, b2 = enhanced.split()
         return Image.merge('RGBA', (r2, g2, b2, a))
 
+    # No-op for grayscale to preserve mode and avoid unintended conversion
+    if image.mode == 'L':
+        return image
+
     # Convert other modes to 'RGB'
     if image.mode != 'RGB':
         image = image.convert('RGB')
