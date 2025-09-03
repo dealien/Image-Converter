@@ -178,9 +178,10 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
         raise TypeError("Saturation must be an integer.")
     if not -100 <= saturation <= 100:
         raise ValueError("Saturation must be between -100 and 100.")
-    factor = 1.0 + (saturation / 100.0)
     if saturation == 0:
         return image
+    factor = 1.0 + (saturation / 100.0)
+
 
     if image.mode == 'RGBA':
         r, g, b, a = image.split()
