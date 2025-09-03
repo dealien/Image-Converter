@@ -15,6 +15,70 @@ class StoreInOrder(argparse.Action):
             setattr(namespace, 'ordered_operations', [])
         namespace.ordered_operations.append({'dest': self.dest, 'values': values})
 
+# --- Operation Handlers ---
+
+def handle_flip(image, image_name, values, args):
+    print(f'Flipping "{image_name}" {values}...')
+    return flip_image(image, values)
+
+def handle_scale(image, image_name, values, args):
+    scale_params = values
+    scale_factor = None
+    new_size = None
+    if len(scale_params) == 1 and scale_params[0].lower().endswith('x'):
+        try:
+            scale_factor = float(scale_params[0][:-1])
+        except ValueError:
+            print(f"Invalid scale factor: {scale_params[0]}")
+            return image # Return original image on error
+    elif len(scale_params) == 2:
+        try:
+            width = int(scale_params[0].lower().replace('px', ''))
+            height = int(scale_params[1].lower().replace('px', ''))
+            new_size = (width, height)
+        except ValueError:
+            print(f"Invalid size format: {scale_params}")
+            return image
+    else:
+        print("Invalid format for --scale argument. Use '1.5x' or '400px 300px'.")
+        return image
+
+    print(f'Scaling "{image_name}"...')
+    return scale_image(image, scale_factor=scale_factor, new_size=new_size,
+                       resample_filter=args.resample)
+
+def handle_remove_background(image, image_name, values, args):
+    print(f'Removing background of "{image_name}"...')
+    return remove_background(image)
+
+def handle_invert(image, image_name, values, args):
+    print(f'Inverting the colors of "{image_name}"...')
+    return invert_colors(image)
+
+def handle_grayscale(image, image_name, values, args):
+    print(f'Converting "{image_name}" to grayscale...')
+    return grayscale(image)
+
+def handle_edge_detection(image, image_name, values, args):
+    if values == 'kovalevsky':
+        print(f'Applying {values} edge detection to "{image_name}" with threshold {args.threshold}...')
+        return edge_detection(image, 'kovalevsky', args.threshold)
+    else:
+        print(f'Applying {values} edge detection to "{image_name}"...')
+        return edge_detection(image, values)
+
+def handle_brightness(image, image_name, values, args):
+    print(f'Adjusting brightness of "{image_name}" by {values}...')
+    return adjust_brightness(image, values)
+
+def handle_contrast(image, image_name, values, args):
+    print(f'Adjusting contrast of "{image_name}" by {values}...')
+    return adjust_contrast(image, values)
+
+def handle_saturation(image, image_name, values, args):
+    print(f'Adjusting saturation of "{image_name}" by {values}...')
+    return adjust_saturation(image, values)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Process command line arguments.")
@@ -46,17 +110,26 @@ def main():
                         help='adjust saturation (-100 to 100)')
     args = parser.parse_args()
 
-    # TODO: If no arguments are passed, switch to a menu
-
     if not hasattr(args, 'ordered_operations'):
         print('No actions specified. Exiting...')
         import sys
-        sys.exit(2)  # Early exit with non-zero status
+        sys.exit(2)
 
-    # Move images to the Base Images directory
+    operation_handlers = {
+        'flip': handle_flip,
+        'scale': handle_scale,
+        'remove_background': handle_remove_background,
+        'invert': handle_invert,
+        'grayscale': handle_grayscale,
+        'edge_detection': handle_edge_detection,
+        'brightness': handle_brightness,
+        'contrast': handle_contrast,
+        'saturation': handle_saturation,
+    }
+
     move_images_to_subdirectory('Base Images')
 
-    if not args.file or args.file == '*':  # For all files in "Base Images" directory
+    if not args.file or args.file == '*':
         images = []
         for root, dirs, files in os.walk('Base Images/'):
             for file in files:
@@ -64,89 +137,34 @@ def main():
                 with Image.open(filepath) as input_image:
                     input_image.load()
                     images.append([file, input_image.copy()])
-                # print([file, input_image])
-    else:  # For specified file(s)
+    else:
         try:
             images = []
-            # Use glob to handle wildcards in the file path
             for filepath in glob.glob(args.file):
                 with Image.open(filepath) as input_image:
                     input_image.load()
-                    # Extract just the filename for display/saving purposes
                     filename = Path(filepath).name
                     images.append([filename, input_image.copy()])
         except Exception as e:
-            # If no files are found or an error occurs, print an error and exit
             print(f'Error while loading file: {e}')
             exit()
 
-    for image in images:
-        output_image = image[1]
+    for image_data in images:
+        output_image = image_data[1]
+        image_name = image_data[0]
 
         for operation in args.ordered_operations:
             op_dest = operation['dest']
             op_values = operation['values']
 
-            if op_dest == 'flip':
-                print(f'Flipping "{image[0]}" {op_values}...')
-                output_image = flip_image(output_image, op_values)
-            elif op_dest == 'scale':
-                scale_params = op_values
-                scale_factor = None
-                new_size = None
-                if len(scale_params) == 1 and scale_params[0].lower().endswith('x'):
-                    try:
-                        scale_factor = float(scale_params[0][:-1])
-                    except ValueError:
-                        print(f"Invalid scale factor: {scale_params[0]}")
-                        continue
-                elif len(scale_params) == 2:
-                    try:
-                        width = int(scale_params[0].lower().replace('px', ''))
-                        height = int(scale_params[1].lower().replace('px', ''))
-                        new_size = (width, height)
-                    except ValueError:
-                        print(f"Invalid size format: {scale_params}")
-                        continue
-                else:
-                    print("Invalid format for --scale argument. Use '1.5x' or '400px 300px'.")
-                    continue
+            handler = operation_handlers.get(op_dest)
+            if handler:
+                output_image = handler(output_image, image_name, op_values, args)
 
-                print(f'Scaling "{image[0]}"...')
-                output_image = scale_image(output_image, scale_factor=scale_factor, new_size=new_size,
-                                           resample_filter=args.resample)
-            elif op_dest == 'remove_background':
-                print(f'Removing background of "{image[0]}"...')
-                output_image = remove_background(output_image)
-            elif op_dest == 'invert':
-                print(f'Inverting the colors of "{image[0]}"...')
-                output_image = invert_colors(output_image)
-            elif op_dest == 'grayscale':
-                print(f'Converting "{image[0]}" to grayscale...')
-                output_image = grayscale(output_image)
-            elif op_dest == 'edge_detection':
-                if op_values == 'kovalevsky':
-                    print(
-                        f'Applying {op_values} edge detection to "{image[0]}" with threshold {args.threshold}...')
-                    output_image = edge_detection(output_image, 'kovalevsky', args.threshold)
-                else:
-                    print(f'Applying {op_values} edge detection to "{image[0]}"...')
-                    output_image = edge_detection(output_image, op_values)
-            elif op_dest == 'brightness':
-                print(f'Adjusting brightness of "{image[0]}" by {op_values}...')
-                output_image = adjust_brightness(output_image, op_values)
-            elif op_dest == 'contrast':
-                print(f'Adjusting contrast of "{image[0]}" by {op_values}...')
-                output_image = adjust_contrast(output_image, op_values)
-            elif op_dest == 'saturation':
-                print(f'Adjusting saturation of "{image[0]}" by {op_values}...')
-                output_image = adjust_saturation(output_image, op_values)
-
-        # Saves final output image
         if not os.path.exists('Output/'):
             os.makedirs('Output/')
         output_image.save("Output/.tmp.png")
-        filename = Path(image[0]).stem
+        filename = Path(image_name).stem
         os.replace("Output/.tmp.png", 'Output/' + filename + '.png')
         print("Image saved successfully:", 'Output/' + filename + '.png')
 
