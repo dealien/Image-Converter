@@ -1,6 +1,5 @@
 import os
 import inspect
-import sys
 from types import SimpleNamespace
 from PIL import Image
 from processing import process_images_and_save
@@ -297,5 +296,9 @@ def interactive_menu():
         process_images_and_save(images_data, operations, mock_args)
         print("\n--- Processing Complete ---")
     except KeyboardInterrupt:
+        # Cleanup logic
+        temp_path = os.path.join('Output', '.tmp.png')
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
         print("\n\nOperation cancelled by user. Exiting.")
         return
