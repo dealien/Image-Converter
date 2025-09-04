@@ -22,6 +22,7 @@ class StoreInOrder(argparse.Action):
             norm_values = values
         namespace.ordered_operations.append({'dest': self.dest, 'values': norm_values})
 
+
 # --- Main Execution ---
 
 def main():
@@ -33,19 +34,33 @@ def main():
         return
 
     parser = argparse.ArgumentParser(description="A versatile command-line image manipulation tool.")
-    parser.add_argument('file', type=str, nargs='?', default=None, help='The image file or pattern to process (e.g., "input.jpg", "images/*.png").')
+    parser.add_argument('file', type=str, nargs='?', default=None,
+                        help='The image file or pattern to process (e.g., "input.jpg", "images/*.png").')
     parser.add_argument('--menu', action='store_true', help='Start the application in interactive menu mode.')
-    parser.add_argument('-bg', '--remove-background', dest='remove_background', action=StoreInOrder, nargs=0, help='Remove image background.')
-    parser.add_argument('-s', '--scale', dest='scale', action=StoreInOrder, nargs='+', help="Scale image by factor (e.g., '1.5x') or to a specific size (e.g., '400px 300px').")
-    parser.add_argument('--resample', type=str, default='bilinear', choices=['nearest', 'bilinear', 'bicubic', 'lanczos'], help='Resampling filter for scaling.')
-    parser.add_argument('-i', '--invert', dest='invert', action=StoreInOrder, nargs=0, help='Invert the colors of an image.')
-    parser.add_argument('-g', '--grayscale', dest='grayscale', action=StoreInOrder, nargs=0, help='Convert an image to grayscale.')
-    parser.add_argument('--flip', dest='flip', action=StoreInOrder, type=str, choices=['horizontal', 'vertical', 'both'], help='Flip image horizontally, vertically, or both.')
-    parser.add_argument('--edge-detection', dest='edge_detection', action=StoreInOrder, type=str, choices=['sobel', 'canny', 'kovalevsky'], help='Apply edge detection using the specified method.')
-    parser.add_argument('--threshold', type=int, default=50, help='Threshold for the Kovalevsky edge detection method (0-255).')
-    parser.add_argument('--brightness', dest='brightness', action=StoreInOrder, type=int, help='Adjust brightness (-100 to 100).')
-    parser.add_argument('--contrast', dest='contrast', action=StoreInOrder, type=int, help='Adjust contrast (-100 to 100).')
-    parser.add_argument('--saturation', dest='saturation', action=StoreInOrder, type=int, help='Adjust saturation (-100 to 100).')
+    parser.add_argument('-bg', '--remove-background', dest='remove_background', action=StoreInOrder, nargs=0,
+                        help='Remove image background.')
+    parser.add_argument('-s', '--scale', dest='scale', action=StoreInOrder, nargs='+',
+                        help="Scale image by factor (e.g., '1.5x') or to a specific size (e.g., '400px 300px').")
+    parser.add_argument('--resample', type=str, default='bilinear',
+                        choices=['nearest', 'bilinear', 'bicubic', 'lanczos'], help='Resampling filter for scaling.')
+    parser.add_argument('-i', '--invert', dest='invert', action=StoreInOrder, nargs=0,
+                        help='Invert the colors of an image.')
+    parser.add_argument('-g', '--grayscale', dest='grayscale', action=StoreInOrder, nargs=0,
+                        help='Convert an image to grayscale.')
+    parser.add_argument('--flip', dest='flip', action=StoreInOrder, type=str,
+                        choices=['horizontal', 'vertical', 'both'],
+                        help='Flip image horizontally, vertically, or both.')
+    parser.add_argument('--edge-detection', dest='edge_detection', action=StoreInOrder, type=str,
+                        choices=['sobel', 'canny', 'kovalevsky'],
+                        help='Apply edge detection using the specified method.')
+    parser.add_argument('--threshold', type=int, default=50,
+                        help='Threshold for the Kovalevsky edge detection method (0-255).')
+    parser.add_argument('--brightness', dest='brightness', action=StoreInOrder, type=int,
+                        help='Adjust brightness (-100 to 100).')
+    parser.add_argument('--contrast', dest='contrast', action=StoreInOrder, type=int,
+                        help='Adjust contrast (-100 to 100).')
+    parser.add_argument('--saturation', dest='saturation', action=StoreInOrder, type=int,
+                        help='Adjust saturation (-100 to 100).')
 
     args = parser.parse_args()
 
@@ -73,6 +88,7 @@ def main():
         return
 
     process_images_and_save(images_data, args.ordered_operations, args)
+
 
 if __name__ == "__main__":
     main()
