@@ -298,4 +298,4 @@ def interactive_menu():
         print("\n--- Processing Complete ---")
     except KeyboardInterrupt:
         print("\n\nOperation cancelled by user. Exiting.")
-        sys.exit(0)
+        return
