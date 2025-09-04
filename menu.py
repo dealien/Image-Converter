@@ -133,7 +133,7 @@ def select_images():
         print(f"Error: Directory '{image_dir}' not found.")
         return []
     try:
-        image_files = sorted([f for f in os.listdir(image_dir) if os.path.isfile(os.path.join(image_dir, f)) and f.lower().endswith(('.png', '.jpg', 'jpeg', '.gif', '.bmp', '.tiff', '.tif', '.webp'))])
+        image_files = sorted([f for f in os.listdir(image_dir) if os.path.isfile(os.path.join(image_dir, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.tif', '.webp'))])
     except Exception as e:
         print(f"An error occurred while reading the directory: {e}")
         return []
