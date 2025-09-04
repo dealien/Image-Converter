@@ -296,12 +296,5 @@ def interactive_menu():
         process_images_and_save(images_data, operations, mock_args)
         print("\n--- Processing Complete ---")
     except KeyboardInterrupt:
-        # Cleanup logic
-        try:
-            temp_path = os.path.join('Output', '.tmp.png')
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-        except Exception as e:
-            print(f"\nWarning: Could not remove temporary file: {e}")
         print("\n\nOperation cancelled by user. Exiting.")
         return
