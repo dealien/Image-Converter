@@ -92,6 +92,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         return
     print(f"\nProcessing {len(images_data)} image(s)...")
     for image_name, image_to_process in images_data:
+        temp_path = None  # Initialize temp_path to None
         try:
             output_image = image_to_process.copy()
             for operation in ordered_operations:
@@ -104,10 +105,17 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 os.makedirs('Output/')
             output_filename = Path(image_name).stem + '.png'
             output_path = os.path.join('Output', output_filename)
-            temp_path = os.path.join('Output', '.tmp.png')
+            temp_path = os.path.join('Output', f".tmp.{output_filename}")
             output_image.save(temp_path, 'PNG')
             os.replace(temp_path, output_path)
             print(f"Image saved successfully: {output_path}")
         except Exception as e:
             print(f"An error occurred while processing {image_name}: {e}")
             continue
+        finally:
+            # Ensure the temp file is removed if it exists
+            if temp_path and os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except OSError as e:
+                    print(f"Error removing temp file {temp_path}: {e}")
