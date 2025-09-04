@@ -13,13 +13,22 @@ class StoreInOrder(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         if not hasattr(namespace, 'ordered_operations'):
             setattr(namespace, 'ordered_operations', [])
-        namespace.ordered_operations.append({'dest': self.dest, 'values': values})
+
+        # Normalize values: None -> empty list, str/int -> list[str/int], keep list as-is
+        if values is None:
+            norm_values = []
+        elif isinstance(values, (str, int)):
+            norm_values = [values]
+        else:
+            norm_values = values
+
+        namespace.ordered_operations.append({'dest': self.dest, 'values': norm_values})
 
 # --- Operation Handlers ---
 
 def handle_flip(image, image_name, values, args):
-    print(f'Flipping "{image_name}" {values}...')
-    return flip_image(image, values)
+    print(f'Flipping "{image_name}" {values[0]}...')
+    return flip_image(image, values[0])
 
 def handle_scale(image, image_name, values, args):
     scale_params = values
@@ -60,24 +69,25 @@ def handle_grayscale(image, image_name, values, args):
     return grayscale(image)
 
 def handle_edge_detection(image, image_name, values, args):
-    if values == 'kovalevsky':
-        print(f'Applying {values} edge detection to "{image_name}" with threshold {args.threshold}...')
+    method = values[0]
+    if method == 'kovalevsky':
+        print(f'Applying {method} edge detection to "{image_name}" with threshold {args.threshold}...')
         return edge_detection(image, 'kovalevsky', args.threshold)
     else:
-        print(f'Applying {values} edge detection to "{image_name}"...')
-        return edge_detection(image, values)
+        print(f'Applying {method} edge detection to "{image_name}"...')
+        return edge_detection(image, method)
 
 def handle_brightness(image, image_name, values, args):
-    print(f'Adjusting brightness of "{image_name}" by {values}...')
-    return adjust_brightness(image, values)
+    print(f'Adjusting brightness of "{image_name}" by {values[0]}...')
+    return adjust_brightness(image, values[0])
 
 def handle_contrast(image, image_name, values, args):
-    print(f'Adjusting contrast of "{image_name}" by {values}...')
-    return adjust_contrast(image, values)
+    print(f'Adjusting contrast of "{image_name}" by {values[0]}...')
+    return adjust_contrast(image, values[0])
 
 def handle_saturation(image, image_name, values, args):
-    print(f'Adjusting saturation of "{image_name}" by {values}...')
-    return adjust_saturation(image, values)
+    print(f'Adjusting saturation of "{image_name}" by {values[0]}...')
+    return adjust_saturation(image, values[0])
 
 
 def main():
