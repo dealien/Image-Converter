@@ -92,18 +92,22 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         return
     print(f"\nProcessing {len(images_data)} image(s)...")
     for image_name, image_to_process in images_data:
-        output_image = image_to_process.copy()
-        for operation in ordered_operations:
-            op_dest = operation['dest']
-            op_values = operation.get('values', [])
-            handler = operation_handlers.get(op_dest)
-            if handler:
-                output_image = handler(output_image, image_name, op_values, cli_args)
-        if not os.path.exists('Output/'):
-            os.makedirs('Output/')
-        output_filename = Path(image_name).stem + '.png'
-        output_path = os.path.join('Output', output_filename)
-        temp_path = os.path.join('Output', '.tmp.png')
-        output_image.save(temp_path, 'PNG')
-        os.replace(temp_path, output_path)
-        print(f"Image saved successfully: {output_path}")
+        try:
+            output_image = image_to_process.copy()
+            for operation in ordered_operations:
+                op_dest = operation['dest']
+                op_values = operation.get('values', [])
+                handler = operation_handlers.get(op_dest)
+                if handler:
+                    output_image = handler(output_image, image_name, op_values, cli_args)
+            if not os.path.exists('Output/'):
+                os.makedirs('Output/')
+            output_filename = Path(image_name).stem + '.png'
+            output_path = os.path.join('Output', output_filename)
+            temp_path = os.path.join('Output', '.tmp.png')
+            output_image.save(temp_path, 'PNG')
+            os.replace(temp_path, output_path)
+            print(f"Image saved successfully: {output_path}")
+        except Exception as e:
+            print(f"An error occurred while processing {image_name}: {e}")
+            continue
