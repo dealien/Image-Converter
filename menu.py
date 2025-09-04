@@ -1,5 +1,6 @@
 import os
 import inspect
+import sys
 from types import SimpleNamespace
 from PIL import Image
 from processing import process_images_and_save
@@ -270,27 +271,31 @@ def select_manipulations():
 
 
 def interactive_menu():
-    print("--- Welcome to the Interactive Image Processor ---")
-    selected_image_paths = select_images()
-    if not selected_image_paths:
-        print("\nNo images to process. Exiting.")
-        return
-    operations, extra_args = select_manipulations()
-    mock_args = SimpleNamespace(
-        resample=extra_args.get('resample', 'bilinear'),
-        threshold=extra_args.get('threshold', 50)
-    )
-    images_data = []
-    print("\nLoading selected images...")
     try:
-        for filepath in selected_image_paths:
-            with Image.open(filepath) as input_image:
-                input_image.load()
-                filename = os.path.basename(filepath)
-                images_data.append([filename, input_image.copy()])
-        print("Images loaded successfully.")
-    except Exception as e:
-        print(f"\nError: Could not load one or more images. Details: {e}")
-        return
-    process_images_and_save(images_data, operations, mock_args)
-    print("\n--- Processing Complete ---")
+        print("--- Welcome to the Interactive Image Processor ---")
+        selected_image_paths = select_images()
+        if not selected_image_paths:
+            print("\nNo images to process. Exiting.")
+            return
+        operations, extra_args = select_manipulations()
+        mock_args = SimpleNamespace(
+            resample=extra_args.get('resample', 'bilinear'),
+            threshold=extra_args.get('threshold', 50)
+        )
+        images_data = []
+        print("\nLoading selected images...")
+        try:
+            for filepath in selected_image_paths:
+                with Image.open(filepath) as input_image:
+                    input_image.load()
+                    filename = os.path.basename(filepath)
+                    images_data.append([filename, input_image.copy()])
+            print("Images loaded successfully.")
+        except Exception as e:
+            print(f"\nError: Could not load one or more images. Details: {e}")
+            return
+        process_images_and_save(images_data, operations, mock_args)
+        print("\n--- Processing Complete ---")
+    except KeyboardInterrupt:
+        print("\n\nOperation cancelled by user. Exiting.")
+        sys.exit(0)
