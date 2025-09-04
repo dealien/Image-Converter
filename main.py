@@ -29,7 +29,6 @@ def main():
     if '--menu' in sys.argv or len(sys.argv) == 1:
         # Import dynamically to prevent circular dependency issues with tests
         from menu import interactive_menu
-        move_images_to_subdirectory('Base Images')
         interactive_menu()
         return
 
