@@ -297,8 +297,11 @@ def interactive_menu():
         print("\n--- Processing Complete ---")
     except KeyboardInterrupt:
         # Cleanup logic
-        temp_path = os.path.join('Output', '.tmp.png')
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        try:
+            temp_path = os.path.join('Output', '.tmp.png')
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+        except Exception as e:
+            print(f"\nWarning: Could not remove temporary file: {e}")
         print("\n\nOperation cancelled by user. Exiting.")
         return
