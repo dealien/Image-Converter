@@ -311,7 +311,10 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     shift = (degrees / 360.0) * 255.0
     
     def shift_hue(p):
-        return int((p + shift) % 255)
+        # Add shift, round to nearest int, and ensure result is in 0-255 range
+        val = round(p + shift) % 256
+        return val
+
 
     h = h.point(shift_hue)
     
