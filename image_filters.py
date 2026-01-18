@@ -303,6 +303,12 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     if degrees == 0:
         return image
 
+    
+    # Store alpha channel if it exists
+    alpha_channel = None
+    if image.mode == 'RGBA' or 'A' in image.mode:
+        alpha_channel = image.split()[-1]
+
     img_hsv = image.convert('HSV')
     h, s, v = img_hsv.split()
     
@@ -319,9 +325,14 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     h = h.point(shift_hue)
     
     new_img = Image.merge('HSV', (h, s, v))
-    if image.mode == 'RGBA':
-        return new_img.convert('RGBA')
-    return new_img.convert('RGB')
+    new_rgb = new_img.convert('RGB')
+    
+    if alpha_channel:
+        new_rgb.putalpha(alpha_channel)
+        return new_rgb
+        
+    return new_rgb
+
 
 
 def apply_posterize(image: Image.Image, bits: int) -> Image.Image:

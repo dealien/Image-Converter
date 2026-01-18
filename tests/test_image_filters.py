@@ -379,6 +379,18 @@ class TestImageColorOps(unittest.TestCase):
         self.assertGreater(pixel[2], pixel[0])
         self.assertGreater(pixel[2], pixel[1])
 
+    def test_hue_rotation_preserves_alpha(self):
+        # Create an RGBA image with transparency
+        rgba_img = Image.new('RGBA', (10, 10), (255, 0, 0, 128))
+        
+        # Rotate hue
+        rotated_img = rotate_hue(rgba_img, 90)
+        
+        # Check if alpha is preserved
+        self.assertEqual(rotated_img.mode, 'RGBA')
+        self.assertEqual(rotated_img.getpixel((0,0))[3], 128)
+
+
 
 
 
