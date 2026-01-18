@@ -311,17 +311,11 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     img_hsv = rgb_base.convert('HSV')
     h, s, v = img_hsv.split()
     
-    # Hue is 0-255 in PIL HSV. 360 degrees = 255.
-    # New Hue = (Old Hue + (degrees/360 * 255)) % 255
-    shift = (degrees / 360.0) * 255.0
-    
-    def shift_hue(p):
-        # Add shift, round to nearest int, and ensure result is in 0-255 range
-        val = round(p + shift) % 256
-        return val
+    # Hue is 0-255 in PIL HSV. Full circle is 256 steps.
+    shift = int((degrees / 360.0) * 256) % 256
 
+    h = h.point(lambda p: (p + shift) % 256)
 
-    h = h.point(shift_hue)
     
     new_img = Image.merge('HSV', (h, s, v))
     new_rgb = new_img.convert('RGB')
