@@ -1,0 +1,14 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "copyTestImages",
+            "type": "shell",
+            "command": "echo 'Copying test images to Base Images folder...'",
+            "windows": {
+                "command": "powershell -Command \"New-Item -ItemType Directory -Force -Path 'Base Images'; Copy-Item -Path 'tests\\test_images\\*' -Destination 'Base Images' -Force\""
+            },
+            "problemMatcher": []
+        }
+    ]
+}
