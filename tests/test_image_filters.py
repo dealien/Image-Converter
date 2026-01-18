@@ -390,6 +390,18 @@ class TestImageColorOps(unittest.TestCase):
         self.assertEqual(rotated_img.mode, 'RGBA')
         self.assertEqual(rotated_img.getpixel((0,0))[3], 128)
 
+    def test_posterize_preserves_alpha(self):
+        # Create an RGBA image with transparency
+        rgba_img = Image.new('RGBA', (10, 10), (100, 150, 200, 128))
+        
+        # Apply posterize
+        posterized_img = apply_posterize(rgba_img, bits=4)
+        
+        # Check if alpha is preserved
+        self.assertEqual(posterized_img.mode, 'RGBA')
+        self.assertEqual(posterized_img.getpixel((0,0))[3], 128)
+
+
 
 
 

@@ -296,20 +296,19 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     """
     if not isinstance(degrees, (int, float)):
         raise TypeError("Degrees must be a number.")
-    
-    # Normalize degrees
-    degrees = degrees % 360
 
+    degrees = degrees % 360
     if degrees == 0:
         return image
 
-    
-    # Store alpha channel if it exists
     alpha_channel = None
-    if image.mode == 'RGBA' or 'A' in image.mode:
-        alpha_channel = image.split()[-1]
+    if image.mode == 'RGBA':
+        rgb_base, alpha_channel = image.convert('RGB'), image.split()[-1]
+    else:
+        # Ensure hue ops always run on RGB data
+        rgb_base = image.convert('RGB')
 
-    img_hsv = image.convert('HSV')
+    img_hsv = rgb_base.convert('HSV')
     h, s, v = img_hsv.split()
     
     # Hue is 0-255 in PIL HSV. 360 degrees = 255.
@@ -327,11 +326,12 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     new_img = Image.merge('HSV', (h, s, v))
     new_rgb = new_img.convert('RGB')
     
-    if alpha_channel:
+    if alpha_channel is not None:
         new_rgb.putalpha(alpha_channel)
         return new_rgb
         
     return new_rgb
+
 
 
 
@@ -348,8 +348,24 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     if not 1 <= bits <= 8:
         raise ValueError("Bits must be between 1 and 8.")
         
-    if image.mode != 'RGB' and image.mode != 'L':
-         # Posterize works on RGB or L
-         return ImageOps.posterize(image.convert('RGB'), bits)
+    if image.mode != 'RGB' and image.mode != 'L' and image.mode != 'RGBA':
+         # Posterize works on RGB, L or RGBA (by splitting)
+         rgb_base = image.convert('RGB')
+    elif image.mode == 'RGBA':
+        rgb_base = image.convert('RGB')
+    else:
+        rgb_base = image
+        
+    # Store alpha if present
+    alpha_channel = None
+    if image.mode == 'RGBA':
+        alpha_channel = image.split()[-1]
 
-    return ImageOps.posterize(image, bits)
+    posterized_rgb = ImageOps.posterize(rgb_base, bits)
+    
+    if alpha_channel is not None:
+        posterized_rgb.putalpha(alpha_channel)
+        return posterized_rgb
+
+    return posterized_rgb
+
