@@ -14,6 +14,10 @@ from image_filters import (
     invert_colors,
     apply_blur,
     apply_sharpen,
+    apply_color_balance,
+    rotate_hue,
+    apply_posterize,
+
 
 )
 from remove_background import remove_background
@@ -90,6 +94,19 @@ def handle_sharpen(image, image_name, values, args):
     print(f'  > Applying Sharpen (intensity: {values[0]})...')
     return apply_sharpen(image, values[0])
 
+def handle_color_balance(image, image_name, values, args):
+    print(f'  > Applying Color Balance (R:{values[0]}, G:{values[1]}, B:{values[2]})...')
+    return apply_color_balance(image, values[0], values[1], values[2])
+
+def handle_hue_rotation(image, image_name, values, args):
+    print(f'  > Rotating Hue by {values[0]} degrees...')
+    return rotate_hue(image, values[0])
+
+def handle_posterize(image, image_name, values, args):
+    print(f'  > Posterizing to {values[0]} bits...')
+    return apply_posterize(image, values[0])
+
+
 
 # --- Core Processing Function ---
 
@@ -99,7 +116,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         'invert': handle_invert, 'grayscale': handle_grayscale, 'edge_detection': handle_edge_detection,
         'brightness': handle_brightness, 'contrast': handle_contrast, 'saturation': handle_saturation,
         'blur': handle_blur, 'sharpen': handle_sharpen,
+        'color_balance': handle_color_balance, 'hue_rotation': handle_hue_rotation, 'posterize': handle_posterize,
     }
+
     }
     if not images_data:
         print("No images to process.")

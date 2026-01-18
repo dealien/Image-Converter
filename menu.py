@@ -21,6 +21,21 @@ def _prompt_for_int_value(prompt, default, min_val, max_val):
             print("Error: Please enter a valid integer.")
 
 
+def _prompt_for_float_value(prompt, default, min_val=0.0):
+    while True:
+        val_str = input(f"{prompt} (default: {default}): ").strip()
+        if not val_str: return default
+        try:
+            val = float(val_str)
+            if val >= min_val:
+                return val
+            else:
+                print(f"Error: Value must be at least {min_val}.")
+        except ValueError:
+            print("Error: Please enter a valid number.")
+
+
+
 def prompt_for_flip_options():
     print("\n--- Flip Options ---")
     choices = ['horizontal', 'vertical', 'both']
@@ -119,6 +134,25 @@ def prompt_for_sharpen_options():
     return {'dest': 'sharpen', 'values': [val]}
 
 
+def prompt_for_color_balance_options():
+    print("Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change).")
+    r = _prompt_for_float_value("Red factor", 1.0)
+    g = _prompt_for_float_value("Green factor", 1.0)
+    b = _prompt_for_float_value("Blue factor", 1.0)
+    return {'dest': 'color_balance', 'values': [r, g, b]}
+
+
+def prompt_for_hue_rotation_options():
+    val = _prompt_for_int_value("Enter hue rotation degrees (0-360)", 90, 0, 360)
+    return {'dest': 'hue_rotation', 'values': [val]}
+
+
+def prompt_for_posterize_options():
+    val = _prompt_for_int_value("Enter number of bits (1-8)", 4, 1, 8)
+    return {'dest': 'posterize', 'values': [val]}
+
+
+
 
 # --- Main Menu Logic ---
 
@@ -134,7 +168,11 @@ AVAILABLE_MANIPULATIONS = [
     {'dest': 'saturation', 'name': 'Adjust Saturation', 'handler': 'prompt_for_saturation_options'},
     {'dest': 'blur', 'name': 'Apply Gaussian Blur', 'handler': 'prompt_for_blur_options'},
     {'dest': 'sharpen', 'name': 'Apply Sharpen', 'handler': 'prompt_for_sharpen_options'},
+    {'dest': 'color_balance', 'name': 'Adjust Color Balance', 'handler': 'prompt_for_color_balance_options'},
+    {'dest': 'hue_rotation', 'name': 'Rotate Hue', 'handler': 'prompt_for_hue_rotation_options'},
+    {'dest': 'posterize', 'name': 'Apply Posterize', 'handler': 'prompt_for_posterize_options'},
 ]
+
 
 
 

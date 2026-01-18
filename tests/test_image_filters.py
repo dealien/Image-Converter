@@ -4,7 +4,9 @@ import random
 from PIL import Image
 from image_filters import (invert_colors, grayscale, edge_detection,
                            adjust_brightness, adjust_contrast, adjust_saturation,
-                           apply_blur, apply_sharpen)
+                           apply_blur, apply_sharpen,
+                           apply_color_balance, rotate_hue, apply_posterize)
+
 
 import numpy as np
 
@@ -322,6 +324,61 @@ class TestImageBlurAndSharpen(unittest.TestCase):
         sharp_gradient = calculate_horizontal_gradient(sharpened_image)
         
         self.assertGreater(sharp_gradient, blur_gradient)
+
+
+class TestImageColorOps(unittest.TestCase):
+    def setUp(self):
+         self.width, self.height = 100, 100
+         self.test_image = Image.new('RGB', (self.width, self.height), (100, 100, 100))
+         
+    def test_color_balance(self):
+        # Enhance Red
+        red_enhanced = apply_color_balance(self.test_image, 2.0, 1.0, 1.0)
+        self.assertEqual(red_enhanced.getpixel((0,0)), (200, 100, 100))
+        
+        # Suppress Blue
+        blue_suppressed = apply_color_balance(self.test_image, 1.0, 1.0, 0.5)
+        self.assertEqual(blue_suppressed.getpixel((0,0)), (100, 100, 50))
+        
+        # Test invalid values
+        with self.assertRaises(TypeError):
+            apply_color_balance(self.test_image, "a", 1, 1)
+        with self.assertRaises(ValueError):
+             apply_color_balance(self.test_image, -1, 1, 1)
+
+    def test_posterize(self):
+        # Create a gradient image
+        img = Image.new('RGB', (256, 1))
+        for x in range(256):
+            img.putpixel((x, 0), (x, x, x))
+            
+        posterized = apply_posterize(img, bits=1) # Reduce to 1 bit (2 levels per channel)
+        
+        unique_colors = len(set(posterized.getdata()))
+        self.assertLess(unique_colors, 10) # Should be very few colors (actually 2^3=8 max for full RGB, but 2 for grayscale-ish)
+
+        with self.assertRaises(ValueError):
+             apply_posterize(img, 9)
+        with self.assertRaises(ValueError):
+             apply_posterize(img, 0)
+
+    def test_hue_rotation(self):
+        # Create a pure red image
+        red_img = Image.new('RGB', (10, 10), (255, 0, 0))
+        
+        # Rotate 120 degrees -> Green
+        green_img = rotate_hue(red_img, 120)
+        pixel = green_img.getpixel((0,0))
+        # Hue rotation isn't perfectly precise with 8-bit HSV, but red->green should have dominant G
+        self.assertGreater(pixel[1], pixel[0]) 
+        self.assertGreater(pixel[1], pixel[2])
+
+        # Rotate 240 degrees -> Blue
+        blue_img = rotate_hue(red_img, 240)
+        pixel = blue_img.getpixel((0,0))
+        self.assertGreater(pixel[2], pixel[0])
+        self.assertGreater(pixel[2], pixel[1])
+
 
 
 

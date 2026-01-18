@@ -245,3 +245,97 @@ def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
         image = image.convert('RGB')
     
     return ImageEnhance.Sharpness(image).enhance(factor)
+
+
+def apply_color_balance(image: Image.Image, red_factor: float, green_factor: float, blue_factor: float) -> Image.Image:
+    """
+    Adjusts the color balance of an image by scaling RGB channels.
+    :param image: The input image.
+    :param red_factor: Multiplier for the red channel.
+    :param green_factor: Multiplier for the green channel.
+    :param blue_factor: Multiplier for the blue channel.
+    :return: The color-balanced image.
+    """
+    if str(red_factor).lower() == 'nan' or str(green_factor).lower() == 'nan' or str(blue_factor).lower() == 'nan':
+         raise ValueError("Factors cannot be NaN")
+
+    # Handle float conversion and validation
+    try:
+        r_f = float(red_factor)
+        g_f = float(green_factor)
+        b_f = float(blue_factor)
+    except (ValueError, TypeError):
+        raise TypeError("Color balance factors must be numbers.")
+        
+    if r_f < 0 or g_f < 0 or b_f < 0:
+        raise ValueError("Color balance factors must be non-negative.")
+
+    if image.mode != 'RGB' and image.mode != 'RGBA':
+        image = image.convert('RGB')
+
+    # split the image into individual bands
+    bands = image.split()
+    
+    # Process R, G, B
+    r = bands[0].point(lambda i: i * r_f)
+    g = bands[1].point(lambda i: i * g_f)
+    b = bands[2].point(lambda i: i * b_f)
+
+    # Recombine (preserve alpha if present)
+    if len(bands) >= 4:
+         return Image.merge(image.mode, (r, g, b, bands[3]))
+    return Image.merge('RGB', (r, g, b))
+
+
+def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
+    """
+    Rotates the hue of the image.
+    :param image: The input image.
+    :param degrees: The angle to rotate the hue (0-360).
+    :return: The image with rotated hue.
+    """
+    if not isinstance(degrees, (int, float)):
+        raise TypeError("Degrees must be a number.")
+    
+    # Normalize degrees
+    degrees = degrees % 360
+
+    if degrees == 0:
+        return image
+
+    img_hsv = image.convert('HSV')
+    h, s, v = img_hsv.split()
+    
+    # Hue is 0-255 in PIL HSV. 360 degrees = 255.
+    # New Hue = (Old Hue + (degrees/360 * 255)) % 255
+    shift = (degrees / 360.0) * 255.0
+    
+    def shift_hue(p):
+        return int((p + shift) % 255)
+
+    h = h.point(shift_hue)
+    
+    new_img = Image.merge('HSV', (h, s, v))
+    if image.mode == 'RGBA':
+        return new_img.convert('RGBA')
+    return new_img.convert('RGB')
+
+
+def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
+    """
+    Reduces the number of bits for each color channel.
+    :param image: The input image.
+    :param bits: The number of bits to keep (1-8).
+    :return: The posterized image.
+    """
+    if not isinstance(bits, int):
+         raise TypeError("Bits must be an integer.")
+    
+    if not 1 <= bits <= 8:
+        raise ValueError("Bits must be between 1 and 8.")
+        
+    if image.mode != 'RGB' and image.mode != 'L':
+         # Posterize works on RGB or L
+         return ImageOps.posterize(image.convert('RGB'), bits)
+
+    return ImageOps.posterize(image, bits)
