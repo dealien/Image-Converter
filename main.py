@@ -2,6 +2,8 @@ import argparse
 import glob
 import os
 import sys
+import logging
+
 from pathlib import Path
 
 from PIL import Image
@@ -26,7 +28,12 @@ class StoreInOrder(argparse.Action):
 # --- Main Execution ---
 
 def main():
+    # Configure logging to mimic print output (stdout, message only) regarding format,
+    # but allowing for future extension (file logging, etc.)
+    logging.basicConfig(level=logging.INFO, format='%(message)s', stream=sys.stdout)
+
     # If --menu is used or no arguments are provided, start the menu.
+
     if '--menu' in sys.argv or len(sys.argv) == 1:
         # Import dynamically to prevent circular dependency issues with tests
         from menu import interactive_menu
