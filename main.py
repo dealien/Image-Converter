@@ -18,8 +18,9 @@ class StoreInOrder(argparse.Action):
             setattr(namespace, 'ordered_operations', [])
         if values is None:
             norm_values = []
-        elif isinstance(values, (str, int)):
+        elif isinstance(values, (str, int, float)):
             norm_values = [values]
+
         else:
             norm_values = values
         namespace.ordered_operations.append({'dest': self.dest, 'values': norm_values})
