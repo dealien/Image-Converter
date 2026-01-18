@@ -23,10 +23,10 @@
             ]
         },
         {
-            "name": "Python: Automated Scenario",
+            "name": "Python: Automated Testing",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/tests/automated_scenario.py",
+            "program": "${workspaceFolder}/tests/automated_testing.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}"
         },

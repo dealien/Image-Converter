@@ -19,7 +19,7 @@ from scale_image import scale_image
 # --- Operation Handlers ---
 
 def handle_flip(image, image_name, values, args):
-    print(f'Flipping "{image_name}" {values[0]}...')
+    print(f'  > Flipping {values[0]}...')
     return flip_image(image, values[0])
 
 def handle_scale(image, image_name, values, args):
@@ -43,40 +43,40 @@ def handle_scale(image, image_name, values, args):
     else:
         print("Invalid format for --scale argument. Use '1.5x' or '400px 300px'.")
         return image
-    print(f'Scaling "{image_name}"...')
+    print(f'  > Scaling...')
     return scale_image(image, scale_factor=scale_factor, new_size=new_size, resample_filter=args.resample)
 
 def handle_remove_background(image, image_name, values, args):
-    print(f'Removing background of "{image_name}"...')
+    print(f'  > Removing background...')
     return remove_background(image)
 
 def handle_invert(image, image_name, values, args):
-    print(f'Inverting the colors of "{image_name}"...')
+    print(f'  > Inverting colors...')
     return invert_colors(image)
 
 def handle_grayscale(image, image_name, values, args):
-    print(f'Converting "{image_name}" to grayscale...')
+    print(f'  > Converting to grayscale...')
     return grayscale(image)
 
 def handle_edge_detection(image, image_name, values, args):
     method = values[0]
     if method == 'kovalevsky':
-        print(f'Applying {method} edge detection to "{image_name}" with threshold {args.threshold}...')
+        print(f'  > Applying {method} edge detection (threshold: {args.threshold})...')
         return edge_detection(image, 'kovalevsky', args.threshold)
     else:
-        print(f'Applying {method} edge detection to "{image_name}"...')
+        print(f'  > Applying {method} edge detection...')
         return edge_detection(image, method)
 
 def handle_brightness(image, image_name, values, args):
-    print(f'Adjusting brightness of "{image_name}" by {values[0]}...')
+    print(f'  > Adjusting brightness by {values[0]}...')
     return adjust_brightness(image, values[0])
 
 def handle_contrast(image, image_name, values, args):
-    print(f'Adjusting contrast of "{image_name}" by {values[0]}...')
+    print(f'  > Adjusting contrast by {values[0]}...')
     return adjust_contrast(image, values[0])
 
 def handle_saturation(image, image_name, values, args):
-    print(f'Adjusting saturation of "{image_name}" by {values[0]}...')
+    print(f'  > Adjusting saturation by {values[0]}...')
     return adjust_saturation(image, values[0])
 
 # --- Core Processing Function ---
@@ -91,7 +91,12 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         print("No images to process.")
         return
     print(f"\nProcessing {len(images_data)} image(s)...")
-    for image_name, image_to_process in images_data:
+    total_images = len(images_data)
+    for i, (image_name, image_to_process) in enumerate(images_data, 1):
+        print(f"\n{'='*50}")
+        print(f"[{i}/{total_images}] Processing: \"{image_name}\"")
+        print(f"{'='*50}")
+        
         temp_path = None  # Initialize temp_path to None
         try:
             output_image = image_to_process.copy()
@@ -108,9 +113,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             temp_path = os.path.join('Output', f".tmp.{output_filename}")
             output_image.save(temp_path, 'PNG')
             os.replace(temp_path, output_path)
-            print(f"Image saved successfully: {output_path}")
+            print(f"  [SUCCESS] Saved to: {output_path}")
         except Exception as e:
-            print(f"An error occurred while processing {image_name}: {e}")
+            print(f"  [ERROR] An error occurred while processing {image_name}: {e}")
             continue
         finally:
             # Ensure the temp file is removed if it exists
