@@ -155,8 +155,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             os.replace(temp_path, output_path)
             logger.info(f"  [SUCCESS] Saved to: {output_path}")
         except Exception as e:
-            logger.error(f"  [ERROR] An error occurred while processing {image_name}: {e}")
+            logger.exception(f"  [ERROR] An error occurred while processing {image_name}: {e}")
             continue
+
         finally:
             # Ensure the temp file is removed if it exists
             if temp_path and os.path.exists(temp_path):
