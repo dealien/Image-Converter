@@ -119,7 +119,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         'color_balance': handle_color_balance, 'hue_rotation': handle_hue_rotation, 'posterize': handle_posterize,
     }
 
-    }
+
     if not images_data:
         print("No images to process.")
         return
