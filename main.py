@@ -61,6 +61,17 @@ def main():
                         help='Adjust contrast (-100 to 100).')
     parser.add_argument('--saturation', dest='saturation', action=StoreInOrder, type=int,
                         help='Adjust saturation (-100 to 100).')
+    parser.add_argument('--blur', dest='blur', action=StoreInOrder, type=float,
+                        help='Apply Gaussian Blur with specified radius.')
+    parser.add_argument('--sharpen', dest='sharpen', action=StoreInOrder, type=int,
+                        help='Resulting image sharpness (0-100).')
+    parser.add_argument('--color-balance', dest='color_balance', action=StoreInOrder, nargs=3, type=float,
+                        help='Adjust R, G, B channels (e.g., 1.2 0.8 1.0).')
+    parser.add_argument('--hue-rotation', dest='hue_rotation', action=StoreInOrder, type=int,
+                        help='Rotate hue by specified degrees (0-360).')
+    parser.add_argument('--posterize', dest='posterize', action=StoreInOrder, type=int,
+                        help='Reduce color depth to N bits (1-8).')
+
 
     args = parser.parse_args()
 
