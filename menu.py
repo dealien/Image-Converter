@@ -155,6 +155,39 @@ def prompt_for_posterize_options():
 
 
 
+def prompt_for_border_options():
+    thickness = _prompt_for_int_value("Enter border thickness", 10, 0, 500)
+    
+    while True:
+        color_str = input("Enter border color (Name or Hex, e.g., 'red', '#FF0000') (default: 'black'): ").strip()
+        if not color_str:
+            color_str = 'black'
+            break
+        # Basic validation could go here, but apply_border handles it more robustly.
+        break
+
+    print("\n--- Border Position ---")
+    positions = ['expand', 'inside']
+    for i, pos in enumerate(positions): print(f"  {i + 1}. {pos.capitalize()}")
+    
+    while True:
+        pos_str = input(f"Select position (default: {positions[0]}): ").strip()
+        if not pos_str:
+             position = positions[0]
+             break
+        try:
+             choice = int(pos_str) - 1
+             if 0 <= choice < len(positions):
+                 position = positions[choice]
+                 break
+             else:
+                 print(f"Invalid number. Choose between 1 and {len(positions)}.")
+        except ValueError:
+             print("Invalid input.")
+
+    return {'dest': 'border', 'values': [thickness, color_str, position]}
+
+
 # --- Main Menu Logic ---
 
 AVAILABLE_MANIPULATIONS = [
@@ -172,7 +205,9 @@ AVAILABLE_MANIPULATIONS = [
     {'dest': 'color_balance', 'name': 'Adjust Color Balance', 'handler': 'prompt_for_color_balance_options'},
     {'dest': 'hue_rotation', 'name': 'Rotate Hue', 'handler': 'prompt_for_hue_rotation_options'},
     {'dest': 'posterize', 'name': 'Apply Posterize', 'handler': 'prompt_for_posterize_options'},
+    {'dest': 'border', 'name': 'Add Border', 'handler': 'prompt_for_border_options'},
 ]
+
 
 
 

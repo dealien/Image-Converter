@@ -1,4 +1,4 @@
-from PIL import Image, ImageOps, ImageEnhance, ImageFilter
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
 
 
 def invert_colors(image: Image.Image) -> Image.Image:
@@ -367,5 +367,63 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
         return posterized
 
     return posterized
+
+
+def apply_border(image: Image.Image, thickness: int, color_str: str, position: str = 'expand') -> Image.Image:
+    """
+    Adds a solid color border to the image.
+    :param image: The input image.
+    :param thickness: Thickness of the border in pixels.
+    :param color_str: Color in Hex or RGB format (e.g., '#FF0000', 'red', '255,0,0').
+    :param position: 'expand' to add border outside, 'inside' to overlay border.
+    :return: Image with border.
+    """
+    try:
+        # Handle "255,0,0" format manually as ImageColor doesn't standardized it
+        if ',' in color_str and not color_str.startswith('rgb'):
+            color_tuple = tuple(map(int, color_str.split(',')))
+            color = color_tuple
+        else:
+            color = ImageColor.getrgb(color_str)
+    except ValueError:
+        raise ValueError(f"Invalid color format: {color_str}")
+
+    if thickness < 0:
+        raise ValueError("Thickness must be non-negative.")
+    
+    if thickness == 0:
+        return image
+
+    if position == 'expand':
+        return ImageOps.expand(image, border=thickness, fill=color)
+    elif position == 'inside':
+        from PIL import ImageDraw
+        img_with_border = image.copy()
+        draw = ImageDraw.Draw(img_with_border)
+        
+        w, h = image.size
+        
+        # Draw 4 rectangles to simulate inside border
+        draw.rectangle((0, 0, w, thickness), fill=color) # Top (overshoot slightly ok as long as it covers) - PIL rectangle is inclusive of top-left, exclusive/inclusive?
+        # PIL Draw.rectangle second coordinate is INCLUSIVE in versions < 10?? No, usually [x0, y0, x1, y1] inclusive.
+        # Let's check docs or be safe. standard is inclusive.
+        
+        # Top: (0, 0) to (w, thickness-1)
+        draw.rectangle((0, 0, w-1, thickness-1), fill=color) 
+        
+        # Bottom: (0, h-thickness) to (w, h)
+        draw.rectangle((0, h-thickness, w-1, h-1), fill=color)
+        
+        # Left: (0, 0) to (thickness-1, h)
+        draw.rectangle((0, 0, thickness-1, h-1), fill=color)
+        
+        # Right: (w-thickness, 0) to (w, h)
+        draw.rectangle((w-thickness, 0, w-1, h-1), fill=color)
+        
+        return img_with_border
+        
+    else:
+        raise ValueError("Position must be 'expand' or 'inside'.")
+
 
 

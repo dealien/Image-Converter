@@ -19,6 +19,7 @@ from image_filters import (
     apply_color_balance,
     rotate_hue,
     apply_posterize,
+    apply_border,
 
 
 )
@@ -113,6 +114,23 @@ def handle_posterize(image, image_name, values, args):
     return apply_posterize(image, values[0])
 
 
+def handle_border(image, image_name, values, args):
+    """
+    values: [thickness, color, position]
+    Expects thickness to be int (or convertible string), color (str), position (str).
+    """
+    try:
+        thickness = int(values[0])
+        color = values[1]
+        position = values[2]
+        logger.info(f"  > Adding border: {thickness}px, {color}, {position}")
+        return apply_border(image, thickness, color, position)
+    except (ValueError, IndexError) as e:
+        logger.error(f"  [ERROR] Invalid border arguments: {values}. Error: {e}")
+        return image
+
+
+
 
 
 # --- Core Processing Function ---
@@ -124,6 +142,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         'brightness': handle_brightness, 'contrast': handle_contrast, 'saturation': handle_saturation,
         'blur': handle_blur, 'sharpen': handle_sharpen,
         'color_balance': handle_color_balance, 'hue_rotation': handle_hue_rotation, 'posterize': handle_posterize,
+        'border': handle_border,
     }
 
 

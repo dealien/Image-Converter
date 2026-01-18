@@ -79,6 +79,9 @@ def main():
                         help='Rotate hue by specified degrees (0-360).')
     parser.add_argument('--posterize', dest='posterize', action=StoreInOrder, type=int,
                         help='Reduce color depth to N bits (1-8).')
+    parser.add_argument('--border', dest='border', action=StoreInOrder, nargs=3,
+                        help='Add border: thickness (int) color (str) position (expand/inside).')
+
 
 
     args = parser.parse_args()

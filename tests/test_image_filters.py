@@ -5,7 +5,7 @@ from PIL import Image
 from image_filters import (invert_colors, grayscale, edge_detection,
                            adjust_brightness, adjust_contrast, adjust_saturation,
                            apply_blur, apply_sharpen,
-                           apply_color_balance, rotate_hue, apply_posterize)
+                           apply_color_balance, rotate_hue, apply_posterize, apply_border)
 
 
 import numpy as np
@@ -420,6 +420,48 @@ class TestImageColorOps(unittest.TestCase):
         # Check if alpha is preserved
         self.assertEqual(posterized_img.mode, 'RGBA')
         self.assertEqual(posterized_img.getpixel((0,0))[3], 128)
+
+
+class TestImageBorder(unittest.TestCase):
+    def setUp(self):
+        self.width, self.height = 100, 100
+        self.test_image = Image.new('RGB', (self.width, self.height), (100, 100, 100))
+
+    def test_border_expand(self):
+        thickness = 10
+        img_with_border = apply_border(self.test_image, thickness, 'red', 'expand')
+        
+        # Dimensions should increase by 2*thickness
+        self.assertEqual(img_with_border.size, (self.width + 2*thickness, self.height + 2*thickness))
+        
+        # Top-left corner should be red (border)
+        self.assertEqual(img_with_border.getpixel((0,0)), (255, 0, 0))
+        # Center should be original color
+        center_x = (self.width + 2*thickness) // 2
+        center_y = (self.height + 2*thickness) // 2
+        self.assertEqual(img_with_border.getpixel((center_x, center_y)), (100, 100, 100))
+
+    def test_border_inside(self):
+        thickness = 10
+        img_with_border = apply_border(self.test_image, thickness, '#0000FF', 'inside')
+        
+        # Dimensions should match original
+        self.assertEqual(img_with_border.size, (self.width, self.height))
+        
+        # Top-left corner should be blue (border)
+        self.assertEqual(img_with_border.getpixel((0,0)), (0, 0, 255))
+        
+        # Center should be original color
+        self.assertEqual(img_with_border.getpixel((50, 50)), (100, 100, 100))
+
+    def test_border_invalid_args(self):
+        with self.assertRaises(ValueError):
+            apply_border(self.test_image, -5, 'red')
+        with self.assertRaises(ValueError):
+            apply_border(self.test_image, 10, 'invalid_color')
+        with self.assertRaises(ValueError):
+             apply_border(self.test_image, 10, 'red', 'invalid_pos')
+
 
 
 
