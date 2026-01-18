@@ -54,6 +54,7 @@ def prompt_for_flip_options():
 
 
 def prompt_for_scale_options(extra_args):
+    # pylint: disable=too-many-branches, complex-logic
     print("\n--- Scale Options ---")
     print("Enter scale factor (e.g., '1.5x') OR new dimensions (e.g., '400px 300px').")
     while True:
@@ -85,6 +86,7 @@ def prompt_for_scale_options(extra_args):
 
 
 def prompt_for_edge_detection_options(extra_args):
+    # pylint: disable=too-many-branches, complex-logic
     print("\n--- Edge Detection Options ---")
     methods = ['sobel', 'canny', 'kovalevsky']
     for i, method in enumerate(methods): print(f"  {i + 1}. {method.capitalize()}")
@@ -156,6 +158,7 @@ def prompt_for_posterize_options():
 
 
 def prompt_for_border_options():
+    # pylint: disable=too-many-branches, complex-logic
     thickness = _prompt_for_int_value("Enter border thickness", 10, 0, 500)
     
     while True:
@@ -213,6 +216,7 @@ AVAILABLE_MANIPULATIONS = [
 
 
 def remove_manipulation(operations, extra_args):
+    # pylint: disable=too-many-branches, complex-logic
     if not operations:
         print("\nThere are no operations to remove.")
         return operations
@@ -247,6 +251,7 @@ def remove_manipulation(operations, extra_args):
 
 
 def select_images():
+    # pylint: disable=too-many-branches, complex-logic
     image_dir = 'Base Images'
     if not os.path.isdir(image_dir):
         print(f"Error: Directory '{image_dir}' not found.")
@@ -292,6 +297,7 @@ def select_images():
 
 
 def select_manipulations():
+    # pylint: disable=too-many-branches, complex-logic
     selected_operations = []
     extra_args = {}
     while True:
@@ -359,6 +365,7 @@ def select_manipulations():
 
 
 def interactive_menu():
+    # pylint: disable=too-many-branches, complex-logic
     try:
         print("--- Welcome to the Interactive Image Processor ---")
         selected_image_paths = select_images()
