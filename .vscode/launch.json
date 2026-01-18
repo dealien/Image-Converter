@@ -35,9 +35,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "pytest",
-            "args": [
-                "${file}"
-            ],
+            "args": [],
             "console": "integratedTerminal"
         }
     ]
