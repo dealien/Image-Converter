@@ -34,6 +34,8 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
     """
 
     try:
+        # Not every system has scikit-image installed, and it's not a required 
+        # dependency for the main functionality
         from skimage import feature, filters
         from skimage.util import img_as_ubyte
         import numpy as np
@@ -248,6 +250,7 @@ def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
 
 
 def apply_color_balance(image: Image.Image, red_factor: float, green_factor: float, blue_factor: float) -> Image.Image:
+    # pylint: disable=too-many-branches, complex-logic
     """
     Adjusts the color balance of an image by scaling RGB channels.
     :param image: The input image.
@@ -268,15 +271,23 @@ def apply_color_balance(image: Image.Image, red_factor: float, green_factor: flo
     if (r_f != r_f) or (g_f != g_f) or (b_f != b_f) or (r_f in (float("inf"), float("-inf"))) or (g_f in (float("inf"), float("-inf"))) or (b_f in (float("inf"), float("-inf"))):
         raise ValueError("Factors must be finite numbers.")
 
+    # Reject negative factors
     if r_f < 0 or g_f < 0 or b_f < 0:
         raise ValueError("Color balance factors must be non-negative.")
 
+    # Convert to RGB if not already
     if image.mode != 'RGB' and image.mode != 'RGBA':
         image = image.convert('RGB')
 
+    # Split the image into color bands
     bands = image.split()
 
     def _scale_channel(factor: float):
+        """
+        Scales a channel by a given factor, clamping values to [0, 255].
+        :param factor: The scaling factor.
+        :return: A function that scales a channel.
+        """
         def _fn(i):
             v = int(round(i * factor))
             if v < 0:
@@ -286,10 +297,12 @@ def apply_color_balance(image: Image.Image, red_factor: float, green_factor: flo
             return v
         return _fn
 
+    # Apply the scaling to each band
     r = bands[0].point(_scale_channel(r_f))
     g = bands[1].point(_scale_channel(g_f))
     b = bands[2].point(_scale_channel(b_f))
 
+    # Merge the bands back into an image
     if len(bands) >= 4:
         return Image.merge(image.mode, (r, g, b, bands[3]))
     return Image.merge('RGB', (r, g, b))
