@@ -301,12 +301,12 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     if degrees == 0:
         return image
 
-    alpha_channel = None
-    if image.mode == 'RGBA':
-        rgb_base, alpha_channel = image.convert('RGB'), image.split()[-1]
-    else:
-        # Ensure hue ops always run on RGB data
-        rgb_base = image.convert('RGB')
+    # Store alpha if present (supports RGBA/LA/etc.)
+    alpha_channel = image.getchannel('A') if 'A' in image.getbands() else None
+
+    # Ensure hue ops always run on RGB data
+    rgb_base = image.convert('RGB')
+
 
     img_hsv = rgb_base.convert('HSV')
     h, s, v = img_hsv.split()
@@ -348,24 +348,21 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     if not 1 <= bits <= 8:
         raise ValueError("Bits must be between 1 and 8.")
         
-    if image.mode != 'RGB' and image.mode != 'L' and image.mode != 'RGBA':
-         # Posterize works on RGB, L or RGBA (by splitting)
-         rgb_base = image.convert('RGB')
-    elif image.mode == 'RGBA':
-        rgb_base = image.convert('RGB')
+    # Store alpha if present (supports RGBA/LA/etc.)
+    alpha_channel = image.getchannel('A') if 'A' in image.getbands() else None
+
+    # Posterize operates on 'RGB' or 'L'
+    if image.mode == 'L':
+        base = image
     else:
-        rgb_base = image
-        
-    # Store alpha if present
-    alpha_channel = None
-    if image.mode == 'RGBA':
-        alpha_channel = image.split()[-1]
+        base = image.convert('RGB')
 
-    posterized_rgb = ImageOps.posterize(rgb_base, bits)
-    
+    posterized = ImageOps.posterize(base, bits)
+
     if alpha_channel is not None:
-        posterized_rgb.putalpha(alpha_channel)
-        return posterized_rgb
+        posterized.putalpha(alpha_channel)
+        return posterized
 
-    return posterized_rgb
+    return posterized
+
 
