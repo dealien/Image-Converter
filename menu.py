@@ -125,8 +125,9 @@ def prompt_for_saturation_options():
 
 
 def prompt_for_blur_options():
-    val = _prompt_for_int_value("Enter blur radius", 2, 0, 100)
+    val = _prompt_for_float_value("Enter blur radius", 2.0, 0.0)
     return {'dest': 'blur', 'values': [val]}
+
 
 
 def prompt_for_sharpen_options():
