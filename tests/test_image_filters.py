@@ -354,6 +354,17 @@ class TestImageColorOps(unittest.TestCase):
             apply_color_balance(self.test_image, "a", 1, 1)
         with self.assertRaises(ValueError):
              apply_color_balance(self.test_image, -1, 1, 1)
+        with self.assertRaises(ValueError):
+             apply_color_balance(self.test_image, float('nan'), 1, 1)
+        with self.assertRaises(ValueError):
+             apply_color_balance(self.test_image, 1, float('inf'), 1)
+
+    def test_color_balance_clamping(self):
+        # Enhance Red to overflow
+        red_enhanced = apply_color_balance(self.test_image, 10.0, 1.0, 1.0)
+        # 100 * 10 = 1000 -> clamped to 255
+        self.assertEqual(red_enhanced.getpixel((0,0))[0], 255)
+
 
     def test_posterize(self):
         # Create a gradient image

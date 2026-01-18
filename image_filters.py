@@ -256,9 +256,6 @@ def apply_color_balance(image: Image.Image, red_factor: float, green_factor: flo
     :param blue_factor: Multiplier for the blue channel.
     :return: The color-balanced image.
     """
-    if str(red_factor).lower() == 'nan' or str(green_factor).lower() == 'nan' or str(blue_factor).lower() == 'nan':
-         raise ValueError("Factors cannot be NaN")
-
     # Handle float conversion and validation
     try:
         r_f = float(red_factor)
@@ -266,25 +263,37 @@ def apply_color_balance(image: Image.Image, red_factor: float, green_factor: flo
         b_f = float(blue_factor)
     except (ValueError, TypeError):
         raise TypeError("Color balance factors must be numbers.")
-        
+
+    # Reject NaN/inf without extra imports
+    if (r_f != r_f) or (g_f != g_f) or (b_f != b_f) or (r_f in (float("inf"), float("-inf"))) or (g_f in (float("inf"), float("-inf"))) or (b_f in (float("inf"), float("-inf"))):
+        raise ValueError("Factors must be finite numbers.")
+
     if r_f < 0 or g_f < 0 or b_f < 0:
         raise ValueError("Color balance factors must be non-negative.")
 
     if image.mode != 'RGB' and image.mode != 'RGBA':
         image = image.convert('RGB')
 
-    # split the image into individual bands
     bands = image.split()
-    
-    # Process R, G, B
-    r = bands[0].point(lambda i: i * r_f)
-    g = bands[1].point(lambda i: i * g_f)
-    b = bands[2].point(lambda i: i * b_f)
 
-    # Recombine (preserve alpha if present)
+    def _scale_channel(factor: float):
+        def _fn(i):
+            v = int(round(i * factor))
+            if v < 0:
+                return 0
+            if v > 255:
+                return 255
+            return v
+        return _fn
+
+    r = bands[0].point(_scale_channel(r_f))
+    g = bands[1].point(_scale_channel(g_f))
+    b = bands[2].point(_scale_channel(b_f))
+
     if len(bands) >= 4:
-         return Image.merge(image.mode, (r, g, b, bands[3]))
+        return Image.merge(image.mode, (r, g, b, bands[3]))
     return Image.merge('RGB', (r, g, b))
+
 
 
 def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
