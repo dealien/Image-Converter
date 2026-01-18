@@ -3,7 +3,9 @@ import os
 import random
 from PIL import Image
 from image_filters import (invert_colors, grayscale, edge_detection,
-                           adjust_brightness, adjust_contrast, adjust_saturation)
+                           adjust_brightness, adjust_contrast, adjust_saturation,
+                           apply_blur, apply_sharpen)
+
 import numpy as np
 
 
@@ -257,3 +259,79 @@ class TestImageAdjustments(unittest.TestCase):
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = saturated_image.split()
         self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+
+
+class TestImageBlurAndSharpen(unittest.TestCase):
+    def setUp(self):
+        # Create a simple image with a checkboard pattern (high frequency/contrast)
+        self.width, self.height = 100, 100
+        self.test_image = Image.new('RGB', (self.width, self.height))
+        for x in range(self.width):
+            for y in range(self.height):
+                if (x // 10 + y // 10) % 2 == 0:
+                    self.test_image.putpixel((x, y), (0, 0, 0))
+                else:
+                    self.test_image.putpixel((x, y), (255, 255, 255))
+
+    def test_apply_blur(self):
+        # Apply blur
+        blurred_image = apply_blur(self.test_image, radius=2)
+        
+        # Check that sharp edges are softened
+        # In the original image, pixel (9, 0) is black (0,0,0) and (10, 0) is white (255,255,255)
+        # After blur, they should be closer in value.
+        p1 = blurred_image.getpixel((9, 0))[0]
+        p2 = blurred_image.getpixel((10, 0))[0]
+        diff = abs(p1 - p2)
+        # Original difference is 255. Blurred diff should be significantly less.
+        self.assertLess(diff, 200)
+
+        # Test invalid values
+        with self.assertRaises(TypeError):
+            apply_blur(self.test_image, "invalid")
+        with self.assertRaises(ValueError):
+            apply_blur(self.test_image, -1)
+
+    def test_apply_sharpen(self):
+        # Create a blurry image to sharpen
+        blurry_image = apply_blur(self.test_image, radius=1)
+
+        
+        # Apply sharpen
+        sharpened_image = apply_sharpen(blurry_image, sharpness=100)
+        
+        # Measure local contrast at an edge
+        # We expect the contrast to increase after sharpening
+        p1_blur = blurry_image.getpixel((9, 0))[0]
+        p2_blur = blurry_image.getpixel((10, 0))[0]
+        
+        # Calculate total horizontal gradient (sum of absolute differences)
+        def calculate_horizontal_gradient(img):
+            data = list(img.getdata())
+            width, height = img.size
+            total_gradient = 0
+            for y in range(height):
+                row_start = y * width
+                for x in range(width - 1):
+                    p1 = data[row_start + x][0]
+                    p2 = data[row_start + x + 1][0]
+                    total_gradient += abs(p1 - p2)
+            return total_gradient
+
+        blur_gradient = calculate_horizontal_gradient(blurry_image)
+        sharp_gradient = calculate_horizontal_gradient(sharpened_image)
+        
+        self.assertGreater(sharp_gradient, blur_gradient)
+
+
+
+
+
+        # Test invalid values
+        with self.assertRaises(TypeError):
+            apply_sharpen(self.test_image, "invalid")
+        with self.assertRaises(ValueError):
+            apply_sharpen(self.test_image, -1)
+        with self.assertRaises(ValueError):
+            apply_sharpen(self.test_image, 101)
+

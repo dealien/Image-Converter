@@ -103,9 +103,21 @@ def prompt_for_contrast_options():
     return {'dest': 'contrast', 'values': [val]}
 
 
+
 def prompt_for_saturation_options():
     val = _prompt_for_int_value("Enter saturation value (-100 to 100)", 0, -100, 100)
     return {'dest': 'saturation', 'values': [val]}
+
+
+def prompt_for_blur_options():
+    val = _prompt_for_int_value("Enter blur radius", 2, 0, 100)
+    return {'dest': 'blur', 'values': [val]}
+
+
+def prompt_for_sharpen_options():
+    val = _prompt_for_int_value("Enter sharpness intensity (0-100)", 50, 0, 100)
+    return {'dest': 'sharpen', 'values': [val]}
+
 
 
 # --- Main Menu Logic ---
@@ -120,7 +132,10 @@ AVAILABLE_MANIPULATIONS = [
     {'dest': 'brightness', 'name': 'Adjust Brightness', 'handler': 'prompt_for_brightness_options'},
     {'dest': 'contrast', 'name': 'Adjust Contrast', 'handler': 'prompt_for_contrast_options'},
     {'dest': 'saturation', 'name': 'Adjust Saturation', 'handler': 'prompt_for_saturation_options'},
+    {'dest': 'blur', 'name': 'Apply Gaussian Blur', 'handler': 'prompt_for_blur_options'},
+    {'dest': 'sharpen', 'name': 'Apply Sharpen', 'handler': 'prompt_for_sharpen_options'},
 ]
+
 
 
 def remove_manipulation(operations, extra_args):

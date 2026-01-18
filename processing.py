@@ -12,6 +12,9 @@ from image_filters import (
     edge_detection,
     grayscale,
     invert_colors,
+    apply_blur,
+    apply_sharpen,
+
 )
 from remove_background import remove_background
 from scale_image import scale_image
@@ -79,6 +82,15 @@ def handle_saturation(image, image_name, values, args):
     print(f'  > Adjusting saturation by {values[0]}...')
     return adjust_saturation(image, values[0])
 
+def handle_blur(image, image_name, values, args):
+    print(f'  > Applying Gaussian Blur (radius: {values[0]})...')
+    return apply_blur(image, values[0])
+
+def handle_sharpen(image, image_name, values, args):
+    print(f'  > Applying Sharpen (intensity: {values[0]})...')
+    return apply_sharpen(image, values[0])
+
+
 # --- Core Processing Function ---
 
 def process_images_and_save(images_data, ordered_operations, cli_args):
@@ -86,6 +98,8 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         'flip': handle_flip, 'scale': handle_scale, 'remove_background': handle_remove_background,
         'invert': handle_invert, 'grayscale': handle_grayscale, 'edge_detection': handle_edge_detection,
         'brightness': handle_brightness, 'contrast': handle_contrast, 'saturation': handle_saturation,
+        'blur': handle_blur, 'sharpen': handle_sharpen,
+    }
     }
     if not images_data:
         print("No images to process.")

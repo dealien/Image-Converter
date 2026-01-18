@@ -1,4 +1,4 @@
-from PIL import Image, ImageOps, ImageEnhance
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 
 
 def invert_colors(image: Image.Image) -> Image.Image:
@@ -198,3 +198,50 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
     if image.mode != 'RGB':
         image = image.convert('RGB')
     return ImageEnhance.Color(image).enhance(factor)
+
+
+def apply_blur(image: Image.Image, radius: int) -> Image.Image:
+    """
+    Applies Gaussian Blur to the image.
+    :param image: The input image.
+    :param radius: The radius of the blur.
+    :return: The blurred image.
+    """
+    if not isinstance(radius, (int, float)):
+        raise TypeError("Radius must be a number.")
+    if radius < 0:
+        raise ValueError("Radius must be non-negative.")
+    if radius == 0:
+        return image
+    return image.filter(ImageFilter.GaussianBlur(radius))
+
+
+def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
+    """
+    Applies sharpening to the image.
+    :param image: The input image.
+    :param sharpness: An integer from 0 to 100 representing intensity.
+    :return: The sharpened image.
+    """
+    if not isinstance(sharpness, int):
+        raise TypeError("Sharpness must be an integer.")
+    if not 0 <= sharpness <= 100:
+        raise ValueError("Sharpness must be between 0 and 100.")
+    if sharpness == 0:
+        return image
+    
+    # Map 0-100 to a factor (e.g., 1.0 to 2.0)
+    factor = 1.0 + (sharpness / 100.0)
+
+
+    if image.mode == 'RGBA':
+        r, g, b, a = image.split()
+        rgb = Image.merge('RGB', (r, g, b))
+        enhanced = ImageEnhance.Sharpness(rgb).enhance(factor)
+        r2, g2, b2 = enhanced.split()
+        return Image.merge('RGBA', (r2, g2, b2, a))
+
+    if image.mode not in ('RGB', 'L'):
+        image = image.convert('RGB')
+    
+    return ImageEnhance.Sharpness(image).enhance(factor)
