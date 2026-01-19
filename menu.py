@@ -8,11 +8,14 @@ from processing import process_images_and_save
 # --- Helper Functions ---
 
 
-def _get_input(prompt, validator=None, default=None):
+_DEFAULT = object()
+
+
+def _get_input(prompt, validator=None, default=_DEFAULT):
     """Generic input helper with validation and default value."""
     while True:
         prompt_text = f"{prompt}"
-        if default is not None:
+        if default is not _DEFAULT:
             # Check if default is an options index (int) or value
             prompt_text += f" (default: {default})"
         prompt_text += ": "
@@ -20,7 +23,7 @@ def _get_input(prompt, validator=None, default=None):
         user_input = input(prompt_text).strip()
 
         if not user_input:
-            if default is not None:
+            if default is not _DEFAULT:
                 return default
             continue
 
@@ -300,10 +303,15 @@ def remove_manipulation(operations, extra_args):
             return idx
         raise ValueError(f"Choose between 1 and {len(operations)}.")
 
-    try:
-        choice_idx = _get_input("Select operation number", removal_validator)
-    except Exception:  # Handle cancellation logic if needed, but here simple input
-        return operations
+    # Let _get_input handle validation loops. It will return None for empty input.
+    choice_idx = _get_input(
+        "Select operation number to remove (or press Enter to cancel)",
+        removal_validator,
+        default=None,
+    )
+
+    if choice_idx is None:
+        return operations  # User cancelled
 
     removed_op = operations.pop(choice_idx)
     print(f"\nRemoved '{removed_op['dest']}'.")
