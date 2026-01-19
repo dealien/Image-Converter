@@ -41,22 +41,29 @@ def handle_scale(image, image_name, values, args):
     scale_params = values
     scale_factor = None
     new_size = None
-    if len(scale_params) == 1 and scale_params[0].lower().endswith('x'):
+    
+    if len(scale_params) == 1:
+        # Handle single argument as scale factor (e.g., "1.5", "0.5x")
         try:
-            scale_factor = float(scale_params[0][:-1])
+            # Remove 'x' if present, then parse float
+            clean_param = scale_params[0].lower().replace('x', '')
+            scale_factor = float(clean_param)
         except ValueError:
-            print(f"Invalid scale factor: {scale_params[0]}")
+            logger.error(f"Invalid scale factor: {scale_params[0]}")
             return image
+            
     elif len(scale_params) == 2:
         try:
             width = int(scale_params[0].lower().replace('px', ''))
             height = int(scale_params[1].lower().replace('px', ''))
             new_size = (width, height)
         except ValueError:
-            print(f"Invalid size format: {scale_params}")
+             # If parsing as explicit size fails, check if it was intended as something else?
+             # But 2 args implies list of dimensions typically.
+            logger.error(f"Invalid size format: {scale_params}")
             return image
     else:
-        logger.error("Invalid format for --scale argument. Use '1.5x' or '400px 300px'.")
+        logger.error("Invalid format for --scale argument. Use '1.5', '1.5x' or '400px 300px'.")
         return image
     logger.info(f'  > Scaling...')
     return scale_image(image, scale_factor=scale_factor, new_size=new_size, resample_filter=args.resample)
