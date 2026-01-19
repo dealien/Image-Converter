@@ -461,16 +461,70 @@ class TestImageBorder(unittest.TestCase):
 
     def test_border_inside(self):
         thickness = 10
+        border_color_rgb = (0, 0, 255)
+        original_color = (100, 100, 100)
+
         img_with_border = apply_border(self.test_image, thickness, "#0000FF", "inside")
 
         # Dimensions should match original
         self.assertEqual(img_with_border.size, (self.width, self.height))
 
         # Top-left corner should be blue (border)
-        self.assertEqual(img_with_border.getpixel((0, 0)), (0, 0, 255))
+        self.assertEqual(img_with_border.getpixel((0, 0)), border_color_rgb)
 
         # Center should be original color
-        self.assertEqual(img_with_border.getpixel((50, 50)), (100, 100, 100))
+        self.assertEqual(
+            img_with_border.getpixel((self.width // 2, self.height // 2)),
+            original_color,
+        )
+
+        # Check Top Border Boundary
+        self.assertEqual(
+            img_with_border.getpixel((self.width // 2, thickness - 1)),
+            border_color_rgb,
+            "Top border outer edge failed",
+        )
+        self.assertEqual(
+            img_with_border.getpixel((self.width // 2, thickness)),
+            original_color,
+            "Top border inner edge failed",
+        )
+
+        # Check Bottom Border Boundary
+        self.assertEqual(
+            img_with_border.getpixel((self.width // 2, self.height - thickness)),
+            border_color_rgb,
+            "Bottom border outer edge failed",
+        )
+        self.assertEqual(
+            img_with_border.getpixel((self.width // 2, self.height - thickness - 1)),
+            original_color,
+            "Bottom border inner edge failed",
+        )
+
+        # Check Left Border Boundary
+        self.assertEqual(
+            img_with_border.getpixel((thickness - 1, self.height // 2)),
+            border_color_rgb,
+            "Left border outer edge failed",
+        )
+        self.assertEqual(
+            img_with_border.getpixel((thickness, self.height // 2)),
+            original_color,
+            "Left border inner edge failed",
+        )
+
+        # Check Right Border Boundary
+        self.assertEqual(
+            img_with_border.getpixel((self.width - thickness, self.height // 2)),
+            border_color_rgb,
+            "Right border outer edge failed",
+        )
+        self.assertEqual(
+            img_with_border.getpixel((self.width - thickness - 1, self.height // 2)),
+            original_color,
+            "Right border inner edge failed",
+        )
 
     def test_border_invalid_args(self):
         with self.assertRaises(ValueError):

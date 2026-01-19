@@ -423,11 +423,6 @@ def apply_border(
         w, h = image.size
 
         # Draw 4 rectangles to simulate inside border
-        draw.rectangle(
-            (0, 0, w, thickness), fill=color
-        )  # Top (overshoot slightly ok as long as it covers) - PIL rectangle is inclusive of top-left, exclusive/inclusive?
-        # PIL Draw.rectangle second coordinate is INCLUSIVE in versions < 10?? No, usually [x0, y0, x1, y1] inclusive.
-        # Let's check docs or be safe. standard is inclusive.
 
         # Top: (0, 0) to (w, thickness-1)
         draw.rectangle((0, 0, w - 1, thickness - 1), fill=color)
