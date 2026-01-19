@@ -40,15 +40,25 @@ class TestHelpers:
         assert menu._get_input("Prompt", validator=int) == 123
 
     def test_validate_int(self):
-        validator = menu._validate_int(min_val=0, max_val=10)
-        assert validator("5") == 5
-        assert validator("0") == 0
-        assert validator("10") == 10
+        # Case 1: Both bounds
+        validator_both = menu._validate_int(min_val=0, max_val=10)
+        assert validator_both("5") == 5
+        with pytest.raises(ValueError, match="between"):
+            validator_both("11")
 
-        with pytest.raises(ValueError, match="between"):
-            validator("11")
-        with pytest.raises(ValueError, match="between"):
-            validator("-1")
+        # Case 2: Min only
+        validator_min = menu._validate_int(min_val=10)
+        assert validator_min("10") == 10
+        assert validator_min("100") == 100
+        with pytest.raises(ValueError, match="at least"):
+            validator_min("9")
+
+        # Case 3: Max only
+        validator_max = menu._validate_int(max_val=10)
+        assert validator_max("10") == 10
+        assert validator_max("-100") == -100
+        with pytest.raises(ValueError, match="at most"):
+            validator_max("11")
 
     def test_validate_float(self):
         validator = menu._validate_float(min_val=1.0)

@@ -39,10 +39,15 @@ def _get_input(prompt, validator=None, default=_DEFAULT):
 def _validate_int(min_val=None, max_val=None):
     def validator(val_str):
         val = int(val_str)
-        if min_val is not None and val < min_val:
-            raise ValueError(f"Value must be between {min_val} and {max_val}.")
-        if max_val is not None and val > max_val:
-            raise ValueError(f"Value must be between {min_val} and {max_val}.")
+        if min_val is not None and max_val is not None:
+            if val < min_val or val > max_val:
+                raise ValueError(f"Value must be between {min_val} and {max_val}.")
+        elif min_val is not None:
+            if val < min_val:
+                raise ValueError(f"Value must be at least {min_val}.")
+        elif max_val is not None:
+            if val > max_val:
+                raise ValueError(f"Value must be at most {max_val}.")
         return val
 
     return validator
