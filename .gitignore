@@ -261,3 +261,5 @@ cython_debug/
 
 Output/
 Base Images/*
+
+.agent/
