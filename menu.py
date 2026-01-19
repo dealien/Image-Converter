@@ -129,6 +129,8 @@ def prompt_for_scale_options(extra_args):
     print("Enter scale factor (e.g., '1.5x') OR new dimensions (e.g., '400px 300px').")
 
     def scale_validator(val_str):
+        if not val_str:
+            raise ValueError("Scale value cannot be empty.")
         val_str = val_str.lower()
         parts = val_str.split()
         if (
