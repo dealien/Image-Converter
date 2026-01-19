@@ -4,17 +4,12 @@ import glob
 
 
 def setup_test_images():
-    # Define paths relative to the project root (assuming script runs from root)
-    # If run from tests/, adjustments needed. We'll make it robust.
+    # Determine paths relative to this script's location for robustness.
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)  # Assumes tests/ is in root
 
-    # Check if we are in 'tests' dir or root
-    cwd = os.getcwd()
-    if os.path.basename(cwd) == "tests":
-        source_dir = "test_images"
-        base_dir = "../Base Images"
-    else:
-        source_dir = os.path.join("tests", "test_images")
-        base_dir = "Base Images"
+    source_dir = os.path.join(script_dir, "test_images")
+    base_dir = os.path.join(project_root, "Base Images")
 
     print(f"Setting up images from '{source_dir}' to '{base_dir}'...")
 
