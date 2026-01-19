@@ -7,12 +7,7 @@ def invert_colors(image: Image.Image) -> Image.Image:
     :param image: The input image.
     :return: The image with inverted colors.
     """
-    return ImageOps.invert(image.convert('RGB'))
-
-
-from skimage import feature, filters
-from skimage.util import img_as_ubyte
-import numpy as np
+    return ImageOps.invert(image.convert("RGB"))
 
 
 def grayscale(image: Image.Image) -> Image.Image:
@@ -34,31 +29,31 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
     """
 
     try:
-        # Not every system has scikit-image installed, and it's not a required 
+        # Not every system has scikit-image installed, and it's not a required
         # dependency for the main functionality
         from skimage import feature, filters
-        from skimage.util import img_as_ubyte
+
         import numpy as np
     except ImportError:
         raise ImportError("scikit-image and numpy are required for edge detection.")
 
-    if method not in ['sobel', 'canny', 'kovalevsky']:
+    if method not in ["sobel", "canny", "kovalevsky"]:
         raise ValueError("Method must be 'sobel', 'canny', or 'kovalevsky'")
 
-    if method == 'sobel':
+    if method == "sobel":
         # Convert to grayscale and then to numpy array
-        grayscale_img = image.convert('L')
+        grayscale_img = image.convert("L")
         img_array = np.array(grayscale_img)
         # Apply Sobel filter
         edge_map = filters.sobel(img_array)
         # Convert the result back to an image
         edge_map_uint8 = np.clip(edge_map * 255, 0, 255).astype(np.uint8)
-        edge_image = Image.fromarray(edge_map_uint8, mode='L')
+        edge_image = Image.fromarray(edge_map_uint8, mode="L")
         return edge_image
 
-    elif method == 'canny':
+    elif method == "canny":
         # Convert to grayscale and then to numpy array
-        grayscale_img = image.convert('L')
+        grayscale_img = image.convert("L")
         img_array = np.array(grayscale_img)
         # Apply Canny filter
         edge_map = feature.canny(img_array)
@@ -68,14 +63,14 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
         edge_image = Image.fromarray(edge_map_uint8)
         return edge_image
 
-    elif method == 'kovalevsky':
+    elif method == "kovalevsky":
         # Convert the image to a NumPy array for efficient processing
-        img_array = np.array(image.convert('RGB'), dtype=np.int16)
+        img_array = np.array(image.convert("RGB"), dtype=np.int16)
         height, width, _ = img_array.shape
 
         # Guard against images smaller than the required 6-pixel window
         if height < 6 or width < 6:
-            return Image.new('L', (width, height), 0)
+            return Image.new("L", (width, height), 0)
 
         # Create a new black image to draw the edges onto
         edge_map = np.zeros((height, width), dtype=np.uint8)
@@ -84,32 +79,36 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
         if width >= 6:
             for y in range(height):
                 for x in range(width - 5):
-                    pixels = img_array[y, x:x + 6]
+                    pixels = img_array[y, x : x + 6]
                     diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
                     center_diff = diffs[2]
-                    if (center_diff > threshold and
-                            center_diff > diffs[0] and
-                            center_diff > diffs[1] and
-                            center_diff > diffs[3] and
-                            center_diff > diffs[4]):
+                    if (
+                        center_diff > threshold
+                        and center_diff > diffs[0]
+                        and center_diff > diffs[1]
+                        and center_diff > diffs[3]
+                        and center_diff > diffs[4]
+                    ):
                         edge_map[y, x + 3] = 255
 
         # --- Vertical Scan ---
         if height >= 6:
             for x in range(width):
                 for y in range(height - 5):
-                    pixels = img_array[y:y + 6, x]
+                    pixels = img_array[y : y + 6, x]
                     diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
                     center_diff = diffs[2]
-                    if (center_diff > threshold and
-                            center_diff > diffs[0] and
-                            center_diff > diffs[1] and
-                            center_diff > diffs[3] and
-                            center_diff > diffs[4]):
+                    if (
+                        center_diff > threshold
+                        and center_diff > diffs[0]
+                        and center_diff > diffs[1]
+                        and center_diff > diffs[3]
+                        and center_diff > diffs[4]
+                    ):
                         edge_map[y + 3, x] = 255
 
         # Convert the NumPy array back to an image
-        edge_image = Image.fromarray(edge_map, mode='L')
+        edge_image = Image.fromarray(edge_map, mode="L")
         return edge_image
 
 
@@ -128,16 +127,16 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
         return image
     factor = 1.0 + (brightness / 100.0)
 
-    if image.mode == 'RGBA':
+    if image.mode == "RGBA":
         r, g, b, a = image.split()
-        rgb = Image.merge('RGB', (r, g, b))
+        rgb = Image.merge("RGB", (r, g, b))
         enhanced = ImageEnhance.Brightness(rgb).enhance(factor)
         r2, g2, b2 = enhanced.split()
-        return Image.merge('RGBA', (r2, g2, b2, a))
+        return Image.merge("RGBA", (r2, g2, b2, a))
 
     # 'L' is supported for brightness; convert other modes to 'RGB'
-    if image.mode not in ('RGB', 'L'):
-        image = image.convert('RGB')
+    if image.mode not in ("RGB", "L"):
+        image = image.convert("RGB")
     return ImageEnhance.Brightness(image).enhance(factor)
 
 
@@ -156,16 +155,16 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
         return image
     factor = 1.0 + (contrast / 100.0)
 
-    if image.mode == 'RGBA':
+    if image.mode == "RGBA":
         r, g, b, a = image.split()
-        rgb = Image.merge('RGB', (r, g, b))
+        rgb = Image.merge("RGB", (r, g, b))
         enhanced = ImageEnhance.Contrast(rgb).enhance(factor)
         r2, g2, b2 = enhanced.split()
-        return Image.merge('RGBA', (r2, g2, b2, a))
+        return Image.merge("RGBA", (r2, g2, b2, a))
 
     # 'L' is supported for contrast; convert other modes to 'RGB'
-    if image.mode not in ('RGB', 'L'):
-        image = image.convert('RGB')
+    if image.mode not in ("RGB", "L"):
+        image = image.convert("RGB")
     return ImageEnhance.Contrast(image).enhance(factor)
 
 
@@ -184,21 +183,20 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
         return image
     factor = 1.0 + (saturation / 100.0)
 
-
-    if image.mode == 'RGBA':
+    if image.mode == "RGBA":
         r, g, b, a = image.split()
-        rgb = Image.merge('RGB', (r, g, b))
+        rgb = Image.merge("RGB", (r, g, b))
         enhanced = ImageEnhance.Color(rgb).enhance(factor)
         r2, g2, b2 = enhanced.split()
-        return Image.merge('RGBA', (r2, g2, b2, a))
+        return Image.merge("RGBA", (r2, g2, b2, a))
 
     # No-op for grayscale to preserve mode and avoid unintended conversion
-    if image.mode == 'L':
+    if image.mode == "L":
         return image
 
     # Convert other modes to 'RGB'
-    if image.mode != 'RGB':
-        image = image.convert('RGB')
+    if image.mode != "RGB":
+        image = image.convert("RGB")
     return ImageEnhance.Color(image).enhance(factor)
 
 
@@ -231,25 +229,26 @@ def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
         raise ValueError("Sharpness must be between 0 and 100.")
     if sharpness == 0:
         return image
-    
+
     # Map 0-100 to a factor (e.g., 1.0 to 2.0)
     factor = 1.0 + (sharpness / 100.0)
 
-
-    if image.mode == 'RGBA':
+    if image.mode == "RGBA":
         r, g, b, a = image.split()
-        rgb = Image.merge('RGB', (r, g, b))
+        rgb = Image.merge("RGB", (r, g, b))
         enhanced = ImageEnhance.Sharpness(rgb).enhance(factor)
         r2, g2, b2 = enhanced.split()
-        return Image.merge('RGBA', (r2, g2, b2, a))
+        return Image.merge("RGBA", (r2, g2, b2, a))
 
-    if image.mode not in ('RGB', 'L'):
-        image = image.convert('RGB')
-    
+    if image.mode not in ("RGB", "L"):
+        image = image.convert("RGB")
+
     return ImageEnhance.Sharpness(image).enhance(factor)
 
 
-def apply_color_balance(image: Image.Image, red_factor: float, green_factor: float, blue_factor: float) -> Image.Image:
+def apply_color_balance(
+    image: Image.Image, red_factor: float, green_factor: float, blue_factor: float
+) -> Image.Image:
     # pylint: disable=too-many-branches, complex-logic
     """
     Adjusts the color balance of an image by scaling RGB channels.
@@ -268,7 +267,14 @@ def apply_color_balance(image: Image.Image, red_factor: float, green_factor: flo
         raise TypeError("Color balance factors must be numbers.")
 
     # Reject NaN/inf without extra imports
-    if (r_f != r_f) or (g_f != g_f) or (b_f != b_f) or (r_f in (float("inf"), float("-inf"))) or (g_f in (float("inf"), float("-inf"))) or (b_f in (float("inf"), float("-inf"))):
+    if (
+        (r_f != r_f)
+        or (g_f != g_f)
+        or (b_f != b_f)
+        or (r_f in (float("inf"), float("-inf")))
+        or (g_f in (float("inf"), float("-inf")))
+        or (b_f in (float("inf"), float("-inf")))
+    ):
         raise ValueError("Factors must be finite numbers.")
 
     # Reject negative factors
@@ -276,8 +282,8 @@ def apply_color_balance(image: Image.Image, red_factor: float, green_factor: flo
         raise ValueError("Color balance factors must be non-negative.")
 
     # Convert to RGB if not already
-    if image.mode != 'RGB' and image.mode != 'RGBA':
-        image = image.convert('RGB')
+    if image.mode != "RGB" and image.mode != "RGBA":
+        image = image.convert("RGB")
 
     # Split the image into color bands
     bands = image.split()
@@ -288,6 +294,7 @@ def apply_color_balance(image: Image.Image, red_factor: float, green_factor: flo
         :param factor: The scaling factor.
         :return: A function that scales a channel.
         """
+
         def _fn(i):
             v = int(round(i * factor))
             if v < 0:
@@ -295,6 +302,7 @@ def apply_color_balance(image: Image.Image, red_factor: float, green_factor: flo
             if v > 255:
                 return 255
             return v
+
         return _fn
 
     # Apply the scaling to each band
@@ -305,8 +313,7 @@ def apply_color_balance(image: Image.Image, red_factor: float, green_factor: flo
     # Merge the bands back into an image
     if len(bands) >= 4:
         return Image.merge(image.mode, (r, g, b, bands[3]))
-    return Image.merge('RGB', (r, g, b))
-
+    return Image.merge("RGB", (r, g, b))
 
 
 def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
@@ -324,31 +331,27 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
         return image
 
     # Store alpha if present (supports RGBA/LA/etc.)
-    alpha_channel = image.getchannel('A') if 'A' in image.getbands() else None
+    alpha_channel = image.getchannel("A") if "A" in image.getbands() else None
 
     # Ensure hue ops always run on RGB data
-    rgb_base = image.convert('RGB')
+    rgb_base = image.convert("RGB")
 
-
-    img_hsv = rgb_base.convert('HSV')
+    img_hsv = rgb_base.convert("HSV")
     h, s, v = img_hsv.split()
-    
+
     # Hue is 0-255 in PIL HSV. Full circle is 256 steps.
     shift = int((degrees / 360.0) * 256) % 256
 
     h = h.point(lambda p: (p + shift) % 256)
 
-    
-    new_img = Image.merge('HSV', (h, s, v))
-    new_rgb = new_img.convert('RGB')
-    
+    new_img = Image.merge("HSV", (h, s, v))
+    new_rgb = new_img.convert("RGB")
+
     if alpha_channel is not None:
         new_rgb.putalpha(alpha_channel)
         return new_rgb
-        
+
     return new_rgb
-
-
 
 
 def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
@@ -359,19 +362,19 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     :return: The posterized image.
     """
     if not isinstance(bits, int):
-         raise TypeError("Bits must be an integer.")
-    
+        raise TypeError("Bits must be an integer.")
+
     if not 1 <= bits <= 8:
         raise ValueError("Bits must be between 1 and 8.")
-        
+
     # Store alpha if present (supports RGBA/LA/etc.)
-    alpha_channel = image.getchannel('A') if 'A' in image.getbands() else None
+    alpha_channel = image.getchannel("A") if "A" in image.getbands() else None
 
     # Posterize operates on 'RGB' or 'L'
-    if image.mode == 'L':
+    if image.mode == "L":
         base = image
     else:
-        base = image.convert('RGB')
+        base = image.convert("RGB")
 
     posterized = ImageOps.posterize(base, bits)
 
@@ -382,7 +385,9 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     return posterized
 
 
-def apply_border(image: Image.Image, thickness: int, color_str: str, position: str = 'expand') -> Image.Image:
+def apply_border(
+    image: Image.Image, thickness: int, color_str: str, position: str = "expand"
+) -> Image.Image:
     """
     Adds a solid color border to the image.
     :param image: The input image.
@@ -393,8 +398,8 @@ def apply_border(image: Image.Image, thickness: int, color_str: str, position: s
     """
     try:
         # Handle "255,0,0" format manually as ImageColor doesn't standardized it
-        if ',' in color_str and not color_str.startswith('rgb'):
-            color_tuple = tuple(map(int, color_str.split(',')))
+        if "," in color_str and not color_str.startswith("rgb"):
+            color_tuple = tuple(map(int, color_str.split(",")))
             color = color_tuple
         else:
             color = ImageColor.getrgb(color_str)
@@ -403,38 +408,41 @@ def apply_border(image: Image.Image, thickness: int, color_str: str, position: s
 
     if thickness < 0:
         raise ValueError("Thickness must be non-negative.")
-    
+
     if thickness == 0:
         return image
 
-    if position == 'expand':
+    if position == "expand":
         return ImageOps.expand(image, border=thickness, fill=color)
-    elif position == 'inside':
+    elif position == "inside":
         from PIL import ImageDraw
+
         img_with_border = image.copy()
         draw = ImageDraw.Draw(img_with_border)
-        
+
         w, h = image.size
-        
+
         # Draw 4 rectangles to simulate inside border
-        draw.rectangle((0, 0, w, thickness), fill=color) # Top (overshoot slightly ok as long as it covers) - PIL rectangle is inclusive of top-left, exclusive/inclusive?
+        draw.rectangle(
+            (0, 0, w, thickness), fill=color
+        )  # Top (overshoot slightly ok as long as it covers) - PIL rectangle is inclusive of top-left, exclusive/inclusive?
         # PIL Draw.rectangle second coordinate is INCLUSIVE in versions < 10?? No, usually [x0, y0, x1, y1] inclusive.
         # Let's check docs or be safe. standard is inclusive.
-        
+
         # Top: (0, 0) to (w, thickness-1)
-        draw.rectangle((0, 0, w-1, thickness-1), fill=color) 
-        
+        draw.rectangle((0, 0, w - 1, thickness - 1), fill=color)
+
         # Bottom: (0, h-thickness) to (w, h)
-        draw.rectangle((0, h-thickness, w-1, h-1), fill=color)
-        
+        draw.rectangle((0, h - thickness, w - 1, h - 1), fill=color)
+
         # Left: (0, 0) to (thickness-1, h)
-        draw.rectangle((0, 0, thickness-1, h-1), fill=color)
-        
+        draw.rectangle((0, 0, thickness - 1, h - 1), fill=color)
+
         # Right: (w-thickness, 0) to (w, h)
-        draw.rectangle((w-thickness, 0, w-1, h-1), fill=color)
-        
+        draw.rectangle((w - thickness, 0, w - 1, h - 1), fill=color)
+
         return img_with_border
-        
+
     else:
         raise ValueError("Position must be 'expand' or 'inside'.")
 
@@ -449,14 +457,10 @@ def rotate_image(image: Image.Image, angle: int) -> Image.Image:
     # Clamp to nearest 90 degrees
     # 0, 90, 180, 270. 360 -> 0. -90 -> 270.
     clamped_angle = int(round(angle / 90.0)) * 90 % 360
-    
+
     if clamped_angle == 0:
         return image
-    
+
     # expand=True ensures the image is resized to fit the rotated content
     # For 90 degree rotations, this swaps width/height appropriately.
     return image.rotate(clamped_angle, expand=True)
-
-
-
-

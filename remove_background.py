@@ -1,4 +1,3 @@
-import os
 from rembg import remove
 from PIL import Image, ImageOps, ImageChops, ImageFile
 

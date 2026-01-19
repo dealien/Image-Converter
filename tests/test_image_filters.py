@@ -2,11 +2,21 @@ import unittest
 import os
 import random
 from PIL import Image
-from image_filters import (invert_colors, grayscale, edge_detection,
-                           adjust_brightness, adjust_contrast, adjust_saturation,
-                           apply_blur, apply_sharpen,
-                           apply_color_balance, rotate_hue, apply_posterize, apply_border,
-                           rotate_image)
+from image_filters import (
+    invert_colors,
+    grayscale,
+    edge_detection,
+    adjust_brightness,
+    adjust_contrast,
+    adjust_saturation,
+    apply_blur,
+    apply_sharpen,
+    apply_color_balance,
+    rotate_hue,
+    apply_posterize,
+    apply_border,
+    rotate_image,
+)
 
 
 import numpy as np
@@ -15,9 +25,9 @@ import numpy as np
 class TestImageFilters(unittest.TestCase):
     def setUp(self):
         # Create a gradient image for testing
-        self.test_image_path = 'tests/test_images/test_gradient.png'
+        self.test_image_path = "tests/test_images/test_gradient.png"
         self.width, self.height = 256, 100
-        self.image = Image.new('RGB', (self.width, self.height))
+        self.image = Image.new("RGB", (self.width, self.height))
         for x in range(self.width):
             for y in range(self.height):
                 self.image.putpixel((x, y), (x, x, x))
@@ -48,7 +58,7 @@ class TestImageFilters(unittest.TestCase):
         # Convert to grayscale
         grayscale_img = grayscale(img)
         # Check the image mode
-        self.assertEqual(grayscale_img.mode, 'L')
+        self.assertEqual(grayscale_img.mode, "L")
         # Check a few random pixel values
         for _ in range(10):
             x = random.randint(0, self.width - 1)
@@ -60,16 +70,16 @@ class TestImageFilters(unittest.TestCase):
             self.assertEqual(grayscale_pixel, expected_grayscale)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
 
 
 class TestEdgeDetection(unittest.TestCase):
     def setUp(self):
         # Create a simple image with a sharp vertical edge for testing
-        self.test_image_path = 'tests/test_images/test_edge.png'
+        self.test_image_path = "tests/test_images/test_edge.png"
         self.width, self.height = 100, 100
-        self.image = Image.new('RGB', (self.width, self.height))
+        self.image = Image.new("RGB", (self.width, self.height))
         for x in range(self.width):
             for y in range(self.height):
                 color = (0, 0, 0) if x < self.width // 2 else (255, 255, 255)
@@ -83,8 +93,8 @@ class TestEdgeDetection(unittest.TestCase):
 
     def test_sobel_edge_detection(self):
         img = Image.open(self.test_image_path)
-        edge_img = edge_detection(img, 'sobel')
-        self.assertEqual(edge_img.mode, 'L')
+        edge_img = edge_detection(img, "sobel")
+        self.assertEqual(edge_img.mode, "L")
         # The edge should be a bright line on a dark background.
         # We expect the brightest pixels to be around the center.
         edge_array = np.array(edge_img)
@@ -98,8 +108,8 @@ class TestEdgeDetection(unittest.TestCase):
 
     def test_canny_edge_detection(self):
         img = Image.open(self.test_image_path)
-        edge_img = edge_detection(img, 'canny')
-        self.assertEqual(edge_img.mode, 'L')
+        edge_img = edge_detection(img, "canny")
+        self.assertEqual(edge_img.mode, "L")
         # Canny produces a binary image (0 or 255)
         edge_array = np.array(edge_img)
         self.assertTrue(np.all(np.logical_or(edge_array == 0, edge_array == 255)))
@@ -111,7 +121,7 @@ class TestEdgeDetection(unittest.TestCase):
     def test_kovalevsky_edge_detection(self):
         # Create a very simple image for predictable results
         width, height = 10, 10
-        img = Image.new('RGB', (width, height))
+        img = Image.new("RGB", (width, height))
         for x in range(width):
             for y in range(height):
                 # A sharp red-to-blue edge in the middle
@@ -119,8 +129,8 @@ class TestEdgeDetection(unittest.TestCase):
                 img.putpixel((x, y), color)
 
         # Use a threshold that will definitely be triggered by this sharp edge
-        edge_img = edge_detection(img, 'kovalevsky', threshold=100)
-        self.assertEqual(edge_img.mode, 'L')
+        edge_img = edge_detection(img, "kovalevsky", threshold=100)
+        self.assertEqual(edge_img.mode, "L")
         edge_array = np.array(edge_img)
 
         # In the horizontal scan, an edge should be detected between col 4 and 5.
@@ -135,7 +145,7 @@ class TestEdgeDetection(unittest.TestCase):
 class TestImageAdjustments(unittest.TestCase):
     def setUp(self):
         # Create a simple gradient image for testing
-        self.test_image = Image.new('RGB', (100, 100))
+        self.test_image = Image.new("RGB", (100, 100))
         for x in range(100):
             for y in range(100):
                 self.test_image.putpixel((x, y), (x, int(y / 2), 128))
@@ -218,13 +228,19 @@ class TestImageAdjustments(unittest.TestCase):
         original_pixel = self.test_image.getpixel((50, 50))
         saturated_pixel = saturated_image.getpixel((50, 50))
         # Saturation increases the difference between R, G, B values
-        self.assertGreater(abs(saturated_pixel[0] - saturated_pixel[1]), abs(original_pixel[0] - original_pixel[1]))
+        self.assertGreater(
+            abs(saturated_pixel[0] - saturated_pixel[1]),
+            abs(original_pixel[0] - original_pixel[1]),
+        )
 
         # Test decreasing saturation
         desaturated_image = adjust_saturation(self.test_image, -50)
         desaturated_pixel = desaturated_image.getpixel((50, 50))
         # Saturation decreases the difference between R, G, B values
-        self.assertLess(abs(desaturated_pixel[0] - desaturated_pixel[1]), abs(original_pixel[0] - original_pixel[1]))
+        self.assertLess(
+            abs(desaturated_pixel[0] - desaturated_pixel[1]),
+            abs(original_pixel[0] - original_pixel[1]),
+        )
 
         # Test no change
         same_image = adjust_saturation(self.test_image, 0)
@@ -250,14 +266,14 @@ class TestImageAdjustments(unittest.TestCase):
         # Create an RGBA image for testing
         rgba_image = self.test_image.copy().convert("RGBA")
         # Set a semi-transparent alpha channel
-        alpha = Image.new('L', rgba_image.size, 128)
+        alpha = Image.new("L", rgba_image.size, 128)
         rgba_image.putalpha(alpha)
 
         # Adjust saturation
         saturated_image = adjust_saturation(rgba_image, 50)
 
         # Check that the image is still RGBA
-        self.assertEqual(saturated_image.mode, 'RGBA')
+        self.assertEqual(saturated_image.mode, "RGBA")
 
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = saturated_image.split()
@@ -268,7 +284,7 @@ class TestImageBlurAndSharpen(unittest.TestCase):
     def setUp(self):
         # Create a simple image with a checkboard pattern (high frequency/contrast)
         self.width, self.height = 100, 100
-        self.test_image = Image.new('RGB', (self.width, self.height))
+        self.test_image = Image.new("RGB", (self.width, self.height))
         for x in range(self.width):
             for y in range(self.height):
                 if (x // 10 + y // 10) % 2 == 0:
@@ -279,7 +295,7 @@ class TestImageBlurAndSharpen(unittest.TestCase):
     def test_apply_blur(self):
         # Apply blur
         blurred_image = apply_blur(self.test_image, radius=2)
-        
+
         # Check that sharp edges are softened
         # In the original image, pixel (9, 0) is black (0,0,0) and (10, 0) is white (255,255,255)
         # After blur, they should be closer in value.
@@ -299,15 +315,9 @@ class TestImageBlurAndSharpen(unittest.TestCase):
         # Create a blurry image to sharpen
         blurry_image = apply_blur(self.test_image, radius=1)
 
-        
         # Apply sharpen
         sharpened_image = apply_sharpen(blurry_image, sharpness=100)
-        
-        # Measure local contrast at an edge
-        # We expect the contrast to increase after sharpening
-        p1_blur = blurry_image.getpixel((9, 0))[0]
-        p2_blur = blurry_image.getpixel((10, 0))[0]
-        
+
         # Calculate total horizontal gradient (sum of absolute differences)
         def calculate_horizontal_gradient(img):
             data = list(img.getdata())
@@ -323,7 +333,7 @@ class TestImageBlurAndSharpen(unittest.TestCase):
 
         blur_gradient = calculate_horizontal_gradient(blurry_image)
         sharp_gradient = calculate_horizontal_gradient(sharpened_image)
-        
+
         self.assertGreater(sharp_gradient, blur_gradient)
 
         # Test invalid values
@@ -335,193 +345,194 @@ class TestImageBlurAndSharpen(unittest.TestCase):
             apply_sharpen(self.test_image, 101)
 
 
-
 class TestImageColorOps(unittest.TestCase):
     def setUp(self):
-         self.width, self.height = 100, 100
-         self.test_image = Image.new('RGB', (self.width, self.height), (100, 100, 100))
-         
+        self.width, self.height = 100, 100
+        self.test_image = Image.new("RGB", (self.width, self.height), (100, 100, 100))
+
     def test_color_balance(self):
         # Enhance Red
         red_enhanced = apply_color_balance(self.test_image, 2.0, 1.0, 1.0)
-        self.assertEqual(red_enhanced.getpixel((0,0)), (200, 100, 100))
-        
+        self.assertEqual(red_enhanced.getpixel((0, 0)), (200, 100, 100))
+
         # Suppress Blue
         blue_suppressed = apply_color_balance(self.test_image, 1.0, 1.0, 0.5)
-        self.assertEqual(blue_suppressed.getpixel((0,0)), (100, 100, 50))
-        
+        self.assertEqual(blue_suppressed.getpixel((0, 0)), (100, 100, 50))
+
         # Test invalid values
         with self.assertRaises(TypeError):
             apply_color_balance(self.test_image, "a", 1, 1)
         with self.assertRaises(ValueError):
-             apply_color_balance(self.test_image, -1, 1, 1)
+            apply_color_balance(self.test_image, -1, 1, 1)
         with self.assertRaises(ValueError):
-             apply_color_balance(self.test_image, float('nan'), 1, 1)
+            apply_color_balance(self.test_image, float("nan"), 1, 1)
         with self.assertRaises(ValueError):
-             apply_color_balance(self.test_image, 1, float('inf'), 1)
+            apply_color_balance(self.test_image, 1, float("inf"), 1)
 
     def test_color_balance_clamping(self):
         # Enhance Red to overflow
         red_enhanced = apply_color_balance(self.test_image, 10.0, 1.0, 1.0)
         # 100 * 10 = 1000 -> clamped to 255
-        self.assertEqual(red_enhanced.getpixel((0,0))[0], 255)
-
+        self.assertEqual(red_enhanced.getpixel((0, 0))[0], 255)
 
     def test_posterize(self):
         # Create a gradient image
-        img = Image.new('RGB', (256, 1))
+        img = Image.new("RGB", (256, 1))
         for x in range(256):
             img.putpixel((x, 0), (x, x, x))
-            
-        posterized = apply_posterize(img, bits=1) # Reduce to 1 bit (2 levels per channel)
-        
+
+        posterized = apply_posterize(
+            img, bits=1
+        )  # Reduce to 1 bit (2 levels per channel)
+
         unique_colors = len(set(posterized.getdata()))
-        self.assertLess(unique_colors, 10) # Should be very few colors (actually 2^3=8 max for full RGB, but 2 for grayscale-ish)
+        self.assertLess(
+            unique_colors, 10
+        )  # Should be very few colors (actually 2^3=8 max for full RGB, but 2 for grayscale-ish)
 
         with self.assertRaises(ValueError):
-             apply_posterize(img, 9)
+            apply_posterize(img, 9)
         with self.assertRaises(ValueError):
-             apply_posterize(img, 0)
+            apply_posterize(img, 0)
 
     def test_hue_rotation(self):
         # Create a pure red image
-        red_img = Image.new('RGB', (10, 10), (255, 0, 0))
-        
+        red_img = Image.new("RGB", (10, 10), (255, 0, 0))
+
         # Rotate 120 degrees -> Green
         green_img = rotate_hue(red_img, 120)
-        pixel = green_img.getpixel((0,0))
+        pixel = green_img.getpixel((0, 0))
         # Hue rotation isn't perfectly precise with 8-bit HSV, but red->green should have dominant G
-        self.assertGreater(pixel[1], pixel[0]) 
+        self.assertGreater(pixel[1], pixel[0])
         self.assertGreater(pixel[1], pixel[2])
 
         # Rotate 240 degrees -> Blue
         blue_img = rotate_hue(red_img, 240)
-        pixel = blue_img.getpixel((0,0))
+        pixel = blue_img.getpixel((0, 0))
         self.assertGreater(pixel[2], pixel[0])
         self.assertGreater(pixel[2], pixel[1])
 
     def test_hue_rotation_preserves_alpha(self):
         # Create an RGBA image with transparency
-        rgba_img = Image.new('RGBA', (10, 10), (255, 0, 0, 128))
-        
+        rgba_img = Image.new("RGBA", (10, 10), (255, 0, 0, 128))
+
         # Rotate hue
         rotated_img = rotate_hue(rgba_img, 90)
-        
+
         # Check if alpha is preserved
-        self.assertEqual(rotated_img.mode, 'RGBA')
-        self.assertEqual(rotated_img.getpixel((0,0))[3], 128)
+        self.assertEqual(rotated_img.mode, "RGBA")
+        self.assertEqual(rotated_img.getpixel((0, 0))[3], 128)
 
     def test_posterize_preserves_alpha(self):
         # Create an RGBA image with transparency
-        rgba_img = Image.new('RGBA', (10, 10), (100, 150, 200, 128))
-        
+        rgba_img = Image.new("RGBA", (10, 10), (100, 150, 200, 128))
+
         # Apply posterize
         posterized_img = apply_posterize(rgba_img, bits=4)
-        
+
         # Check if alpha is preserved
-        self.assertEqual(posterized_img.mode, 'RGBA')
-        self.assertEqual(posterized_img.getpixel((0,0))[3], 128)
+        self.assertEqual(posterized_img.mode, "RGBA")
+        self.assertEqual(posterized_img.getpixel((0, 0))[3], 128)
 
 
 class TestImageBorder(unittest.TestCase):
     def setUp(self):
         self.width, self.height = 100, 100
-        self.test_image = Image.new('RGB', (self.width, self.height), (100, 100, 100))
+        self.test_image = Image.new("RGB", (self.width, self.height), (100, 100, 100))
 
     def test_border_expand(self):
         thickness = 10
-        img_with_border = apply_border(self.test_image, thickness, 'red', 'expand')
-        
+        img_with_border = apply_border(self.test_image, thickness, "red", "expand")
+
         # Dimensions should increase by 2*thickness
-        self.assertEqual(img_with_border.size, (self.width + 2*thickness, self.height + 2*thickness))
-        
+        self.assertEqual(
+            img_with_border.size,
+            (self.width + 2 * thickness, self.height + 2 * thickness),
+        )
+
         # Top-left corner should be red (border)
-        self.assertEqual(img_with_border.getpixel((0,0)), (255, 0, 0))
+        self.assertEqual(img_with_border.getpixel((0, 0)), (255, 0, 0))
         # Center should be original color
-        center_x = (self.width + 2*thickness) // 2
-        center_y = (self.height + 2*thickness) // 2
-        self.assertEqual(img_with_border.getpixel((center_x, center_y)), (100, 100, 100))
+        center_x = (self.width + 2 * thickness) // 2
+        center_y = (self.height + 2 * thickness) // 2
+        self.assertEqual(
+            img_with_border.getpixel((center_x, center_y)), (100, 100, 100)
+        )
 
     def test_border_inside(self):
         thickness = 10
-        img_with_border = apply_border(self.test_image, thickness, '#0000FF', 'inside')
-        
+        img_with_border = apply_border(self.test_image, thickness, "#0000FF", "inside")
+
         # Dimensions should match original
         self.assertEqual(img_with_border.size, (self.width, self.height))
-        
+
         # Top-left corner should be blue (border)
-        self.assertEqual(img_with_border.getpixel((0,0)), (0, 0, 255))
-        
+        self.assertEqual(img_with_border.getpixel((0, 0)), (0, 0, 255))
+
         # Center should be original color
         self.assertEqual(img_with_border.getpixel((50, 50)), (100, 100, 100))
 
     def test_border_invalid_args(self):
         with self.assertRaises(ValueError):
-            apply_border(self.test_image, -5, 'red')
+            apply_border(self.test_image, -5, "red")
         with self.assertRaises(ValueError):
-            apply_border(self.test_image, 10, 'invalid_color')
+            apply_border(self.test_image, 10, "invalid_color")
         with self.assertRaises(ValueError):
-             apply_border(self.test_image, 10, 'red', 'invalid_pos')
+            apply_border(self.test_image, 10, "red", "invalid_pos")
 
 
 class TestImageRotation(unittest.TestCase):
     def setUp(self):
         # Create a rectangular image to easily verify rotation
         self.width, self.height = 100, 50
-        self.test_image = Image.new('RGB', (self.width, self.height), 'blue')
+        self.test_image = Image.new("RGB", (self.width, self.height), "blue")
         # Mark top-left pixel
-        self.test_image.putpixel((0, 0), (255, 0, 0)) # Red pixel at top-left
+        self.test_image.putpixel((0, 0), (255, 0, 0))  # Red pixel at top-left
 
     def test_rotate_90(self):
         # 90 degrees clockwise? PIL rotate is counter-clockwise by default.
         # But let's check what we implemented. We just passed the angle to image.rotate.
         # PIL image.rotate(90) rotates counter-clockwise.
-        
+
         rotated = rotate_image(self.test_image, 90)
-        
+
         # Dimensions should be swapped (50, 100)
         self.assertEqual(rotated.size, (self.height, self.width))
-        
-        # Original top-left (0,0) red pixel should move to bottom-left (0, 100) -> Wait, 
+
+        # Original top-left (0,0) red pixel should move to bottom-left (0, 100) -> Wait,
         # (0,0) in PIL is top-left.
         # Rotate 90 CCW:
         # Top-left (0,0) -> Bottom-left (0, 50-1) => (0, 49) ? No.
         # Let's verify standard PIL behavior.
         # (x, y) -> (y, width-x-1) ?
-        
-        # Let's just trust dimensions for now and visual checks via automated tests, 
+
+        # Let's just trust dimensions for now and visual checks via automated tests,
         # but verifying dimensions is a strong signal for 90 deg rotation.
         # We can also check 180 and 360.
 
     def test_rotate_180(self):
         rotated = rotate_image(self.test_image, 180)
-        self.assertEqual(rotated.size, (self.width, self.height)) # Same dimensions
+        self.assertEqual(rotated.size, (self.width, self.height))  # Same dimensions
 
     def test_rotate_270(self):
         rotated = rotate_image(self.test_image, 270)
-        self.assertEqual(rotated.size, (self.height, self.width)) # Swapped dimensions
+        self.assertEqual(rotated.size, (self.height, self.width))  # Swapped dimensions
 
     def test_rotate_clamping(self):
         # 89 -> 90
-        self.assertEqual(rotate_image(self.test_image, 89).size, (self.height, self.width))
+        self.assertEqual(
+            rotate_image(self.test_image, 89).size, (self.height, self.width)
+        )
         # 44 -> 0
-        self.assertEqual(rotate_image(self.test_image, 44).size, (self.width, self.height))
+        self.assertEqual(
+            rotate_image(self.test_image, 44).size, (self.width, self.height)
+        )
         # 46 -> 90
-        self.assertEqual(rotate_image(self.test_image, 46).size, (self.height, self.width))
-    
+        self.assertEqual(
+            rotate_image(self.test_image, 46).size, (self.height, self.width)
+        )
+
     def test_rotate_negative(self):
         # -90 -> 270
         rotated = rotate_image(self.test_image, -90)
         self.assertEqual(rotated.size, (self.height, self.width))
-
-
-
-
-
-
-
-
-
-
-
-
