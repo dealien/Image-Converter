@@ -100,6 +100,20 @@ def _get_menu_choice(options, default_index=0, title=None):
     return resp
 
 
+def _format_operation_display(index, op, extra_args):
+    op_name = op["dest"].replace("_", "-")
+    op_vals = " ".join(map(str, op.get("values", [])))
+    display_string = f"  {index + 1}. --{op_name} {op_vals}"
+
+    if op["dest"] == "scale" and "resample" in extra_args:
+        display_string += f" --resample {extra_args['resample']}"
+
+    if op["dest"] == "edge_detection" and op.get("values", [""])[0] == "kovalevsky":
+        display_string += f" --threshold {extra_args.get('threshold', 50)}"
+
+    return display_string
+
+
 # --- Submenu Functions ---
 
 
@@ -276,9 +290,7 @@ def remove_manipulation(operations, extra_args):
     # Show current ops
     print("\n--- Remove an Operation ---")
     for i, op in enumerate(operations):
-        op_name = op["dest"].replace("_", "-")
-        op_values = " ".join(map(str, op.get("values", [])))
-        print(f"  {i + 1}. --{op_name} {op_values}")
+        print(_format_operation_display(i, op, extra_args))
 
     def removal_validator(val_str):
         idx = int(val_str) - 1
@@ -426,17 +438,7 @@ def select_manipulations():
             print("  (No operations added yet)")
         else:
             for i, op in enumerate(selected_operations):
-                op_name = op["dest"].replace("_", "-")
-                op_vals = " ".join(map(str, op.get("values", [])))
-                s = f"  {i + 1}. --{op_name} {op_vals}"
-                if op["dest"] == "scale" and "resample" in extra_args:
-                    s += f" --resample {extra_args['resample']}"
-                if (
-                    op["dest"] == "edge_detection"
-                    and op.get("values", [""])[0] == "kovalevsky"
-                ):
-                    s += f" --threshold {extra_args.get('threshold', 50)}"
-                print(s)
+                print(_format_operation_display(i, op, extra_args))
 
         print("\nAvailable:")
         for i, m in enumerate(AVAILABLE_MANIPULATIONS):
