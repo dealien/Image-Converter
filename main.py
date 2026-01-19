@@ -2,6 +2,8 @@ import argparse
 import glob
 import os
 import sys
+import logging
+
 from pathlib import Path
 
 from PIL import Image
@@ -16,8 +18,9 @@ class StoreInOrder(argparse.Action):
             setattr(namespace, 'ordered_operations', [])
         if values is None:
             norm_values = []
-        elif isinstance(values, (str, int)):
+        elif isinstance(values, (str, int, float)):
             norm_values = [values]
+
         else:
             norm_values = values
         namespace.ordered_operations.append({'dest': self.dest, 'values': norm_values})
@@ -26,7 +29,12 @@ class StoreInOrder(argparse.Action):
 # --- Main Execution ---
 
 def main():
+    # Configure logging to mimic print output (stdout, message only) regarding format,
+    # but allowing for future extension (file logging, etc.)
+    logging.basicConfig(level=logging.INFO, format='%(message)s', stream=sys.stdout)
+
     # If --menu is used or no arguments are provided, start the menu.
+
     if '--menu' in sys.argv or len(sys.argv) == 1:
         # Import dynamically to prevent circular dependency issues with tests
         from menu import interactive_menu
@@ -61,6 +69,23 @@ def main():
                         help='Adjust contrast (-100 to 100).')
     parser.add_argument('--saturation', dest='saturation', action=StoreInOrder, type=int,
                         help='Adjust saturation (-100 to 100).')
+    parser.add_argument('--blur', dest='blur', action=StoreInOrder, type=float,
+                        help='Apply Gaussian Blur with specified radius.')
+    parser.add_argument('--sharpen', dest='sharpen', action=StoreInOrder, type=int,
+                        help='Resulting image sharpness (0-100).')
+    parser.add_argument('--color-balance', dest='color_balance', action=StoreInOrder, nargs=3, type=float,
+                        help='Adjust R, G, B channels (e.g., 1.2 0.8 1.0).')
+    parser.add_argument('--hue-rotation', dest='hue_rotation', action=StoreInOrder, type=int,
+                        help='Rotate hue by specified degrees (0-360).')
+    parser.add_argument('--posterize', dest='posterize', action=StoreInOrder, type=int,
+                        help='Reduce color depth to N bits (1-8).')
+    parser.add_argument('--border', dest='border', action=StoreInOrder, nargs=3,
+                        help='Add border: thickness (int) color (str) position (expand/inside).')
+    parser.add_argument('--rotate', dest='rotate', action=StoreInOrder, type=int,
+                        help='Rotate image by 90-degree increments (0, 90, 180, 270).')
+
+
+
 
     args = parser.parse_args()
 

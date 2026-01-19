@@ -20,7 +20,8 @@
             "console": "integratedTerminal",
             "args": [
                 "--menu"
-            ]
+            ],
+            "preLaunchTask": "copyTestImages"
         },
         {
             "name": "Python: Automated Testing",

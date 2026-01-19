@@ -21,6 +21,21 @@ def _prompt_for_int_value(prompt, default, min_val, max_val):
             print("Error: Please enter a valid integer.")
 
 
+def _prompt_for_float_value(prompt, default, min_val=0.0):
+    while True:
+        val_str = input(f"{prompt} (default: {default}): ").strip()
+        if not val_str: return default
+        try:
+            val = float(val_str)
+            if val >= min_val:
+                return val
+            else:
+                print(f"Error: Value must be at least {min_val}.")
+        except ValueError:
+            print("Error: Please enter a valid number.")
+
+
+
 def prompt_for_flip_options():
     print("\n--- Flip Options ---")
     choices = ['horizontal', 'vertical', 'both']
@@ -39,6 +54,7 @@ def prompt_for_flip_options():
 
 
 def prompt_for_scale_options(extra_args):
+    # pylint: disable=too-many-branches, complex-logic
     print("\n--- Scale Options ---")
     print("Enter scale factor (e.g., '1.5x') OR new dimensions (e.g., '400px 300px').")
     while True:
@@ -70,6 +86,7 @@ def prompt_for_scale_options(extra_args):
 
 
 def prompt_for_edge_detection_options(extra_args):
+    # pylint: disable=too-many-branches, complex-logic
     print("\n--- Edge Detection Options ---")
     methods = ['sobel', 'canny', 'kovalevsky']
     for i, method in enumerate(methods): print(f"  {i + 1}. {method.capitalize()}")
@@ -103,9 +120,80 @@ def prompt_for_contrast_options():
     return {'dest': 'contrast', 'values': [val]}
 
 
+
 def prompt_for_saturation_options():
     val = _prompt_for_int_value("Enter saturation value (-100 to 100)", 0, -100, 100)
     return {'dest': 'saturation', 'values': [val]}
+
+
+def prompt_for_blur_options():
+    val = _prompt_for_float_value("Enter blur radius", 2.0, 0.0)
+    return {'dest': 'blur', 'values': [val]}
+
+
+
+def prompt_for_sharpen_options():
+    val = _prompt_for_int_value("Enter sharpness intensity (0-100)", 50, 0, 100)
+    return {'dest': 'sharpen', 'values': [val]}
+
+
+def prompt_for_color_balance_options():
+    print("Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change).")
+    r = _prompt_for_float_value("Red factor", 1.0)
+    g = _prompt_for_float_value("Green factor", 1.0)
+    b = _prompt_for_float_value("Blue factor", 1.0)
+    return {'dest': 'color_balance', 'values': [r, g, b]}
+
+
+def prompt_for_hue_rotation_options():
+    val = _prompt_for_int_value("Enter hue rotation degrees (0-360)", 90, 0, 360)
+    return {'dest': 'hue_rotation', 'values': [val]}
+
+
+def prompt_for_posterize_options():
+    val = _prompt_for_int_value("Enter number of bits (1-8)", 4, 1, 8)
+    return {'dest': 'posterize', 'values': [val]}
+
+
+
+
+def prompt_for_border_options():
+    # pylint: disable=too-many-branches, complex-logic
+    thickness = _prompt_for_int_value("Enter border thickness", 10, 0, 500)
+    
+    while True:
+        color_str = input("Enter border color (Name or Hex, e.g., 'red', '#FF0000') (default: 'black'): ").strip()
+        if not color_str:
+            color_str = 'black'
+            break
+        # Basic validation could go here, but apply_border handles it more robustly.
+        break
+
+    print("\n--- Border Position ---")
+    positions = ['expand', 'inside']
+    for i, pos in enumerate(positions): print(f"  {i + 1}. {pos.capitalize()}")
+    
+    while True:
+        pos_str = input(f"Select position (default: {positions[0]}): ").strip()
+        if not pos_str:
+             position = positions[0]
+             break
+        try:
+             choice = int(pos_str) - 1
+             if 0 <= choice < len(positions):
+                 position = positions[choice]
+                 break
+             else:
+                 print(f"Invalid number. Choose between 1 and {len(positions)}.")
+        except ValueError:
+             print("Invalid input.")
+
+    return {'dest': 'border', 'values': [thickness, color_str, position]}
+
+
+def prompt_for_rotation_options():
+    angle = _prompt_for_int_value("Enter rotation angle (will clamp to nearest 90)", 90, -3600, 3600)
+    return {'dest': 'rotate', 'values': [angle]}
 
 
 # --- Main Menu Logic ---
@@ -120,10 +208,22 @@ AVAILABLE_MANIPULATIONS = [
     {'dest': 'brightness', 'name': 'Adjust Brightness', 'handler': 'prompt_for_brightness_options'},
     {'dest': 'contrast', 'name': 'Adjust Contrast', 'handler': 'prompt_for_contrast_options'},
     {'dest': 'saturation', 'name': 'Adjust Saturation', 'handler': 'prompt_for_saturation_options'},
+    {'dest': 'blur', 'name': 'Apply Gaussian Blur', 'handler': 'prompt_for_blur_options'},
+    {'dest': 'sharpen', 'name': 'Apply Sharpen', 'handler': 'prompt_for_sharpen_options'},
+    {'dest': 'color_balance', 'name': 'Adjust Color Balance', 'handler': 'prompt_for_color_balance_options'},
+    {'dest': 'hue_rotation', 'name': 'Rotate Hue', 'handler': 'prompt_for_hue_rotation_options'},
+    {'dest': 'posterize', 'name': 'Apply Posterize', 'handler': 'prompt_for_posterize_options'},
+    {'dest': 'border', 'name': 'Add Border', 'handler': 'prompt_for_border_options'},
+    {'dest': 'rotate', 'name': 'Rotate Image', 'handler': 'prompt_for_rotation_options'},
 ]
 
 
+
+
+
+
 def remove_manipulation(operations, extra_args):
+    # pylint: disable=too-many-branches, complex-logic
     if not operations:
         print("\nThere are no operations to remove.")
         return operations
@@ -158,6 +258,7 @@ def remove_manipulation(operations, extra_args):
 
 
 def select_images():
+    # pylint: disable=too-many-branches, complex-logic
     image_dir = 'Base Images'
     if not os.path.isdir(image_dir):
         print(f"Error: Directory '{image_dir}' not found.")
@@ -203,6 +304,7 @@ def select_images():
 
 
 def select_manipulations():
+    # pylint: disable=too-many-branches, complex-logic
     selected_operations = []
     extra_args = {}
     while True:
@@ -270,6 +372,7 @@ def select_manipulations():
 
 
 def interactive_menu():
+    # pylint: disable=too-many-branches, complex-logic
     try:
         print("--- Welcome to the Interactive Image Processor ---")
         selected_image_paths = select_images()

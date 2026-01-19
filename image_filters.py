@@ -1,4 +1,4 @@
-from PIL import Image, ImageOps, ImageEnhance
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
 
 
 def invert_colors(image: Image.Image) -> Image.Image:
@@ -34,6 +34,8 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
     """
 
     try:
+        # Not every system has scikit-image installed, and it's not a required 
+        # dependency for the main functionality
         from skimage import feature, filters
         from skimage.util import img_as_ubyte
         import numpy as np
@@ -198,3 +200,263 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
     if image.mode != 'RGB':
         image = image.convert('RGB')
     return ImageEnhance.Color(image).enhance(factor)
+
+
+def apply_blur(image: Image.Image, radius: int) -> Image.Image:
+    """
+    Applies Gaussian Blur to the image.
+    :param image: The input image.
+    :param radius: The radius of the blur.
+    :return: The blurred image.
+    """
+    if not isinstance(radius, (int, float)):
+        raise TypeError("Radius must be a number.")
+    if radius < 0:
+        raise ValueError("Radius must be non-negative.")
+    if radius == 0:
+        return image
+    return image.filter(ImageFilter.GaussianBlur(radius))
+
+
+def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
+    """
+    Applies sharpening to the image.
+    :param image: The input image.
+    :param sharpness: An integer from 0 to 100 representing intensity.
+    :return: The sharpened image.
+    """
+    if not isinstance(sharpness, int):
+        raise TypeError("Sharpness must be an integer.")
+    if not 0 <= sharpness <= 100:
+        raise ValueError("Sharpness must be between 0 and 100.")
+    if sharpness == 0:
+        return image
+    
+    # Map 0-100 to a factor (e.g., 1.0 to 2.0)
+    factor = 1.0 + (sharpness / 100.0)
+
+
+    if image.mode == 'RGBA':
+        r, g, b, a = image.split()
+        rgb = Image.merge('RGB', (r, g, b))
+        enhanced = ImageEnhance.Sharpness(rgb).enhance(factor)
+        r2, g2, b2 = enhanced.split()
+        return Image.merge('RGBA', (r2, g2, b2, a))
+
+    if image.mode not in ('RGB', 'L'):
+        image = image.convert('RGB')
+    
+    return ImageEnhance.Sharpness(image).enhance(factor)
+
+
+def apply_color_balance(image: Image.Image, red_factor: float, green_factor: float, blue_factor: float) -> Image.Image:
+    # pylint: disable=too-many-branches, complex-logic
+    """
+    Adjusts the color balance of an image by scaling RGB channels.
+    :param image: The input image.
+    :param red_factor: Multiplier for the red channel.
+    :param green_factor: Multiplier for the green channel.
+    :param blue_factor: Multiplier for the blue channel.
+    :return: The color-balanced image.
+    """
+    # Handle float conversion and validation
+    try:
+        r_f = float(red_factor)
+        g_f = float(green_factor)
+        b_f = float(blue_factor)
+    except (ValueError, TypeError):
+        raise TypeError("Color balance factors must be numbers.")
+
+    # Reject NaN/inf without extra imports
+    if (r_f != r_f) or (g_f != g_f) or (b_f != b_f) or (r_f in (float("inf"), float("-inf"))) or (g_f in (float("inf"), float("-inf"))) or (b_f in (float("inf"), float("-inf"))):
+        raise ValueError("Factors must be finite numbers.")
+
+    # Reject negative factors
+    if r_f < 0 or g_f < 0 or b_f < 0:
+        raise ValueError("Color balance factors must be non-negative.")
+
+    # Convert to RGB if not already
+    if image.mode != 'RGB' and image.mode != 'RGBA':
+        image = image.convert('RGB')
+
+    # Split the image into color bands
+    bands = image.split()
+
+    def _scale_channel(factor: float):
+        """
+        Scales a channel by a given factor, clamping values to [0, 255].
+        :param factor: The scaling factor.
+        :return: A function that scales a channel.
+        """
+        def _fn(i):
+            v = int(round(i * factor))
+            if v < 0:
+                return 0
+            if v > 255:
+                return 255
+            return v
+        return _fn
+
+    # Apply the scaling to each band
+    r = bands[0].point(_scale_channel(r_f))
+    g = bands[1].point(_scale_channel(g_f))
+    b = bands[2].point(_scale_channel(b_f))
+
+    # Merge the bands back into an image
+    if len(bands) >= 4:
+        return Image.merge(image.mode, (r, g, b, bands[3]))
+    return Image.merge('RGB', (r, g, b))
+
+
+
+def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
+    """
+    Rotates the hue of the image.
+    :param image: The input image.
+    :param degrees: The angle to rotate the hue (0-360).
+    :return: The image with rotated hue.
+    """
+    if not isinstance(degrees, (int, float)):
+        raise TypeError("Degrees must be a number.")
+
+    degrees = degrees % 360
+    if degrees == 0:
+        return image
+
+    # Store alpha if present (supports RGBA/LA/etc.)
+    alpha_channel = image.getchannel('A') if 'A' in image.getbands() else None
+
+    # Ensure hue ops always run on RGB data
+    rgb_base = image.convert('RGB')
+
+
+    img_hsv = rgb_base.convert('HSV')
+    h, s, v = img_hsv.split()
+    
+    # Hue is 0-255 in PIL HSV. Full circle is 256 steps.
+    shift = int((degrees / 360.0) * 256) % 256
+
+    h = h.point(lambda p: (p + shift) % 256)
+
+    
+    new_img = Image.merge('HSV', (h, s, v))
+    new_rgb = new_img.convert('RGB')
+    
+    if alpha_channel is not None:
+        new_rgb.putalpha(alpha_channel)
+        return new_rgb
+        
+    return new_rgb
+
+
+
+
+def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
+    """
+    Reduces the number of bits for each color channel.
+    :param image: The input image.
+    :param bits: The number of bits to keep (1-8).
+    :return: The posterized image.
+    """
+    if not isinstance(bits, int):
+         raise TypeError("Bits must be an integer.")
+    
+    if not 1 <= bits <= 8:
+        raise ValueError("Bits must be between 1 and 8.")
+        
+    # Store alpha if present (supports RGBA/LA/etc.)
+    alpha_channel = image.getchannel('A') if 'A' in image.getbands() else None
+
+    # Posterize operates on 'RGB' or 'L'
+    if image.mode == 'L':
+        base = image
+    else:
+        base = image.convert('RGB')
+
+    posterized = ImageOps.posterize(base, bits)
+
+    if alpha_channel is not None:
+        posterized.putalpha(alpha_channel)
+        return posterized
+
+    return posterized
+
+
+def apply_border(image: Image.Image, thickness: int, color_str: str, position: str = 'expand') -> Image.Image:
+    """
+    Adds a solid color border to the image.
+    :param image: The input image.
+    :param thickness: Thickness of the border in pixels.
+    :param color_str: Color in Hex or RGB format (e.g., '#FF0000', 'red', '255,0,0').
+    :param position: 'expand' to add border outside, 'inside' to overlay border.
+    :return: Image with border.
+    """
+    try:
+        # Handle "255,0,0" format manually as ImageColor doesn't standardized it
+        if ',' in color_str and not color_str.startswith('rgb'):
+            color_tuple = tuple(map(int, color_str.split(',')))
+            color = color_tuple
+        else:
+            color = ImageColor.getrgb(color_str)
+    except ValueError:
+        raise ValueError(f"Invalid color format: {color_str}")
+
+    if thickness < 0:
+        raise ValueError("Thickness must be non-negative.")
+    
+    if thickness == 0:
+        return image
+
+    if position == 'expand':
+        return ImageOps.expand(image, border=thickness, fill=color)
+    elif position == 'inside':
+        from PIL import ImageDraw
+        img_with_border = image.copy()
+        draw = ImageDraw.Draw(img_with_border)
+        
+        w, h = image.size
+        
+        # Draw 4 rectangles to simulate inside border
+        draw.rectangle((0, 0, w, thickness), fill=color) # Top (overshoot slightly ok as long as it covers) - PIL rectangle is inclusive of top-left, exclusive/inclusive?
+        # PIL Draw.rectangle second coordinate is INCLUSIVE in versions < 10?? No, usually [x0, y0, x1, y1] inclusive.
+        # Let's check docs or be safe. standard is inclusive.
+        
+        # Top: (0, 0) to (w, thickness-1)
+        draw.rectangle((0, 0, w-1, thickness-1), fill=color) 
+        
+        # Bottom: (0, h-thickness) to (w, h)
+        draw.rectangle((0, h-thickness, w-1, h-1), fill=color)
+        
+        # Left: (0, 0) to (thickness-1, h)
+        draw.rectangle((0, 0, thickness-1, h-1), fill=color)
+        
+        # Right: (w-thickness, 0) to (w, h)
+        draw.rectangle((w-thickness, 0, w-1, h-1), fill=color)
+        
+        return img_with_border
+        
+    else:
+        raise ValueError("Position must be 'expand' or 'inside'.")
+
+
+def rotate_image(image: Image.Image, angle: int) -> Image.Image:
+    """
+    Rotates the image by a given angle, clamped to 90-degree increments.
+    :param image: The input image.
+    :param angle: The angle to rotate (will be rounded to nearest 90).
+    :return: Rotated image.
+    """
+    # Clamp to nearest 90 degrees
+    # 0, 90, 180, 270. 360 -> 0. -90 -> 270.
+    clamped_angle = int(round(angle / 90.0)) * 90 % 360
+    
+    if clamped_angle == 0:
+        return image
+    
+    # expand=True ensures the image is resized to fit the rotated content
+    # For 90 degree rotations, this swaps width/height appropriately.
+    return image.rotate(clamped_angle, expand=True)
+
+
+
+
