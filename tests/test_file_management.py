@@ -4,13 +4,12 @@ import shutil
 import unittest
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from file_management import move_images_to_subdirectory
+from file_management import move_images_to_subdirectory  # noqa: E402
 
 
 class TestFileManagement(unittest.TestCase):
-
     def setUp(self):
         """Set up a temporary directory and a dummy file for testing."""
         self.test_dir = "tests/test_images"
@@ -42,5 +41,5 @@ class TestFileManagement(unittest.TestCase):
         self.assertFalse(os.path.exists("Hill Castle.png"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
