@@ -8,7 +8,7 @@ from processing import process_images_and_save
 # --- Submenu Functions for Manipulation Options ---
 
 
-def _prompt_for_int_value(prompt, default, min_val, max_val):
+def _prompt_for_int_value(prompt, default, min_val, max_val):  # noqa: C901
     while True:
         val_str = input(f"{prompt} (default: {default}): ").strip()
         if not val_str:
@@ -23,7 +23,7 @@ def _prompt_for_int_value(prompt, default, min_val, max_val):
             print("Error: Please enter a valid integer.")
 
 
-def _prompt_for_float_value(prompt, default, min_val=0.0):
+def _prompt_for_float_value(prompt, default, min_val=0.0):  # noqa: C901
     while True:
         val_str = input(f"{prompt} (default: {default}): ").strip()
         if not val_str:
@@ -38,7 +38,7 @@ def _prompt_for_float_value(prompt, default, min_val=0.0):
             print("Error: Please enter a valid number.")
 
 
-def prompt_for_flip_options():
+def prompt_for_flip_options():  # noqa: C901
     print("\n--- Flip Options ---")
     choices = ["horizontal", "vertical", "both"]
     for i, choice in enumerate(choices):
@@ -59,8 +59,7 @@ def prompt_for_flip_options():
             print("Invalid input. Please enter a number.")
 
 
-def prompt_for_scale_options(extra_args):
-    # pylint: disable=too-many-branches, complex-logic
+def prompt_for_scale_options(extra_args):  # noqa: C901
     print("\n--- Scale Options ---")
     print("Enter scale factor (e.g., '1.5x') OR new dimensions (e.g., '400px 300px').")
     while True:
@@ -98,8 +97,7 @@ def prompt_for_scale_options(extra_args):
     return {"dest": "scale", "values": values_str.split()}
 
 
-def prompt_for_edge_detection_options(extra_args):
-    # pylint: disable=too-many-branches, complex-logic
+def prompt_for_edge_detection_options(extra_args):  # noqa: C901
     print("\n--- Edge Detection Options ---")
     methods = ["sobel", "canny", "kovalevsky"]
     for i, method in enumerate(methods):
@@ -173,8 +171,7 @@ def prompt_for_posterize_options():
     return {"dest": "posterize", "values": [val]}
 
 
-def prompt_for_border_options():
-    # pylint: disable=too-many-branches, complex-logic
+def prompt_for_border_options():  # noqa: C901
     thickness = _prompt_for_int_value("Enter border thickness", 10, 0, 500)
 
     while True:
@@ -279,8 +276,7 @@ AVAILABLE_MANIPULATIONS = [
 ]
 
 
-def remove_manipulation(operations, extra_args):
-    # pylint: disable=too-many-branches, complex-logic
+def remove_manipulation(operations, extra_args):  # noqa: C901
     if not operations:
         print("\nThere are no operations to remove.")
         return operations
@@ -322,8 +318,7 @@ def remove_manipulation(operations, extra_args):
             print("Invalid input. Please enter a number.")
 
 
-def select_images():
-    # pylint: disable=too-many-branches, complex-logic
+def select_images():  # noqa: C901
     image_dir = "Base Images"
     if not os.path.isdir(image_dir):
         print(f"Error: Directory '{image_dir}' not found.")
@@ -384,8 +379,7 @@ def select_images():
     ]
 
 
-def select_manipulations():
-    # pylint: disable=too-many-branches, complex-logic
+def select_manipulations():  # noqa: C901
     selected_operations = []
     extra_args = {}
     while True:
@@ -467,8 +461,7 @@ def select_manipulations():
     return selected_operations, extra_args
 
 
-def interactive_menu():
-    # pylint: disable=too-many-branches, complex-logic
+def interactive_menu():  # noqa: C901
     try:
         print("--- Welcome to the Interactive Image Processor ---")
         selected_image_paths = select_images()
