@@ -62,9 +62,9 @@ def handle_scale(image, image_name, values, args):
             "Invalid format for --scale argument. Use '1.5', '1.5x' or '400px 300px'."
         )
         return image
-    if scale_factor:
+    if scale_factor is not None:
         logger.info(f"  > Scaling by factor: {scale_factor}...")
-    elif new_size:
+    elif new_size is not None:
         logger.info(f"  > Scaling to dimensions: {new_size}...")
     else:
         logger.info("  > Scaling...")
