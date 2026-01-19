@@ -27,7 +27,8 @@ def main():
         ['.\\tests\\test_images\\*', '--posterize', '4'],
         ['.\\tests\\test_images\\*', '--blur', '10'],
         ['.\\tests\\test_images\\*', '--sharpen', '10'],
-        ['.\\tests\\test_images\\*', '--border', '10', 'red', 'expand']
+        ['.\\tests\\test_images\\*', '--border', '10', 'red', 'expand'],
+        ['.\\tests\\test_images\\*', '--rotate', '90']
     ]
 
     print("Starting automated scenario...")

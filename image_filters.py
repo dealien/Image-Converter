@@ -439,4 +439,24 @@ def apply_border(image: Image.Image, thickness: int, color_str: str, position: s
         raise ValueError("Position must be 'expand' or 'inside'.")
 
 
+def rotate_image(image: Image.Image, angle: int) -> Image.Image:
+    """
+    Rotates the image by a given angle, clamped to 90-degree increments.
+    :param image: The input image.
+    :param angle: The angle to rotate (will be rounded to nearest 90).
+    :return: Rotated image.
+    """
+    # Clamp to nearest 90 degrees
+    # 0, 90, 180, 270. 360 -> 0. -90 -> 270.
+    clamped_angle = int(round(angle / 90.0)) * 90 % 360
+    
+    if clamped_angle == 0:
+        return image
+    
+    # expand=True ensures the image is resized to fit the rotated content
+    # For 90 degree rotations, this swaps width/height appropriately.
+    return image.rotate(clamped_angle, expand=True)
+
+
+
 

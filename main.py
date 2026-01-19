@@ -81,6 +81,9 @@ def main():
                         help='Reduce color depth to N bits (1-8).')
     parser.add_argument('--border', dest='border', action=StoreInOrder, nargs=3,
                         help='Add border: thickness (int) color (str) position (expand/inside).')
+    parser.add_argument('--rotate', dest='rotate', action=StoreInOrder, type=int,
+                        help='Rotate image by 90-degree increments (0, 90, 180, 270).')
+
 
 
 

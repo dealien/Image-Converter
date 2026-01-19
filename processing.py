@@ -20,6 +20,7 @@ from image_filters import (
     rotate_hue,
     apply_posterize,
     apply_border,
+    rotate_image,
 
 
 )
@@ -130,6 +131,16 @@ def handle_border(image, image_name, values, args):
         return image
 
 
+def handle_rotate(image, image_name, values, args):
+    """
+    values: [angle]
+    Expects angle to be int.
+    """
+    logger.info(f'  > Rotating image by {values[0]} degrees...')
+    return rotate_image(image, values[0])
+
+
+
 
 
 
@@ -143,6 +154,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         'blur': handle_blur, 'sharpen': handle_sharpen,
         'color_balance': handle_color_balance, 'hue_rotation': handle_hue_rotation, 'posterize': handle_posterize,
         'border': handle_border,
+        'rotate': handle_rotate,
     }
 
 

@@ -191,6 +191,11 @@ def prompt_for_border_options():
     return {'dest': 'border', 'values': [thickness, color_str, position]}
 
 
+def prompt_for_rotation_options():
+    angle = _prompt_for_int_value("Enter rotation angle (will clamp to nearest 90)", 90, -3600, 3600)
+    return {'dest': 'rotate', 'values': [angle]}
+
+
 # --- Main Menu Logic ---
 
 AVAILABLE_MANIPULATIONS = [
@@ -209,7 +214,9 @@ AVAILABLE_MANIPULATIONS = [
     {'dest': 'hue_rotation', 'name': 'Rotate Hue', 'handler': 'prompt_for_hue_rotation_options'},
     {'dest': 'posterize', 'name': 'Apply Posterize', 'handler': 'prompt_for_posterize_options'},
     {'dest': 'border', 'name': 'Add Border', 'handler': 'prompt_for_border_options'},
+    {'dest': 'rotate', 'name': 'Rotate Image', 'handler': 'prompt_for_rotation_options'},
 ]
+
 
 
 
