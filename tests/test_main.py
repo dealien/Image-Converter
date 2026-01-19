@@ -9,10 +9,10 @@ from PIL import Image, ImageChops
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import the main function that we want to test
-from main import main
+from main import main  # noqa: E402
 
 # Import the image filter functions to create an expected image
-from image_filters import invert_colors, grayscale
+from image_filters import invert_colors, grayscale  # noqa: E402
 
 
 class TestMain(unittest.TestCase):

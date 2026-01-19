@@ -7,7 +7,7 @@ from PIL import Image, ImageChops
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from remove_background import remove_background, trim
+from remove_background import remove_background, trim  # noqa: E402
 
 
 class TestRemoveBackground(unittest.TestCase):

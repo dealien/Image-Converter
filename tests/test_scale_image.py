@@ -6,7 +6,7 @@ import os
 # Add the parent directory to the path so we can import the scale_image module
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from scale_image import scale_image, RESAMPLE_FILTERS
+from scale_image import scale_image, RESAMPLE_FILTERS  # noqa: E402
 
 
 class TestScaleImage(unittest.TestCase):

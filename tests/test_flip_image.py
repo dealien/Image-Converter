@@ -6,7 +6,7 @@ import os
 # Add the parent directory to the path so we can import the flip_image module
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from flip_image import flip_image
+from flip_image import flip_image  # noqa: E402
 
 
 class TestFlipImage(unittest.TestCase):
