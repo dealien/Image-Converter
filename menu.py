@@ -117,9 +117,9 @@ def prompt_for_scale_options(extra_args):
     def scale_validator(val_str):
         val_str = val_str.lower()
         parts = val_str.split()
-        if (len(parts) == 1 and parts[0].endswith("x")) or (
-            len(parts) == 2 and all(p.endswith("px") for p in parts)
-        ):
+        if (
+            len(parts) == 1 and parts[0].endswith("x") and not parts[0].endswith("px")
+        ) or (len(parts) == 2 and all(p.endswith("px") for p in parts)):
             return parts
         raise ValueError("Invalid format. Use '1.5x' or '400px 300px'.")
 

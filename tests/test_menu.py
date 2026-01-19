@@ -117,7 +117,83 @@ class TestSubMenus:
         res = menu.prompt_for_border_options()
         assert res == {"dest": "border", "values": [5, "red", "inside"]}
 
-    # ... Can add more for brevity others are simple int prompts ...
+    def test_prompt_for_scale_invalid_formats(self, mock_input, suppress_print):
+        # Invalid inputs: 400px (single), 400 (no unit), 1.5 (no unit), abc
+        # Followed by valid inputs to break loop: 1.5x
+        # We test that it retries until valid
+        mock_input.side_effect = ["400px", "400", "1.5", "abc", "1.5x", ""]
+        extra = {}
+        res = menu.prompt_for_scale_options(extra)
+        assert res["values"] == ["1.5x"]
+
+    def test_prompt_for_edge_detection_defaults(self, mock_input, suppress_print):
+        mock_input.side_effect = [""]  # default (sobel)
+        extra = {}
+        res = menu.prompt_for_edge_detection_options(extra)
+        assert res["values"] == ["sobel"]
+
+    def test_prompt_for_brightness(self, mock_input, suppress_print):
+        mock_input.side_effect = ["10"]
+        assert menu.prompt_for_brightness_options() == {
+            "dest": "brightness",
+            "values": [10],
+        }
+
+    def test_prompt_for_contrast(self, mock_input, suppress_print):
+        mock_input.side_effect = ["-10"]
+        assert menu.prompt_for_contrast_options() == {
+            "dest": "contrast",
+            "values": [-10],
+        }
+
+    def test_prompt_for_saturation(self, mock_input, suppress_print):
+        mock_input.side_effect = ["50"]
+        assert menu.prompt_for_saturation_options() == {
+            "dest": "saturation",
+            "values": [50],
+        }
+
+    def test_prompt_for_blur(self, mock_input, suppress_print):
+        mock_input.side_effect = ["1.5"]
+        assert menu.prompt_for_blur_options() == {
+            "dest": "blur",
+            "values": [1.5],
+        }
+
+    def test_prompt_for_sharpen(self, mock_input, suppress_print):
+        mock_input.side_effect = ["100"]
+        assert menu.prompt_for_sharpen_options() == {
+            "dest": "sharpen",
+            "values": [100],
+        }
+
+    def test_prompt_for_color_balance(self, mock_input, suppress_print):
+        mock_input.side_effect = ["0.9", "1.1", "1.0"]  # r, g, b
+        assert menu.prompt_for_color_balance_options() == {
+            "dest": "color_balance",
+            "values": [0.9, 1.1, 1.0],
+        }
+
+    def test_prompt_for_hue_rotation(self, mock_input, suppress_print):
+        mock_input.side_effect = ["180"]
+        assert menu.prompt_for_hue_rotation_options() == {
+            "dest": "hue_rotation",
+            "values": [180],
+        }
+
+    def test_prompt_for_posterize(self, mock_input, suppress_print):
+        mock_input.side_effect = ["2"]
+        assert menu.prompt_for_posterize_options() == {
+            "dest": "posterize",
+            "values": [2],
+        }
+
+    def test_prompt_for_rotation(self, mock_input, suppress_print):
+        mock_input.side_effect = ["90"]
+        assert menu.prompt_for_rotation_options() == {
+            "dest": "rotate",
+            "values": [90],
+        }
 
 
 # --- Main Logic Tests ---
@@ -184,6 +260,16 @@ class TestAppLogic:
         assert ops[0]["dest"] == "flip"
         assert ops[0]["values"] == ["horizontal"]
 
+    def test_select_manipulations_add_invalid(self, mock_input, suppress_print):
+        # Inputs:
+        # '999' -> Invalid selection
+        # 'abc' -> Invalid input
+        # 'd' -> Done
+        # 'y' -> Process empty
+        mock_input.side_effect = ["999", "abc", "d", "y"]
+        ops, extra = menu.select_manipulations()
+        assert ops == []
+
     def test_select_manipulations_cancel_empty(self, mock_input, suppress_print):
         # 'd' -> Done
         # 'n' -> Don't process empty (continue)
@@ -218,3 +304,10 @@ class TestAppLogic:
         mock_process.assert_called_once()
         args_passed = mock_process.call_args[0][2]
         assert args_passed.resample == "b"
+
+    @patch("menu.select_images")
+    def test_interactive_menu_cancel(self, mock_sel_imgs, suppress_print):
+        mock_sel_imgs.return_value = []
+        menu.interactive_menu()
+        # Should return immediately
+        mock_sel_imgs.assert_called_once()
