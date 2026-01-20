@@ -166,6 +166,9 @@ def prompt_for_scale_options(extra_args):
         default="Bilinear",
     ).ask()
 
+    if not resample_choice:
+        return None
+
     extra_args["resample"] = resample_choice.lower()
 
     return {"dest": "scale", "values": values}
