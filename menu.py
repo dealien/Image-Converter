@@ -2,116 +2,17 @@ import os
 import inspect
 from types import SimpleNamespace
 from PIL import Image
+import questionary
 from processing import process_images_and_save
 
 
 # --- Helper Functions ---
 
 
-_DEFAULT = object()
-
-
-def _get_input(prompt, validator=None, default=_DEFAULT):
-    """Generic input helper with validation and default value."""
-    while True:
-        prompt_text = f"{prompt}"
-        if default is not _DEFAULT:
-            # Check if default is an options index (int) or value
-            prompt_text += f" (default: {default})"
-        prompt_text += ": "
-
-        user_input = input(prompt_text).strip()
-
-        if not user_input:
-            if default is not _DEFAULT:
-                return default
-            continue
-
-        if validator:
-            try:
-                return validator(user_input)
-            except (ValueError, TypeError) as e:
-                print(f"Error: {e}")
-        else:
-            return user_input
-
-
-def _validate_int(min_val=None, max_val=None):
-    def validator(val_str):
-        val = int(val_str)
-        if min_val is not None and max_val is not None:
-            if val < min_val or val > max_val:
-                raise ValueError(f"Value must be between {min_val} and {max_val}.")
-        elif min_val is not None:
-            if val < min_val:
-                raise ValueError(f"Value must be at least {min_val}.")
-        elif max_val is not None:
-            if val > max_val:
-                raise ValueError(f"Value must be at most {max_val}.")
-        return val
-
-    return validator
-
-
-def _validate_float(min_val=None, max_val=None):
-    def validator(val_str):
-        val = float(val_str)
-        if min_val is not None and val < min_val:
-            raise ValueError(f"Value must be at least {min_val}.")
-        if max_val is not None and val > max_val:
-            raise ValueError(f"Value must be at most {max_val}.")
-        return val
-
-    return validator
-
-
-def _prompt_for_int_value(prompt, default, min_val, max_val):
-    return _get_input(prompt, _validate_int(min_val, max_val), default)
-
-
-def _prompt_for_float_value(prompt, default, min_val=0.0):
-    return _get_input(prompt, _validate_float(min_val=min_val), default)
-
-
-def _get_menu_choice(options, default_index=0, title=None):
-    if title:
-        print(f"\n--- {title} ---")
-    for i, option in enumerate(options):
-        print(f"  {i + 1}. {option.capitalize()}")
-
-    # We return the actual string option, but the default passed to _get_input should be the display-friendly 1-based index or the value?
-    # The original code displayed "default: 1. Horizontal".
-    # Let's simplify and just show the value or index.
-    # Or just handle the default logic inside the validator wrapper.
-
-    def choice_validator(val_str):
-        try:
-            idx = int(val_str) - 1
-        except ValueError:
-            raise ValueError("Please enter a number.")
-
-        if 0 <= idx < len(options):
-            return options[idx]
-        raise ValueError(f"Choose between 1 and {len(options)}.")
-
-    # We pass the resolved default object to _get_input? No, _get_input returns the raw input if empty.
-    # We need to bridge the gap.
-    # Actually, simpler:
-
-    resp = _get_input(
-        "Select option",
-        choice_validator,
-        default=options[default_index],  # If user hits enter, we want the option value
-    )
-    # Wait, if I pass options[default_index] as default, _get_input returns it.
-    # But the prompt in _get_input will show "default: horizontal". That's fine.
-    return resp
-
-
 def _format_operation_display(index, op, extra_args):
     op_name = op["dest"].replace("_", "-")
     op_vals = " ".join(map(str, op.get("values", [])))
-    display_string = f"  {index + 1}. --{op_name} {op_vals}"
+    display_string = f"{index + 1}. --{op_name} {op_vals}"
 
     if op["dest"] == "scale" and "resample" in extra_args:
         display_string += f" --resample {extra_args['resample']}"
@@ -122,122 +23,202 @@ def _format_operation_display(index, op, extra_args):
     return display_string
 
 
+def _validate_number(min_val=None, max_val=None, value_type=int):
+    def validator(val_str):
+        if not val_str:
+            return "Value cannot be empty."
+        try:
+            val = value_type(val_str)
+            if min_val is not None and val < min_val:
+                return f"Value must be at least {min_val}."
+            if max_val is not None and val > max_val:
+                return f"Value must be at most {max_val}."
+            return True
+        except ValueError:
+            return (
+                f"Please enter a valid {'integer' if value_type is int else 'number'}."
+            )
+
+    return validator
+
+
 # --- Submenu Functions ---
 
 
 def prompt_for_flip_options():
-    choice = _get_menu_choice(
-        ["horizontal", "vertical", "both"], default_index=0, title="Flip Options"
-    )
-    return {"dest": "flip", "values": [choice]}
+    choice = questionary.select(
+        "Select flip direction:", choices=["Horizontal", "Vertical", "Both"]
+    ).ask()
+    if not choice:
+        return None
+    return {"dest": "flip", "values": [choice.lower()]}
 
 
 def prompt_for_scale_options(extra_args):
     print("\n--- Scale Options ---")
-    print("Enter scale factor (e.g., '1.5x') OR new dimensions (e.g., '400px 300px').")
 
     def scale_validator(val_str):
         if not val_str:
-            raise ValueError("Scale value cannot be empty.")
+            return "Scale value cannot be empty."
         val_str = val_str.lower()
         parts = val_str.split()
         if (
             len(parts) == 1 and parts[0].endswith("x") and not parts[0].endswith("px")
         ) or (len(parts) == 2 and all(p.endswith("px") for p in parts)):
-            return parts
-        raise ValueError("Invalid format. Use '1.5x' or '400px 300px'.")
+            return True
+        return "Invalid format. Use '1.5x' or '400px 300px'."
 
-    values = _get_input("Enter scale value", scale_validator)
+    values_str = questionary.text(
+        "Enter scale value (e.g., '1.5x' OR '400px 300px'):", validate=scale_validator
+    ).ask()
 
-    resample_choice = _get_menu_choice(
-        ["nearest", "bilinear", "bicubic", "lanczos"],
-        default_index=1,
-        title="Resample Filter",
-    )
-    extra_args["resample"] = resample_choice
+    if not values_str:
+        return None
+
+    values = values_str.lower().split()
+
+    resample_choice = questionary.select(
+        "Select Resample Filter:",
+        choices=["Nearest", "Bilinear", "Bicubic", "Lanczos"],
+        default="Bilinear",
+    ).ask()
+
+    extra_args["resample"] = resample_choice.lower()
 
     return {"dest": "scale", "values": values}
 
 
 def prompt_for_edge_detection_options(extra_args):
-    method = _get_menu_choice(
-        ["sobel", "canny", "kovalevsky"],
-        default_index=0,
-        title="Edge Detection Options",
-    )
+    method = questionary.select(
+        "Select Edge Detection Method:", choices=["Sobel", "Canny", "Kovalevsky"]
+    ).ask()
+
+    if not method:
+        return None
+
+    method = method.lower()
 
     if method == "kovalevsky":
-        print("\n--- Kovalevsky Threshold ---")
-        extra_args["threshold"] = _prompt_for_int_value(
-            "Enter threshold value (0-255)", 50, 0, 255
-        )
+        val_str = questionary.text(
+            "Enter threshold value (0-255):",
+            default="50",
+            validate=_validate_number(0, 255),
+        ).ask()
+        extra_args["threshold"] = int(val_str)
 
     return {"dest": "edge_detection", "values": [method]}
 
 
 def prompt_for_brightness_options():
-    val = _prompt_for_int_value("Enter brightness value (-100 to 100)", 0, -100, 100)
-    return {"dest": "brightness", "values": [val]}
+    val_str = questionary.text(
+        "Enter brightness value (-100 to 100):",
+        default="0",
+        validate=_validate_number(-100, 100),
+    ).ask()
+    return {"dest": "brightness", "values": [int(val_str)]}
 
 
 def prompt_for_contrast_options():
-    val = _prompt_for_int_value("Enter contrast value (-100 to 100)", 0, -100, 100)
-    return {"dest": "contrast", "values": [val]}
+    val_str = questionary.text(
+        "Enter contrast value (-100 to 100):",
+        default="0",
+        validate=_validate_number(-100, 100),
+    ).ask()
+    return {"dest": "contrast", "values": [int(val_str)]}
 
 
 def prompt_for_saturation_options():
-    val = _prompt_for_int_value("Enter saturation value (-100 to 100)", 0, -100, 100)
-    return {"dest": "saturation", "values": [val]}
+    val_str = questionary.text(
+        "Enter saturation value (-100 to 100):",
+        default="0",
+        validate=_validate_number(-100, 100),
+    ).ask()
+    return {"dest": "saturation", "values": [int(val_str)]}
 
 
 def prompt_for_blur_options():
-    val = _prompt_for_float_value("Enter blur radius", 2.0, 0.0)
-    return {"dest": "blur", "values": [val]}
+    val_str = questionary.text(
+        "Enter blur radius (min 0.0):",
+        default="2.0",
+        validate=_validate_number(min_val=0.0, value_type=float),
+    ).ask()
+    return {"dest": "blur", "values": [float(val_str)]}
 
 
 def prompt_for_sharpen_options():
-    val = _prompt_for_int_value("Enter sharpness intensity (0-100)", 50, 0, 100)
-    return {"dest": "sharpen", "values": [val]}
+    val_str = questionary.text(
+        "Enter sharpness intensity (0-100):",
+        default="50",
+        validate=_validate_number(0, 100),
+    ).ask()
+    return {"dest": "sharpen", "values": [int(val_str)]}
 
 
 def prompt_for_color_balance_options():
     print(
         "Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change)."
     )
-    r = _prompt_for_float_value("Red factor", 1.0)
-    g = _prompt_for_float_value("Green factor", 1.0)
-    b = _prompt_for_float_value("Blue factor", 1.0)
-    return {"dest": "color_balance", "values": [r, g, b]}
+
+    r_str = questionary.text(
+        "Red factor:", default="1.0", validate=_validate_number(value_type=float)
+    ).ask()
+    g_str = questionary.text(
+        "Green factor:", default="1.0", validate=_validate_number(value_type=float)
+    ).ask()
+    b_str = questionary.text(
+        "Blue factor:", default="1.0", validate=_validate_number(value_type=float)
+    ).ask()
+
+    return {
+        "dest": "color_balance",
+        "values": [float(r_str), float(g_str), float(b_str)],
+    }
 
 
 def prompt_for_hue_rotation_options():
-    val = _prompt_for_int_value("Enter hue rotation degrees (0-360)", 90, 0, 360)
-    return {"dest": "hue_rotation", "values": [val]}
+    val_str = questionary.text(
+        "Enter hue rotation degrees (0-360):",
+        default="90",
+        validate=_validate_number(0, 360),
+    ).ask()
+    return {"dest": "hue_rotation", "values": [int(val_str)]}
 
 
 def prompt_for_posterize_options():
-    val = _prompt_for_int_value("Enter number of bits (1-8)", 4, 1, 8)
-    return {"dest": "posterize", "values": [val]}
+    val_str = questionary.text(
+        "Enter number of bits (1-8):", default="4", validate=_validate_number(1, 8)
+    ).ask()
+    return {"dest": "posterize", "values": [int(val_str)]}
 
 
 def prompt_for_border_options():
-    thickness = _prompt_for_int_value("Enter border thickness", 10, 0, 500)
+    thickness_str = questionary.text(
+        "Enter border thickness (0-500):",
+        default="10",
+        validate=_validate_number(0, 500),
+    ).ask()
 
-    # Simple input for color
-    color_str = _get_input("Enter border color (Name or Hex)", default="black")
+    color_str = questionary.text(
+        "Enter border color (Name or Hex):", default="black"
+    ).ask()
 
-    position = _get_menu_choice(
-        ["expand", "inside"], default_index=0, title="Border Position"
-    )
+    position = questionary.select(
+        "Border Position:", choices=["Expand", "Inside"]
+    ).ask()
 
-    return {"dest": "border", "values": [thickness, color_str, position]}
+    return {
+        "dest": "border",
+        "values": [int(thickness_str), color_str, position.lower()],
+    }
 
 
 def prompt_for_rotation_options():
-    angle = _prompt_for_int_value(
-        "Enter rotation angle (will clamp to nearest 90)", 90, -3600, 3600
-    )
-    return {"dest": "rotate", "values": [angle]}
+    angle_str = questionary.text(
+        "Enter rotation angle (will clamp to nearest 90):",
+        default="90",
+        validate=_validate_number(-3600, 3600),
+    ).ask()
+    return {"dest": "rotate", "values": [int(angle_str)]}
 
 
 # --- Main Menu Configuration ---
@@ -297,26 +278,18 @@ def remove_manipulation(operations, extra_args):
         print("\nThere are no operations to remove.")
         return operations
 
-    # Show current ops
-    print("\n--- Remove an Operation ---")
-    for i, op in enumerate(operations):
-        print(_format_operation_display(i, op, extra_args))
+    choices = [
+        questionary.Choice(title=_format_operation_display(i, op, extra_args), value=i)
+        for i, op in enumerate(operations)
+    ]
+    choices.append(questionary.Choice(title="Cancel", value=-1))
 
-    def removal_validator(val_str):
-        idx = int(val_str) - 1
-        if 0 <= idx < len(operations):
-            return idx
-        raise ValueError(f"Choose between 1 and {len(operations)}.")
+    choice_idx = questionary.select(
+        "Select operation to remove:", choices=choices
+    ).ask()
 
-    # Let _get_input handle validation loops. It will return None for empty input.
-    choice_idx = _get_input(
-        "Select operation number to remove (or press Enter to cancel)",
-        removal_validator,
-        default=None,
-    )
-
-    if choice_idx is None:
-        return operations  # User cancelled
+    if choice_idx == -1 or choice_idx is None:
+        return operations
 
     removed_op = operations.pop(choice_idx)
     print(f"\nRemoved '{removed_op['dest']}'.")
@@ -326,17 +299,6 @@ def remove_manipulation(operations, extra_args):
         op["dest"] == "scale" for op in operations
     ):
         extra_args.pop("resample", None)
-    if removed_op["dest"] == "edge_detection":
-        # Check if any other op is using kovalevsky? Unlikely since we just popped it, but good to be safe if multiple
-        pass  # Logic from original was specific to kovalevsky.
-        # Original:
-        # if removed_op["dest"] == "edge_detection" and not any(
-        #           op["dest"] == "edge_detection" and op["values"][0] == "kovalevsky"
-        #           for op in operations
-        #       ):
-        #           extra_args.pop("threshold", None)
-
-        # Re-implementing original cleanup logic completely:
 
     has_kovalevsky = any(
         op["dest"] == "edge_detection" and op.get("values", [""])[0] == "kovalevsky"
@@ -374,110 +336,85 @@ def select_images():
         print(f"No images found in '{image_dir}'.")
         return []
 
-    selected_indices = set()
+    selected = questionary.checkbox(
+        "Select images to process (Space to select, Enter to confirm):",
+        choices=image_files,
+    ).ask()
 
-    while True:
-        print("\n--- Select Images ---")
-        for i, filename in enumerate(image_files):
-            marker = "[x]" if i in selected_indices else "[ ]"
-            print(f"{marker} {i + 1: >2}. {filename}")
-        print("---------------------")
+    if not selected:
+        confirm = questionary.confirm(
+            "No images selected. Continue anyway?", default=False
+        ).ask()
+        if not confirm:
+            # Maybe allow re-selection? Or just return empty
+            return []
 
-        choice = input("Type number to toggle, or Enter to confirm: ").strip()
-
-        if not choice:
-            if not selected_indices:
-                if input("No images selected. Continue? (y/N): ").lower() != "y":
-                    continue
-            break
-
-        try:
-            idx = int(choice) - 1
-            if 0 <= idx < len(image_files):
-                if idx in selected_indices:
-                    selected_indices.remove(idx)
-                else:
-                    selected_indices.add(idx)
-            else:
-                print("Invalid number.")
-        except ValueError:
-            print("Invalid input.")
-
-    return [
-        os.path.join(image_dir, image_files[i]) for i in sorted(list(selected_indices))
-    ]
+    return [os.path.join(image_dir, f) for f in selected]
 
 
 def select_manipulations():
     selected_operations = []
     extra_args = {}
 
-    def _action_add_manipulation(idx_str):
-        try:
-            idx = int(idx_str) - 1
-            if 0 <= idx < len(AVAILABLE_MANIPULATIONS):
-                manip = AVAILABLE_MANIPULATIONS[idx]
-                handler = manip.get("handler")
-
-                op_details = None
-                if handler:
-                    # Check signature to see if it needs extra_args
-                    sig = inspect.signature(handler)
-                    if "extra_args" in sig.parameters:
-                        op_details = handler(extra_args)
-                    else:
-                        op_details = handler()
-                else:
-                    op_details = {"dest": manip["dest"], "values": []}
-
-                if op_details:
-                    selected_operations.append(op_details)
-                    print(f"Added '{manip['name']}'.")
-            else:
-                print("Invalid selection number.")
-        except ValueError:
-            print("Invalid input.")
-
-    def _action_remove(arg=None):  # arg for compatibility
-        remove_manipulation(selected_operations, extra_args)
-
-    def _action_done(arg=None):
-        return "DONE"  # Signal to break loop
-
-    # Dictionary dispatch for non-numeric commands
-    command_dispatch = {"-": _action_remove, "d": _action_done}
-
     while True:
-        print("\n--- Select Manipulations ---")
+        # Build main menu based on current state
+        choices = []
+
+        # Action Groups
+        choices.append(questionary.Separator(line="--- Actions ---"))
+        choices.append(questionary.Choice("Run Processing", value="PROCESS"))
+        if selected_operations:
+            choices.append(questionary.Choice("Remove an Operation", value="REMOVE"))
+
+        choices.append(questionary.Separator(line="--- Add Operation ---"))
+        for i, manip in enumerate(AVAILABLE_MANIPULATIONS):
+            choices.append(questionary.Choice(manip["name"], value=i))
+
+        # Show current ops summary
+        print("\nCurrent Pipeline:")
         if not selected_operations:
-            print("  (No operations added yet)")
+            print("  (Empty)")
         else:
             for i, op in enumerate(selected_operations):
-                print(_format_operation_display(i, op, extra_args))
+                print(f"  {_format_operation_display(i, op, extra_args)}")
+        print("")
 
-        print("\nAvailable:")
-        for i, m in enumerate(AVAILABLE_MANIPULATIONS):
-            print(f"  {i + 1}. {m['name']}")
+        selection = questionary.select(
+            "What would you like to do?", choices=choices
+        ).ask()
 
-        print("----------------------------")
-        print("Enter number to add, '-' to remove, 'd' to process.")
+        if selection is None:  # C-c
+            break
 
-        choice = input("Your choice: ").strip().lower()
-        if not choice:
-            continue
-
-        if choice in command_dispatch:
-            result = command_dispatch[choice]()
-            if result == "DONE":
-                if (
-                    not selected_operations
-                    and input("Process empty? (y/N): ").lower() != "y"
-                ):
+        if selection == "PROCESS":
+            if not selected_operations:
+                confirm = questionary.confirm(
+                    "Pipeline is empty. Process anyway?", default=False
+                ).ask()
+                if not confirm:
                     continue
-                break
+            break
+        elif selection == "REMOVE":
+            remove_manipulation(selected_operations, extra_args)
         else:
-            # Assume numeric for addition
-            _action_add_manipulation(choice)
+            # It's an index for a manipulation
+            idx = selection
+            manip = AVAILABLE_MANIPULATIONS[idx]
+            handler = manip.get("handler")
+
+            op_details = None
+            if handler:
+                sig = inspect.signature(handler)
+                if "extra_args" in sig.parameters:
+                    op_details = handler(extra_args)
+                else:
+                    op_details = handler()
+            else:
+                op_details = {"dest": manip["dest"], "values": []}
+
+            if op_details:
+                selected_operations.append(op_details)
+                print(f"Added '{manip['name']}'.")
 
     return selected_operations, extra_args
 
@@ -487,6 +424,7 @@ def interactive_menu():
         print("--- Welcome to the Interactive Image Processor ---")
         paths = select_images()
         if not paths:
+            print("No images selected. Exiting.")
             return
 
         ops, extra_args = select_manipulations()
