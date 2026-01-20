@@ -143,13 +143,26 @@ def prompt_for_scale_options(extra_args):
     def scale_validator(val_str):
         if not val_str:
             return "Scale value cannot be empty."
-        val_str = val_str.lower()
+        val_str = val_str.lower().strip()
         parts = val_str.split()
-        if (
-            len(parts) == 1 and parts[0].endswith("x") and not parts[0].endswith("px")
-        ) or (len(parts) == 2 and all(p.endswith("px") for p in parts)):
+
+        # Accept:
+        #   - scale factor: "1.5" or "1.5x"
+        #   - dimensions: "400px 300px"
+        if len(parts) == 1:
+            token = parts[0]
+            if token.endswith("x") and not token.endswith("px"):
+                token = token[:-1]
+            try:
+                float(token)
+                return True
+            except ValueError:
+                return "Invalid format. Use '1.5', '1.5x' or '400px 300px'."
+
+        if len(parts) == 2 and all(p.endswith("px") for p in parts):
             return True
-        return "Invalid format. Use '1.5x' or '400px 300px'."
+
+        return "Invalid format. Use '1.5', '1.5x' or '400px 300px'."
 
     values_str = _ask_text(
         "Enter scale value (e.g., '1.5x' OR '400px 300px')", validate=scale_validator
