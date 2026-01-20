@@ -302,6 +302,9 @@ def prompt_for_border_options():
         "Border Position:", choices=["Expand", "Inside"]
     ).ask()
 
+    if not position:
+        return None
+
     return {
         "dest": "border",
         "values": [
