@@ -3,9 +3,12 @@ import inspect
 from types import SimpleNamespace
 from PIL import Image
 import questionary
-from prompt_toolkit import prompt
+from prompt_toolkit import PromptSession, print_formatted_text
+from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.lexers import SimpleLexer
 from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.styles import Style
+from prompt_toolkit.application.current import get_app
 from processing import process_images_and_save
 
 
@@ -13,10 +16,10 @@ from processing import process_images_and_save
 
 _CUSTOM_STYLE = Style.from_dict(
     {
-        "qmark": "#E91E63 bold",  # Pinkish-red (Questionary default)
-        "question": "",  # Normal
-        "answer": "#F44336 bold",  # Orange/Red (Questionary default for answer)
-        "default": "fg:cyan",  # Cyan for default
+        "qmark": "#5F819D",  # Questionary default blueish
+        "question": "bold",  # Questionary default bold
+        "answer": "#FF9D00 bold",  # Questionary default Orange
+        "default": "fg:cyan",  # Our custom Cyan for default
     }
 )
 
@@ -26,13 +29,28 @@ def _ask_text(message, default_val=None, validate=None):
     Custom text prompt helper using prompt_toolkit to support colored defaults.
     Replaces questionary.text(...).ask()
     """
-    # Build formatted message
-    formatted_msg = [("class:qmark", "? "), ("class:question", message)]
-    if default_val is not None:
-        formatted_msg.append(("", " [default: "))
-        formatted_msg.append(("class:default", str(default_val)))
-        formatted_msg.append(("", "]"))
-    formatted_msg.append(("class:question", ": "))
+
+    def get_prompt_text():
+        # Dynamic prompt generation based on current input buffer
+        try:
+            # text = get_app().current_buffer.text  # This works in full app
+            # For prompt() shortcut, we might need a safer access if app not ready
+            # But prompt() initializes app before rendering.
+            text = get_app().current_buffer.text
+        except Exception:
+            text = ""
+
+        formatted_msg = [("class:qmark", "? "), ("class:question", message)]
+
+        if default_val is not None:
+            formatted_msg.append(("", " [default: "))
+            # If input is empty, color default cyan. Otherwise uncolored.
+            style_class = "class:default" if not text else ""
+            formatted_msg.append((style_class, str(default_val)))
+            formatted_msg.append(("", "]"))
+
+        formatted_msg.append(("class:question", ": "))
+        return formatted_msg
 
     # Build Validator
     pt_validator = None
@@ -48,7 +66,28 @@ def _ask_text(message, default_val=None, validate=None):
 
         pt_validator = CustomValidator()
 
-    return prompt(formatted_msg, validator=pt_validator, style=_CUSTOM_STYLE)
+    # interactive call
+    session = PromptSession(
+        style=_CUSTOM_STYLE, erase_when_done=True, lexer=SimpleLexer("class:answer")
+    )
+    result = session.prompt(get_prompt_text, validator=pt_validator)
+
+    # Post-processing for display history
+    final_answer = result
+    if not result and default_val is not None:
+        final_answer = str(default_val)
+
+    final_msg = [("class:qmark", "? "), ("class:question", message)]
+    if default_val is not None:
+        final_msg.append(
+            ("", f" [default: {default_val}]")
+        )  # Always uncolored in history
+    final_msg.append(("class:question", ": "))
+    final_msg.append(("class:answer", final_answer))
+
+    print_formatted_text(FormattedText(final_msg), style=_CUSTOM_STYLE)
+
+    return result
 
 
 def _format_operation_display(index, op, extra_args):
