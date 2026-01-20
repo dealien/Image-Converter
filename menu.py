@@ -3,10 +3,52 @@ import inspect
 from types import SimpleNamespace
 from PIL import Image
 import questionary
+from prompt_toolkit import prompt
+from prompt_toolkit.validation import Validator, ValidationError
+from prompt_toolkit.styles import Style
 from processing import process_images_and_save
 
 
 # --- Helper Functions ---
+
+_CUSTOM_STYLE = Style.from_dict(
+    {
+        "qmark": "#E91E63 bold",  # Pinkish-red (Questionary default)
+        "question": "",  # Normal
+        "answer": "#F44336 bold",  # Orange/Red (Questionary default for answer)
+        "default": "fg:cyan",  # Cyan for default
+    }
+)
+
+
+def _ask_text(message, default_val=None, validate=None):
+    """
+    Custom text prompt helper using prompt_toolkit to support colored defaults.
+    Replaces questionary.text(...).ask()
+    """
+    # Build formatted message
+    formatted_msg = [("class:qmark", "? "), ("class:question", message)]
+    if default_val is not None:
+        formatted_msg.append(("", " [default: "))
+        formatted_msg.append(("class:default", str(default_val)))
+        formatted_msg.append(("", "]"))
+    formatted_msg.append(("class:question", ": "))
+
+    # Build Validator
+    pt_validator = None
+    if validate:
+
+        class CustomValidator(Validator):
+            def validate(self, document):
+                res = validate(document.text)
+                if res is not True:
+                    raise ValidationError(
+                        message=res, cursor_position=len(document.text)
+                    )
+
+        pt_validator = CustomValidator()
+
+    return prompt(formatted_msg, validator=pt_validator, style=_CUSTOM_STYLE)
 
 
 def _format_operation_display(index, op, extra_args):
@@ -23,9 +65,11 @@ def _format_operation_display(index, op, extra_args):
     return display_string
 
 
-def _validate_number(min_val=None, max_val=None, value_type=int):
+def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=False):
     def validator(val_str):
         if not val_str:
+            if allow_empty:
+                return True
             return "Value cannot be empty."
         try:
             val = value_type(val_str)
@@ -68,9 +112,9 @@ def prompt_for_scale_options(extra_args):
             return True
         return "Invalid format. Use '1.5x' or '400px 300px'."
 
-    values_str = questionary.text(
-        "Enter scale value (e.g., '1.5x' OR '400px 300px'):", validate=scale_validator
-    ).ask()
+    values_str = _ask_text(
+        "Enter scale value (e.g., '1.5x' OR '400px 300px')", validate=scale_validator
+    )
 
     if not values_str:
         return None
@@ -99,59 +143,59 @@ def prompt_for_edge_detection_options(extra_args):
     method = method.lower()
 
     if method == "kovalevsky":
-        val_str = questionary.text(
-            "Enter threshold value (0-255):",
-            default="50",
-            validate=_validate_number(0, 255),
-        ).ask()
-        extra_args["threshold"] = int(val_str)
+        val_str = _ask_text(
+            "Enter threshold value (0-255)",
+            default_val=50,
+            validate=_validate_number(0, 255, allow_empty=True),
+        )
+        extra_args["threshold"] = int(val_str) if val_str else 50
 
     return {"dest": "edge_detection", "values": [method]}
 
 
 def prompt_for_brightness_options():
-    val_str = questionary.text(
-        "Enter brightness value (-100 to 100):",
-        default="0",
-        validate=_validate_number(-100, 100),
-    ).ask()
-    return {"dest": "brightness", "values": [int(val_str)]}
+    val_str = _ask_text(
+        "Enter brightness value (-100 to 100)",
+        default_val=0,
+        validate=_validate_number(-100, 100, allow_empty=True),
+    )
+    return {"dest": "brightness", "values": [int(val_str) if val_str else 0]}
 
 
 def prompt_for_contrast_options():
-    val_str = questionary.text(
-        "Enter contrast value (-100 to 100):",
-        default="0",
-        validate=_validate_number(-100, 100),
-    ).ask()
-    return {"dest": "contrast", "values": [int(val_str)]}
+    val_str = _ask_text(
+        "Enter contrast value (-100 to 100)",
+        default_val=0,
+        validate=_validate_number(-100, 100, allow_empty=True),
+    )
+    return {"dest": "contrast", "values": [int(val_str) if val_str else 0]}
 
 
 def prompt_for_saturation_options():
-    val_str = questionary.text(
-        "Enter saturation value (-100 to 100):",
-        default="0",
-        validate=_validate_number(-100, 100),
-    ).ask()
-    return {"dest": "saturation", "values": [int(val_str)]}
+    val_str = _ask_text(
+        "Enter saturation value (-100 to 100)",
+        default_val=0,
+        validate=_validate_number(-100, 100, allow_empty=True),
+    )
+    return {"dest": "saturation", "values": [int(val_str) if val_str else 0]}
 
 
 def prompt_for_blur_options():
-    val_str = questionary.text(
-        "Enter blur radius (min 0.0):",
-        default="2.0",
-        validate=_validate_number(min_val=0.0, value_type=float),
-    ).ask()
-    return {"dest": "blur", "values": [float(val_str)]}
+    val_str = _ask_text(
+        "Enter blur radius (min 0.0)",
+        default_val=2.0,
+        validate=_validate_number(min_val=0.0, value_type=float, allow_empty=True),
+    )
+    return {"dest": "blur", "values": [float(val_str) if val_str else 2.0]}
 
 
 def prompt_for_sharpen_options():
-    val_str = questionary.text(
-        "Enter sharpness intensity (0-100):",
-        default="50",
-        validate=_validate_number(0, 100),
-    ).ask()
-    return {"dest": "sharpen", "values": [int(val_str)]}
+    val_str = _ask_text(
+        "Enter sharpness intensity (0-100)",
+        default_val=50,
+        validate=_validate_number(0, 100, allow_empty=True),
+    )
+    return {"dest": "sharpen", "values": [int(val_str) if val_str else 50]}
 
 
 def prompt_for_color_balance_options():
@@ -159,48 +203,58 @@ def prompt_for_color_balance_options():
         "Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change)."
     )
 
-    r_str = questionary.text(
-        "Red factor:", default="1.0", validate=_validate_number(value_type=float)
-    ).ask()
-    g_str = questionary.text(
-        "Green factor:", default="1.0", validate=_validate_number(value_type=float)
-    ).ask()
-    b_str = questionary.text(
-        "Blue factor:", default="1.0", validate=_validate_number(value_type=float)
-    ).ask()
+    r_str = _ask_text(
+        "Red factor",
+        default_val=1.0,
+        validate=_validate_number(value_type=float, allow_empty=True),
+    )
+    g_str = _ask_text(
+        "Green factor",
+        default_val=1.0,
+        validate=_validate_number(value_type=float, allow_empty=True),
+    )
+    b_str = _ask_text(
+        "Blue factor",
+        default_val=1.0,
+        validate=_validate_number(value_type=float, allow_empty=True),
+    )
 
     return {
         "dest": "color_balance",
-        "values": [float(r_str), float(g_str), float(b_str)],
+        "values": [
+            float(r_str) if r_str else 1.0,
+            float(g_str) if g_str else 1.0,
+            float(b_str) if b_str else 1.0,
+        ],
     }
 
 
 def prompt_for_hue_rotation_options():
-    val_str = questionary.text(
-        "Enter hue rotation degrees (0-360):",
-        default="90",
-        validate=_validate_number(0, 360),
-    ).ask()
-    return {"dest": "hue_rotation", "values": [int(val_str)]}
+    val_str = _ask_text(
+        "Enter hue rotation degrees (0-360)",
+        default_val=90,
+        validate=_validate_number(0, 360, allow_empty=True),
+    )
+    return {"dest": "hue_rotation", "values": [int(val_str) if val_str else 90]}
 
 
 def prompt_for_posterize_options():
-    val_str = questionary.text(
-        "Enter number of bits (1-8):", default="4", validate=_validate_number(1, 8)
-    ).ask()
-    return {"dest": "posterize", "values": [int(val_str)]}
+    val_str = _ask_text(
+        "Enter number of bits (1-8)",
+        default_val=4,
+        validate=_validate_number(1, 8, allow_empty=True),
+    )
+    return {"dest": "posterize", "values": [int(val_str) if val_str else 4]}
 
 
 def prompt_for_border_options():
-    thickness_str = questionary.text(
-        "Enter border thickness (0-500):",
-        default="10",
-        validate=_validate_number(0, 500),
-    ).ask()
+    thickness_str = _ask_text(
+        "Enter border thickness (0-500)",
+        default_val=10,
+        validate=_validate_number(0, 500, allow_empty=True),
+    )
 
-    color_str = questionary.text(
-        "Enter border color (Name or Hex):", default="black"
-    ).ask()
+    color_str = _ask_text("Enter border color (Name or Hex)", default_val="black")
 
     position = questionary.select(
         "Border Position:", choices=["Expand", "Inside"]
@@ -208,17 +262,21 @@ def prompt_for_border_options():
 
     return {
         "dest": "border",
-        "values": [int(thickness_str), color_str, position.lower()],
+        "values": [
+            int(thickness_str) if thickness_str else 10,
+            color_str if color_str else "black",
+            position.lower(),
+        ],
     }
 
 
 def prompt_for_rotation_options():
-    angle_str = questionary.text(
-        "Enter rotation angle (will clamp to nearest 90):",
-        default="90",
-        validate=_validate_number(-3600, 3600),
-    ).ask()
-    return {"dest": "rotate", "values": [int(angle_str)]}
+    angle_str = _ask_text(
+        "Enter rotation angle (will clamp to nearest 90)",
+        default_val=90,
+        validate=_validate_number(-3600, 3600, allow_empty=True),
+    )
+    return {"dest": "rotate", "values": [int(angle_str) if angle_str else 90]}
 
 
 # --- Main Menu Configuration ---

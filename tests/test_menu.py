@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock, ANY
+from unittest.mock import patch, MagicMock
 import menu
 
 # --- Fixtures ---
@@ -10,10 +10,17 @@ def mock_questionary():
     with patch("menu.questionary") as q:
         # Defaults for common methods to return a valid chainable object
         q.select.return_value.ask.return_value = None
-        q.text.return_value.ask.return_value = None
+        q.text.return_value.ask.return_value = None  # Still used? No, verifying removal
         q.checkbox.return_value.ask.return_value = []
         q.confirm.return_value.ask.return_value = False
         yield q
+
+
+@pytest.fixture
+def mock_ask_text():
+    with patch("menu._ask_text") as m:
+        m.return_value = None
+        yield m
 
 
 # --- Validator Tests ---
@@ -25,8 +32,14 @@ def test_validate_number():
     # Valid
     assert validator("5") is True
 
-    # Empty
+    # Empty (default False)
     assert validator("") == "Value cannot be empty."
+
+    # Empty (allow True)
+    validator_empty = menu._validate_number(
+        min_val=0, max_val=10, value_type=int, allow_empty=True
+    )
+    assert validator_empty("") is True
 
     # Type error
     assert validator("abc") == "Please enter a valid integer."
@@ -37,9 +50,9 @@ def test_validate_number():
 
 
 def test_validate_number_float():
-    validator = menu._validate_number(min_val=0.0, value_type=float)
+    validator = menu._validate_number(min_val=0.0, value_type=float, allow_empty=True)
     assert validator("0.5") is True
-    assert validator("0") is True  # 0 can be parsed as float
+    assert validator("") is True
     assert "at least 0.0" in validator("-0.1")
 
 
@@ -57,9 +70,9 @@ def test_prompt_for_flip_cancel(mock_questionary):
     assert menu.prompt_for_flip_options() is None
 
 
-def test_prompt_for_scale(mock_questionary):
+def test_prompt_for_scale(mock_questionary, mock_ask_text):
     # Mock text prompt for scale value
-    mock_questionary.text.return_value.ask.return_value = "1.5x"
+    mock_ask_text.return_value = "1.5x"
     # Mock select prompt for resample
     mock_questionary.select.return_value.ask.return_value = "Bicubic"
 
@@ -70,39 +83,99 @@ def test_prompt_for_scale(mock_questionary):
     assert extra["resample"] == "bicubic"
 
 
-def test_prompt_for_scale_cancel(mock_questionary):
-    mock_questionary.text.return_value.ask.return_value = None
+def test_prompt_for_scale_cancel(mock_questionary, mock_ask_text):
+    mock_ask_text.return_value = None
     res = menu.prompt_for_scale_options({})
     assert res is None
 
 
-def test_prompt_for_edge_detection_kovalevsky(mock_questionary):
+def test_prompt_for_edge_detection_kovalevsky(mock_questionary, mock_ask_text):
     # Select method
     mock_questionary.select.return_value.ask.return_value = "Kovalevsky"
-    # Select threshold
-    mock_questionary.text.return_value.ask.return_value = "20"
+    # Select threshold (default case)
+    mock_ask_text.return_value = ""
 
     extra = {}
     res = menu.prompt_for_edge_detection_options(extra)
 
     assert res == {"dest": "edge_detection", "values": ["kovalevsky"]}
-    assert extra["threshold"] == 20
+    assert extra["threshold"] == 50
 
 
-def test_prompt_for_border(mock_questionary):
-    # Thickness, Color, Position
-    # Note: Using update side_effect for separate text calls is tricky if they are same mock object
-    # But usually patch creates one mock for text, one for select.
-    # If a function calls text() multiple times, we need side_effect on the ask().
-
-    text_mock = mock_questionary.text.return_value.ask
+def test_prompt_for_border(mock_questionary, mock_ask_text):
     select_mock = mock_questionary.select.return_value.ask
 
-    text_mock.side_effect = ["5", "Red"]  # thickness, color
-    select_mock.return_value = "Inside"  # position
+    # Thickness (empty->default 10), Color (empty->default black)
+    mock_ask_text.side_effect = ["", ""]
+    select_mock.return_value = "Inside"
 
     res = menu.prompt_for_border_options()
-    assert res == {"dest": "border", "values": [5, "Red", "inside"]}
+    assert res == {"dest": "border", "values": [10, "black", "inside"]}
+
+
+# Since we switched to structured messages (list of tuples), strict string matching
+# in call assertions (if we had them) would fail.
+# But we are mocking return values mainly.
+# Let's ensure prompts are called.
+
+
+def test_prompt_for_brightness(mock_ask_text):
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_brightness_options()
+    # verify call args regarding default if we want, but mocking return value is simpler
+    assert res["values"] == [0]
+
+
+def test_prompt_for_contrast(mock_ask_text):
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_contrast_options()
+    assert res["values"] == [0]
+
+
+def test_prompt_for_saturation(mock_ask_text):
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_saturation_options()
+    assert res["values"] == [0]
+
+
+def test_prompt_for_blur(mock_ask_text):
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_blur_options()
+    assert res["values"] == [2.0]
+
+
+def test_prompt_for_sharpen(mock_ask_text):
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_sharpen_options()
+    assert res["values"] == [50]
+
+
+def test_prompt_for_color_balance(mock_ask_text):
+    mock_ask_text.side_effect = [
+        "",
+        "0.5",
+        "",
+    ]  # r(def), g(0.5), b(def)
+    res = menu.prompt_for_color_balance_options()
+    assert res["values"] == [1.0, 0.5, 1.0]
+
+
+def test_prompt_for_hue_rotation(mock_ask_text):
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_hue_rotation_options()
+    assert res["values"] == [90]
+
+
+def test_prompt_for_posterize(mock_ask_text):
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_posterize_options()
+    assert res["values"] == [4]
+
+
+def test_prompt_for_rotation(mock_ask_text):
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_rotation_options()
+    assert res["values"] == [90]
 
 
 # --- Main Logic Tests ---
