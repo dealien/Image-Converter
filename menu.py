@@ -445,6 +445,9 @@ def select_images():
             choices=image_files,
         ).ask()
 
+        if selected is None:
+            return []
+
         if selected:
             return [os.path.join(image_dir, f) for f in selected]
 
