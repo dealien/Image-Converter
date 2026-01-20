@@ -439,20 +439,20 @@ def select_images():
         print(f"No images found in '{image_dir}'.")
         return []
 
-    selected = questionary.checkbox(
-        "Select images to process (Space to select, Enter to confirm):",
-        choices=image_files,
-    ).ask()
+    while True:
+        selected = questionary.checkbox(
+            "Select images to process (Space to select, Enter to confirm):",
+            choices=image_files,
+        ).ask()
 
-    if not selected:
+        if selected:
+            return [os.path.join(image_dir, f) for f in selected]
+
         confirm = questionary.confirm(
-            "No images selected. Continue anyway?", default=False
+            "No images selected. Re-select images?", default=True
         ).ask()
         if not confirm:
-            # Maybe allow re-selection? Or just return empty
             return []
-
-    return [os.path.join(image_dir, f) for f in selected]
 
 
 def select_manipulations():
