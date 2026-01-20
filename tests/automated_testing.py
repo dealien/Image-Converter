@@ -2,6 +2,15 @@ import subprocess
 import sys
 import os
 
+"""
+Normal testing of the program is done using pytest.
+
+This file is for automated testing of all arguments and operations of the 
+program by running it as a user would from the command line.
+
+Just run this file and it will run all the commands in the commands list.
+"""
+
 
 def run_command(args):
     """Runs a single command with the current python executable."""

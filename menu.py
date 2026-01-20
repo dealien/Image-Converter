@@ -2,332 +2,442 @@ import os
 import inspect
 from types import SimpleNamespace
 from PIL import Image
+import questionary
+from prompt_toolkit import PromptSession, print_formatted_text
+from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.lexers import SimpleLexer
+from prompt_toolkit.validation import Validator, ValidationError
+from prompt_toolkit.styles import Style
+from prompt_toolkit.application.current import get_app
 from processing import process_images_and_save
 
 
-# --- Submenu Functions for Manipulation Options ---
+# --- Helper Functions ---
+
+_CUSTOM_STYLE = Style.from_dict(
+    {
+        "qmark": "#5F819D",  # Questionary default blueish
+        "question": "bold",  # Questionary default bold
+        "answer": "#FF9D00 bold",  # Questionary default Orange
+        "default": "fg:cyan",  # Our custom Cyan for default
+    }
+)
 
 
-def _prompt_for_int_value(prompt, default, min_val, max_val):  # noqa: C901
-    while True:
-        val_str = input(f"{prompt} (default: {default}): ").strip()
+def _ask_text(message, default_val=None, validate=None):
+    """
+    Custom text prompt helper using prompt_toolkit to support colored defaults.
+    Replaces questionary.text(...).ask()
+    """
+
+    def get_prompt_text():
+        # Dynamic prompt generation based on current input buffer
+        try:
+            # text = get_app().current_buffer.text  # This works in full app
+            # For prompt() shortcut, we might need a safer access if app not ready
+            # But prompt() initializes app before rendering.
+            text = get_app().current_buffer.text
+        except Exception:
+            text = ""
+
+        formatted_msg = [("class:qmark", "? "), ("class:question", message)]
+
+        if default_val is not None:
+            formatted_msg.append(("", " [default: "))
+            # If input is empty, color default cyan. Otherwise uncolored.
+            style_class = "class:default" if not text else ""
+            formatted_msg.append((style_class, str(default_val)))
+            formatted_msg.append(("", "]"))
+
+        formatted_msg.append(("class:question", ": "))
+        return formatted_msg
+
+    # Build Validator
+    pt_validator = None
+    if validate:
+
+        class CustomValidator(Validator):
+            def validate(self, document):
+                res = validate(document.text)
+                if res is not True:
+                    raise ValidationError(
+                        message=res, cursor_position=len(document.text)
+                    )
+
+        pt_validator = CustomValidator()
+
+    # interactive call
+    session = PromptSession(
+        style=_CUSTOM_STYLE, erase_when_done=True, lexer=SimpleLexer("class:answer")
+    )
+    result = session.prompt(get_prompt_text, validator=pt_validator)
+
+    # Post-processing for display history
+    final_answer = result
+    if not result and default_val is not None:
+        final_answer = str(default_val)
+
+    final_msg = [("class:qmark", "? "), ("class:question", message)]
+    if default_val is not None:
+        final_msg.append(
+            ("", f" [default: {default_val}]")
+        )  # Always uncolored in history
+    final_msg.append(("class:question", ": "))
+    final_msg.append(("class:answer", final_answer))
+
+    print_formatted_text(FormattedText(final_msg), style=_CUSTOM_STYLE)
+
+    return result
+
+
+def _format_operation_display(index, op, extra_args):
+    op_name = op["dest"].replace("_", "-")
+    op_vals = " ".join(map(str, op.get("values", [])))
+    display_string = f"{index + 1}. --{op_name} {op_vals}"
+
+    if op["dest"] == "scale" and "resample" in extra_args:
+        display_string += f" --resample {extra_args['resample']}"
+
+    if op["dest"] == "edge_detection" and op.get("values", [""])[0] == "kovalevsky":
+        display_string += f" --threshold {extra_args.get('threshold', 50)}"
+
+    return display_string
+
+
+def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=False):
+    def validator(val_str):
         if not val_str:
-            return default
+            if allow_empty:
+                return True
+            return "Value cannot be empty."
         try:
-            val = int(val_str)
-            if min_val <= val <= max_val:
-                return val
-            else:
-                print(f"Error: Value must be between {min_val} and {max_val}.")
+            val = value_type(val_str)
+            if min_val is not None and val < min_val:
+                return f"Value must be at least {min_val}."
+            if max_val is not None and val > max_val:
+                return f"Value must be at most {max_val}."
+            return True
         except ValueError:
-            print("Error: Please enter a valid integer.")
+            return (
+                f"Please enter a valid {'integer' if value_type is int else 'number'}."
+            )
+
+    return validator
 
 
-def _prompt_for_float_value(prompt, default, min_val=0.0):  # noqa: C901
-    while True:
-        val_str = input(f"{prompt} (default: {default}): ").strip()
-        if not val_str:
-            return default
-        try:
-            val = float(val_str)
-            if val >= min_val:
-                return val
-            else:
-                print(f"Error: Value must be at least {min_val}.")
-        except ValueError:
-            print("Error: Please enter a valid number.")
+# --- Submenu Functions ---
 
 
-def prompt_for_flip_options():  # noqa: C901
-    print("\n--- Flip Options ---")
-    choices = ["horizontal", "vertical", "both"]
-    for i, choice in enumerate(choices):
-        print(f"  {i + 1}. {choice.capitalize()}")
-    while True:
-        choice_str = input(
-            f"Select flip direction (default: 1. {choices[0].capitalize()}): "
-        ).strip()
-        if not choice_str:
-            return {"dest": "flip", "values": [choices[0]]}
-        try:
-            choice_num = int(choice_str) - 1
-            if 0 <= choice_num < len(choices):
-                return {"dest": "flip", "values": [choices[choice_num]]}
-            else:
-                print(f"Invalid number. Choose between 1 and {len(choices)}.")
-        except ValueError:
-            print("Invalid input. Please enter a number.")
+def prompt_for_flip_options():
+    choice = questionary.select(
+        "Select flip direction:", choices=["Horizontal", "Vertical", "Both"]
+    ).ask()
+    if not choice:
+        return None
+    return {"dest": "flip", "values": [choice.lower()]}
 
 
-def prompt_for_scale_options(extra_args):  # noqa: C901
+def prompt_for_scale_options(extra_args):
     print("\n--- Scale Options ---")
-    print("Enter scale factor (e.g., '1.5x') OR new dimensions (e.g., '400px 300px').")
-    while True:
-        values_str = input("Enter scale value: ").strip().lower()
-        if not values_str:
-            print("Error: Scale value cannot be empty.")
-            continue
-        parts = values_str.split()
-        if (len(parts) == 1 and parts[0].endswith("x")) or (
-            len(parts) == 2 and all(p.endswith("px") for p in parts)
-        ):
-            break
-        print("Invalid format. Use '1.5x' or '400px 300px'.")
-    resample_choices = ["nearest", "bilinear", "bicubic", "lanczos"]
-    default_resample = "bilinear"
-    print("\n--- Resample Filter ---")
-    for i, choice in enumerate(resample_choices):
-        print(f"  {i + 1}. {choice.capitalize()}")
-    while True:
-        resample_str = input(
-            f"Select resample filter (default: {default_resample}): "
-        ).strip()
-        if not resample_str:
-            extra_args["resample"] = default_resample
-            break
-        try:
-            choice_num = int(resample_str) - 1
-            if 0 <= choice_num < len(resample_choices):
-                extra_args["resample"] = resample_choices[choice_num]
-                break
-            else:
-                print(f"Invalid number. Choose between 1 and {len(resample_choices)}.")
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-    return {"dest": "scale", "values": values_str.split()}
+
+    def scale_validator(val_str):
+        if not val_str:
+            return "Scale value cannot be empty."
+        val_str = val_str.lower().strip()
+        parts = val_str.split()
+
+        # Accept:
+        #   - scale factor: "1.5" or "1.5x"
+        #   - dimensions: "400px 300px"
+        if len(parts) == 1:
+            token = parts[0]
+            if token.endswith("x") and not token.endswith("px"):
+                token = token[:-1]
+            try:
+                float(token)
+                return True
+            except ValueError:
+                return "Invalid format. Use '1.5', '1.5x' or '400px 300px'."
+
+        if len(parts) == 2 and all(p.endswith("px") for p in parts):
+            return True
+
+        return "Invalid format. Use '1.5', '1.5x' or '400px 300px'."
+
+    values_str = _ask_text(
+        "Enter scale value (e.g., '1.5x' OR '400px 300px')", validate=scale_validator
+    )
+
+    if not values_str:
+        return None
+
+    values = values_str.lower().split()
+
+    resample_choice = questionary.select(
+        "Select Resample Filter:",
+        choices=["Nearest", "Bilinear", "Bicubic", "Lanczos"],
+        default="Bilinear",
+    ).ask()
+
+    if not resample_choice:
+        return None
+
+    extra_args["resample"] = resample_choice.lower()
+
+    return {"dest": "scale", "values": values}
 
 
-def prompt_for_edge_detection_options(extra_args):  # noqa: C901
-    print("\n--- Edge Detection Options ---")
-    methods = ["sobel", "canny", "kovalevsky"]
-    for i, method in enumerate(methods):
-        print(f"  {i + 1}. {method.capitalize()}")
-    while True:
-        method_str = input(f"Select method (default: {methods[0]}): ").strip()
-        if not method_str:
-            chosen_method = methods[0]
-            break
-        try:
-            choice_num = int(method_str) - 1
-            if 0 <= choice_num < len(methods):
-                chosen_method = methods[choice_num]
-                break
-            else:
-                print(f"Invalid number. Choose between 1 and {len(methods)}.")
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-    if chosen_method == "kovalevsky":
-        print("\n--- Kovalevsky Threshold ---")
-        default_threshold = 50
-        threshold = _prompt_for_int_value(
-            "Enter threshold value (0-255)", default_threshold, 0, 255
+def prompt_for_edge_detection_options(extra_args):
+    method = questionary.select(
+        "Select Edge Detection Method:", choices=["Sobel", "Canny", "Kovalevsky"]
+    ).ask()
+
+    if not method:
+        return None
+
+    method = method.lower()
+
+    if method == "kovalevsky":
+        val_str = _ask_text(
+            "Enter threshold value (0-255)",
+            default_val=50,
+            validate=_validate_number(0, 255, allow_empty=True),
         )
-        extra_args["threshold"] = threshold
-    return {"dest": "edge_detection", "values": [chosen_method]}
+        extra_args["threshold"] = int(val_str) if val_str else 50
+
+    return {"dest": "edge_detection", "values": [method]}
 
 
 def prompt_for_brightness_options():
-    val = _prompt_for_int_value("Enter brightness value (-100 to 100)", 0, -100, 100)
-    return {"dest": "brightness", "values": [val]}
+    val_str = _ask_text(
+        "Enter brightness value (-100 to 100)",
+        default_val=0,
+        validate=_validate_number(-100, 100, allow_empty=True),
+    )
+    return {"dest": "brightness", "values": [int(val_str) if val_str else 0]}
 
 
 def prompt_for_contrast_options():
-    val = _prompt_for_int_value("Enter contrast value (-100 to 100)", 0, -100, 100)
-    return {"dest": "contrast", "values": [val]}
+    val_str = _ask_text(
+        "Enter contrast value (-100 to 100)",
+        default_val=0,
+        validate=_validate_number(-100, 100, allow_empty=True),
+    )
+    return {"dest": "contrast", "values": [int(val_str) if val_str else 0]}
 
 
 def prompt_for_saturation_options():
-    val = _prompt_for_int_value("Enter saturation value (-100 to 100)", 0, -100, 100)
-    return {"dest": "saturation", "values": [val]}
+    val_str = _ask_text(
+        "Enter saturation value (-100 to 100)",
+        default_val=0,
+        validate=_validate_number(-100, 100, allow_empty=True),
+    )
+    return {"dest": "saturation", "values": [int(val_str) if val_str else 0]}
 
 
 def prompt_for_blur_options():
-    val = _prompt_for_float_value("Enter blur radius", 2.0, 0.0)
-    return {"dest": "blur", "values": [val]}
+    val_str = _ask_text(
+        "Enter blur radius (min 0.0)",
+        default_val=2.0,
+        validate=_validate_number(min_val=0.0, value_type=float, allow_empty=True),
+    )
+    return {"dest": "blur", "values": [float(val_str) if val_str else 2.0]}
 
 
 def prompt_for_sharpen_options():
-    val = _prompt_for_int_value("Enter sharpness intensity (0-100)", 50, 0, 100)
-    return {"dest": "sharpen", "values": [val]}
+    val_str = _ask_text(
+        "Enter sharpness intensity (0-100)",
+        default_val=50,
+        validate=_validate_number(0, 100, allow_empty=True),
+    )
+    return {"dest": "sharpen", "values": [int(val_str) if val_str else 50]}
 
 
 def prompt_for_color_balance_options():
     print(
         "Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change)."
     )
-    r = _prompt_for_float_value("Red factor", 1.0)
-    g = _prompt_for_float_value("Green factor", 1.0)
-    b = _prompt_for_float_value("Blue factor", 1.0)
-    return {"dest": "color_balance", "values": [r, g, b]}
+
+    r_str = _ask_text(
+        "Red factor",
+        default_val=1.0,
+        validate=_validate_number(value_type=float, allow_empty=True),
+    )
+    g_str = _ask_text(
+        "Green factor",
+        default_val=1.0,
+        validate=_validate_number(value_type=float, allow_empty=True),
+    )
+    b_str = _ask_text(
+        "Blue factor",
+        default_val=1.0,
+        validate=_validate_number(value_type=float, allow_empty=True),
+    )
+
+    return {
+        "dest": "color_balance",
+        "values": [
+            float(r_str) if r_str else 1.0,
+            float(g_str) if g_str else 1.0,
+            float(b_str) if b_str else 1.0,
+        ],
+    }
 
 
 def prompt_for_hue_rotation_options():
-    val = _prompt_for_int_value("Enter hue rotation degrees (0-360)", 90, 0, 360)
-    return {"dest": "hue_rotation", "values": [val]}
+    val_str = _ask_text(
+        "Enter hue rotation degrees (0-360)",
+        default_val=90,
+        validate=_validate_number(0, 360, allow_empty=True),
+    )
+    return {"dest": "hue_rotation", "values": [int(val_str) if val_str else 90]}
 
 
 def prompt_for_posterize_options():
-    val = _prompt_for_int_value("Enter number of bits (1-8)", 4, 1, 8)
-    return {"dest": "posterize", "values": [val]}
+    val_str = _ask_text(
+        "Enter number of bits (1-8)",
+        default_val=4,
+        validate=_validate_number(1, 8, allow_empty=True),
+    )
+    return {"dest": "posterize", "values": [int(val_str) if val_str else 4]}
 
 
-def prompt_for_border_options():  # noqa: C901
-    thickness = _prompt_for_int_value("Enter border thickness", 10, 0, 500)
+def prompt_for_border_options():
+    thickness_str = _ask_text(
+        "Enter border thickness (0-500)",
+        default_val=10,
+        validate=_validate_number(0, 500, allow_empty=True),
+    )
 
-    while True:
-        color_str = input(
-            "Enter border color (Name or Hex, e.g., 'red', '#FF0000') (default: 'black'): "
-        ).strip()
-        if not color_str:
-            color_str = "black"
-            break
-        # Basic validation could go here, but apply_border handles it more robustly.
-        break
+    color_str = _ask_text("Enter border color (Name or Hex)", default_val="black")
 
-    print("\n--- Border Position ---")
-    positions = ["expand", "inside"]
-    for i, pos in enumerate(positions):
-        print(f"  {i + 1}. {pos.capitalize()}")
+    position = questionary.select(
+        "Border Position:", choices=["Expand", "Inside"]
+    ).ask()
 
-    while True:
-        pos_str = input(f"Select position (default: {positions[0]}): ").strip()
-        if not pos_str:
-            position = positions[0]
-            break
-        try:
-            choice = int(pos_str) - 1
-            if 0 <= choice < len(positions):
-                position = positions[choice]
-                break
-            else:
-                print(f"Invalid number. Choose between 1 and {len(positions)}.")
-        except ValueError:
-            print("Invalid input.")
+    if not position:
+        return None
 
-    return {"dest": "border", "values": [thickness, color_str, position]}
+    return {
+        "dest": "border",
+        "values": [
+            int(thickness_str) if thickness_str else 10,
+            color_str if color_str else "black",
+            position.lower(),
+        ],
+    }
 
 
 def prompt_for_rotation_options():
-    angle = _prompt_for_int_value(
-        "Enter rotation angle (will clamp to nearest 90)", 90, -3600, 3600
+    angle_str = _ask_text(
+        "Enter rotation angle (will clamp to nearest 90)",
+        default_val=90,
+        validate=_validate_number(-3600, 3600, allow_empty=True),
     )
-    return {"dest": "rotate", "values": [angle]}
+    return {"dest": "rotate", "values": [int(angle_str) if angle_str else 90]}
 
 
-# --- Main Menu Logic ---
+# --- Main Menu Configuration ---
 
 AVAILABLE_MANIPULATIONS = [
-    {"dest": "flip", "name": "Flip Image", "handler": "prompt_for_flip_options"},
-    {"dest": "scale", "name": "Scale Image", "handler": "prompt_for_scale_options"},
+    {"dest": "flip", "name": "Flip Image", "handler": prompt_for_flip_options},
+    {"dest": "scale", "name": "Scale Image", "handler": prompt_for_scale_options},
     {"dest": "remove_background", "name": "Remove Background", "handler": None},
     {"dest": "invert", "name": "Invert Colors", "handler": None},
     {"dest": "grayscale", "name": "Convert to Grayscale", "handler": None},
     {
         "dest": "edge_detection",
         "name": "Apply Edge Detection",
-        "handler": "prompt_for_edge_detection_options",
+        "handler": prompt_for_edge_detection_options,
     },
     {
         "dest": "brightness",
         "name": "Adjust Brightness",
-        "handler": "prompt_for_brightness_options",
+        "handler": prompt_for_brightness_options,
     },
     {
         "dest": "contrast",
         "name": "Adjust Contrast",
-        "handler": "prompt_for_contrast_options",
+        "handler": prompt_for_contrast_options,
     },
     {
         "dest": "saturation",
         "name": "Adjust Saturation",
-        "handler": "prompt_for_saturation_options",
+        "handler": prompt_for_saturation_options,
     },
-    {
-        "dest": "blur",
-        "name": "Apply Gaussian Blur",
-        "handler": "prompt_for_blur_options",
-    },
-    {
-        "dest": "sharpen",
-        "name": "Apply Sharpen",
-        "handler": "prompt_for_sharpen_options",
-    },
+    {"dest": "blur", "name": "Apply Gaussian Blur", "handler": prompt_for_blur_options},
+    {"dest": "sharpen", "name": "Apply Sharpen", "handler": prompt_for_sharpen_options},
     {
         "dest": "color_balance",
         "name": "Adjust Color Balance",
-        "handler": "prompt_for_color_balance_options",
+        "handler": prompt_for_color_balance_options,
     },
     {
         "dest": "hue_rotation",
         "name": "Rotate Hue",
-        "handler": "prompt_for_hue_rotation_options",
+        "handler": prompt_for_hue_rotation_options,
     },
     {
         "dest": "posterize",
         "name": "Apply Posterize",
-        "handler": "prompt_for_posterize_options",
+        "handler": prompt_for_posterize_options,
     },
-    {"dest": "border", "name": "Add Border", "handler": "prompt_for_border_options"},
-    {
-        "dest": "rotate",
-        "name": "Rotate Image",
-        "handler": "prompt_for_rotation_options",
-    },
+    {"dest": "border", "name": "Add Border", "handler": prompt_for_border_options},
+    {"dest": "rotate", "name": "Rotate Image", "handler": prompt_for_rotation_options},
 ]
 
+# --- Menu Logic ---
 
-def remove_manipulation(operations, extra_args):  # noqa: C901
+
+def remove_manipulation(operations, extra_args):
     if not operations:
         print("\nThere are no operations to remove.")
         return operations
-    print("\n--- Remove an Operation ---")
-    for i, op in enumerate(operations):
-        op_name = op["dest"].replace("_", "-")
-        op_values = " ".join(map(str, op.get("values", [])))
-        display_string = f"--{op_name}"
-        if op_values:
-            display_string += f" {op_values}"
-        # This part doesn't need to show extra args, it's just for identification
-        print(f"  {i + 1}. {display_string}")
-    print("---------------------------")
-    while True:
-        choice_str = input(
-            "Select an operation number to remove (or press Enter to cancel): "
-        ).strip()
-        if not choice_str:
-            return operations
-        try:
-            choice_num = int(choice_str) - 1
-            if 0 <= choice_num < len(operations):
-                removed_op = operations.pop(choice_num)
-                print(f"\nRemoved '{removed_op['dest']}'.")
-                # Clean up extra_args if the removed op was the only one using it
-                if removed_op["dest"] == "scale" and not any(
-                    op["dest"] == "scale" for op in operations
-                ):
-                    extra_args.pop("resample", None)
-                if removed_op["dest"] == "edge_detection" and not any(
-                    op["dest"] == "edge_detection" and op["values"][0] == "kovalevsky"
-                    for op in operations
-                ):
-                    extra_args.pop("threshold", None)
-                return operations
-            else:
-                print(f"Invalid number. Choose between 1 and {len(operations)}.")
-        except ValueError:
-            print("Invalid input. Please enter a number.")
+
+    choices = [
+        questionary.Choice(title=_format_operation_display(i, op, extra_args), value=i)
+        for i, op in enumerate(operations)
+    ]
+    choices.append(questionary.Choice(title="Cancel", value=-1))
+
+    choice_idx = questionary.select(
+        "Select operation to remove:", choices=choices
+    ).ask()
+
+    if choice_idx == -1 or choice_idx is None:
+        return operations
+
+    removed_op = operations.pop(choice_idx)
+    print(f"\nRemoved '{removed_op['dest']}'.")
+
+    # Cleanup extra args logic
+    if removed_op["dest"] == "scale" and not any(
+        op["dest"] == "scale" for op in operations
+    ):
+        extra_args.pop("resample", None)
+
+    has_kovalevsky = any(
+        op["dest"] == "edge_detection" and op.get("values", [""])[0] == "kovalevsky"
+        for op in operations
+    )
+    if not has_kovalevsky:
+        extra_args.pop("threshold", None)
+
+    return operations
 
 
-def select_images():  # noqa: C901
+def select_images():
     image_dir = "Base Images"
     if not os.path.isdir(image_dir):
         print(f"Error: Directory '{image_dir}' not found.")
         return []
+
     try:
+        all_files = os.listdir(image_dir)
         image_files = sorted(
             [
                 f
-                for f in os.listdir(image_dir)
+                for f in all_files
                 if os.path.isfile(os.path.join(image_dir, f))
                 and f.lower().endswith(
                     (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".tif", ".webp")
@@ -335,158 +445,126 @@ def select_images():  # noqa: C901
             ]
         )
     except Exception as e:
-        print(f"An error occurred while reading the directory: {e}")
+        print(f"Read error: {e}")
         return []
+
     if not image_files:
-        print(f"No images found in the '{image_dir}' directory.")
+        print(f"No images found in '{image_dir}'.")
         return []
-    selected_indices = set()
+
     while True:
-        print("\n--- Select Images ---")
-        for i, filename in enumerate(image_files):
-            marker = "[x]" if i in selected_indices else "[ ]"
-            print(f"{marker} {i + 1: >2}. {filename}")
-        print("---------------------")
-        try:
-            choice = input(
-                "Type number to toggle, or press Enter to confirm selection: "
-            )
-            if not choice:
-                if not selected_indices:
-                    print("\nWarning: No images were selected.")
-                    if (
-                        input("Continue without selecting images? (y/N): ").lower()
-                        != "y"
-                    ):
-                        continue
-                break
-            choice_num = int(choice) - 1
-            if 0 <= choice_num < len(image_files):
-                if choice_num in selected_indices:
-                    selected_indices.remove(choice_num)
-                else:
-                    selected_indices.add(choice_num)
-            else:
-                print(
-                    f"\nInvalid number. Please enter a number between 1 and {len(image_files)}."
-                )
-                input("Press Enter to continue...")
-        except ValueError:
-            print("\nInvalid input. Please enter a number.")
-            input("Press Enter to continue...")
-    return [
-        os.path.join(image_dir, image_files[i]) for i in sorted(list(selected_indices))
-    ]
+        selected = questionary.checkbox(
+            "Select images to process (Space to select, Enter to confirm):",
+            choices=image_files,
+        ).ask()
+
+        if selected is None:
+            return []
+
+        if selected:
+            return [os.path.join(image_dir, f) for f in selected]
+
+        confirm = questionary.confirm(
+            "No images selected. Re-select images?", default=True
+        ).ask()
+        if not confirm:
+            return []
 
 
-def select_manipulations():  # noqa: C901
+def select_manipulations():
     selected_operations = []
     extra_args = {}
+
     while True:
-        print("\n--- Select Manipulations ---")
-        print("Current sequence of operations:")
+        # Build main menu based on current state
+        choices = []
+
+        # Action Groups
+        choices.append(questionary.Separator(line="--- Actions ---"))
+        choices.append(questionary.Choice("Run Processing", value="PROCESS"))
+        if selected_operations:
+            choices.append(questionary.Choice("Remove an Operation", value="REMOVE"))
+
+        choices.append(questionary.Separator(line="--- Add Operation ---"))
+        for i, manip in enumerate(AVAILABLE_MANIPULATIONS):
+            choices.append(questionary.Choice(manip["name"], value=i))
+
+        # Show current ops summary
+        print("\nCurrent Pipeline:")
         if not selected_operations:
-            print("  (No operations added yet)")
+            print("  (Empty)")
         else:
             for i, op in enumerate(selected_operations):
-                op_name = op["dest"].replace("_", "-")
-                op_values = " ".join(map(str, op.get("values", [])))
-                display_string = f"--{op_name}"
-                if op_values:
-                    display_string += f" {op_values}"
-                if op["dest"] == "scale" and "resample" in extra_args:
-                    display_string += f" --resample {extra_args['resample']}"
-                if (
-                    op["dest"] == "edge_detection"
-                    and op["values"]
-                    and op["values"][0] == "kovalevsky"
-                    and "threshold" in extra_args
-                ):
-                    display_string += f" --threshold {extra_args['threshold']}"
-                print(f"  {i + 1}. {display_string}")
-        print("\nAvailable manipulations:")
-        for i, manip in enumerate(AVAILABLE_MANIPULATIONS):
-            print(f"  {i + 1}. {manip['name']}")
-        print("----------------------------")
-        print(
-            "Enter a number to add a manipulation.\nEnter '-' to remove an operation.\nEnter 'd' when done to process the images."
-        )
-        print("----------------------------")
-        choice = input("Your choice: ").lower().strip()
-        if not choice:
-            continue
-        if choice == "d":
-            if (
-                not selected_operations
-                and input("Process without any changes? (y/N): ").lower() != "y"
-            ):
-                continue
+                print(f"  {_format_operation_display(i, op, extra_args)}")
+        print("")
+
+        selection = questionary.select(
+            "What would you like to do?", choices=choices
+        ).ask()
+
+        if selection is None:  # C-c
             break
-        if choice == "-":
-            selected_operations = remove_manipulation(selected_operations, extra_args)
-            input("Press Enter to continue...")
-            continue
-        try:
-            choice_num = int(choice) - 1
-            if 0 <= choice_num < len(AVAILABLE_MANIPULATIONS):
-                manip_to_add = AVAILABLE_MANIPULATIONS[choice_num]
-                handler_name = manip_to_add.get("handler")
-                op_details = None
-                if handler_name:
-                    handler_func = globals().get(handler_name)
-                    if handler_func:
-                        sig = inspect.signature(handler_func)
-                        if "extra_args" in sig.parameters:
-                            op_details = handler_func(extra_args)
-                        else:
-                            op_details = handler_func()
-                    else:
-                        print(f"Error: Handler function '{handler_name}' not found.")
+
+        if selection == "PROCESS":
+            if not selected_operations:
+                confirm = questionary.confirm(
+                    "Pipeline is empty. Process anyway?", default=False
+                ).ask()
+                if not confirm:
+                    continue
+            break
+        elif selection == "REMOVE":
+            remove_manipulation(selected_operations, extra_args)
+        else:
+            # It's an index for a manipulation
+            idx = selection
+            manip = AVAILABLE_MANIPULATIONS[idx]
+            handler = manip.get("handler")
+
+            op_details = None
+            if handler:
+                sig = inspect.signature(handler)
+                if "extra_args" in sig.parameters:
+                    op_details = handler(extra_args)
                 else:
-                    op_details = {"dest": manip_to_add["dest"], "values": []}
-                if op_details:
-                    selected_operations.append(op_details)
-                    print(f"\nSuccessfully added '{manip_to_add['name']}'.")
-                else:
-                    print("\nOperation cancelled.")
-                input("Press Enter to continue...")
+                    op_details = handler()
             else:
-                print(
-                    f"\nInvalid number. Please enter a number between 1 and {len(AVAILABLE_MANIPULATIONS)}."
-                )
-                input("Press Enter to continue...")
-        except ValueError:
-            print("\nInvalid input. Please enter a number, '-', or 'd'.")
-            input("Press Enter to continue...")
+                op_details = {"dest": manip["dest"], "values": []}
+
+            if op_details:
+                selected_operations.append(op_details)
+                print(f"Added '{manip['name']}'.")
+
     return selected_operations, extra_args
 
 
-def interactive_menu():  # noqa: C901
+def interactive_menu():
     try:
         print("--- Welcome to the Interactive Image Processor ---")
-        selected_image_paths = select_images()
-        if not selected_image_paths:
-            print("\nNo images to process. Exiting.")
+        paths = select_images()
+        if not paths:
+            print("No images selected. Exiting.")
             return
-        operations, extra_args = select_manipulations()
+
+        ops, extra_args = select_manipulations()
+
+        # Prepare args
         mock_args = SimpleNamespace(
             resample=extra_args.get("resample", "bilinear"),
             threshold=extra_args.get("threshold", 50),
         )
+
+        print(f"\nProcessing {len(paths)} images...")
         images_data = []
-        print("\nLoading selected images...")
-        try:
-            for filepath in selected_image_paths:
-                with Image.open(filepath) as input_image:
-                    input_image.load()
-                    filename = os.path.basename(filepath)
-                    images_data.append([filename, input_image.copy()])
-            print("Images loaded successfully.")
-        except Exception as e:
-            print(f"\nError: Could not load one or more images. Details: {e}")
-            return
-        process_images_and_save(images_data, operations, mock_args)
+        for p in paths:
+            with Image.open(p) as img:
+                img.load()
+                images_data.append([os.path.basename(p), img.copy()])
+
+        process_images_and_save(images_data, ops, mock_args)
         print("\n--- Processing Complete ---")
+
     except KeyboardInterrupt:
-        print("\n\nOperation cancelled by user. Exiting.")
-        return
+        print("\nCancelled.")
+    except Exception as e:
+        print(f"Error: {e}")
