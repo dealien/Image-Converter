@@ -30,9 +30,16 @@ if __name__ == "__main__":
         # Load the test from the specified file
         loader = unittest.TestLoader()
         if test_file.endswith(".py"):
+            if not os.path.exists(test_file):
+                print(f"Error: Test file {test_file} does not exist")
+                sys.exit(1)
+
             # Import the module from file path
             module_name = os.path.basename(test_file)[:-3]
             spec = importlib.util.spec_from_file_location(module_name, test_file)
+            if spec is None or spec.loader is None:
+                print(f"Error: Could not load test file {test_file}")
+                sys.exit(1)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             suite = loader.loadTestsFromModule(module)
