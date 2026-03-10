@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 from types import SimpleNamespace
 import processing
 
+
 class TestHandleScaleErrorHandling(unittest.TestCase):
     @patch("processing.logger")
     @patch("processing.scale_image")
@@ -53,6 +54,7 @@ class TestHandleScaleErrorHandling(unittest.TestCase):
         )
         self.assertEqual(result, image)
         mock_scale_image.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
