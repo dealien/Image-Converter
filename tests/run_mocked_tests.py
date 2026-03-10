@@ -1,4 +1,7 @@
+import importlib.util
+import os
 import sys
+import unittest
 from unittest.mock import MagicMock
 
 # Mock PIL and submodules
@@ -15,8 +18,6 @@ sys.modules["PIL.ImageFont"] = mock_pil.ImageFont
 # Mock rembg
 sys.modules["rembg"] = MagicMock()
 
-import unittest
-
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         test_file = sys.argv[1]
@@ -24,8 +25,6 @@ if __name__ == "__main__":
         loader = unittest.TestLoader()
         if test_file.endswith(".py"):
             # Import the module from file path
-            import importlib.util
-            import os
             module_name = os.path.basename(test_file)[:-3]
             spec = importlib.util.spec_from_file_location(module_name, test_file)
             module = importlib.util.module_from_spec(spec)
