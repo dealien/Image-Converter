@@ -77,41 +77,50 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
 
         # --- Horizontal Scan ---
         if width >= 6:
-            # Vectorized horizontal scan
-            # Calculate absolute differences between adjacent pixels in the same row
-            h_diffs = np.abs(img_array[:, 1:, :] - img_array[:, :-1, :]).sum(axis=2)
-            # Create slices for the 5-pixel comparison window
-            d0 = h_diffs[:, :-4]
-            d1 = h_diffs[:, 1:-3]
-            d2 = h_diffs[:, 2:-2]  # The center difference
-            d3 = h_diffs[:, 3:-1]
-            d4 = h_diffs[:, 4:]
+            # Chunk rows to cap peak memory while maintaining vectorized speed
+            chunk_size = 512
+            for i in range(0, height, chunk_size):
+                chunk = img_array[i : i + chunk_size]
+                # Calculate absolute differences between adjacent pixels in the same row
+                # np.diff computes img[:, 1:] - img[:, :-1] along the specified axis
+                h_diffs = np.abs(np.diff(chunk, axis=1)).sum(axis=2, dtype=np.int32)
 
-            # Apply Kovalevsky condition: center is a local maximum and above threshold
-            h_condition = (
-                (d2 > threshold) & (d2 > d0) & (d2 > d1) & (d2 > d3) & (d2 > d4)
-            )
-            # Mark detected edges in the edge map
-            edge_map[:, 3:-2][h_condition] = 255
+                # Create slices for the 5-pixel comparison window
+                d0 = h_diffs[:, :-4]
+                d1 = h_diffs[:, 1:-3]
+                d2 = h_diffs[:, 2:-2]  # The center difference
+                d3 = h_diffs[:, 3:-1]
+                d4 = h_diffs[:, 4:]
+
+                # Apply Kovalevsky condition: center is a local maximum and above threshold
+                h_condition = (
+                    (d2 > threshold) & (d2 > d0) & (d2 > d1) & (d2 > d3) & (d2 > d4)
+                )
+                # Mark detected edges in the edge map
+                edge_map[i : i + chunk_size, 3:-2][h_condition] = 255
 
         # --- Vertical Scan ---
         if height >= 6:
-            # Vectorized vertical scan
-            # Calculate absolute differences between adjacent pixels in the same column
-            v_diffs = np.abs(img_array[1:, :, :] - img_array[:-1, :, :]).sum(axis=2)
-            # Create slices for the 5-pixel comparison window
-            d0 = v_diffs[:-4, :]
-            d1 = v_diffs[1:-3, :]
-            d2 = v_diffs[2:-2, :]  # The center difference
-            d3 = v_diffs[3:-1, :]
-            d4 = v_diffs[4:, :]
+            # Chunk columns to cap peak memory
+            chunk_size = 512
+            for i in range(0, width, chunk_size):
+                chunk = img_array[:, i : i + chunk_size]
+                # Calculate absolute differences between adjacent pixels in the same column
+                v_diffs = np.abs(np.diff(chunk, axis=0)).sum(axis=2, dtype=np.int32)
 
-            # Apply Kovalevsky condition
-            v_condition = (
-                (d2 > threshold) & (d2 > d0) & (d2 > d1) & (d2 > d3) & (d2 > d4)
-            )
-            # Mark detected edges in the edge map
-            edge_map[3:-2, :][v_condition] = 255
+                # Create slices for the 5-pixel comparison window
+                d0 = v_diffs[:-4, :]
+                d1 = v_diffs[1:-3, :]
+                d2 = v_diffs[2:-2, :]  # The center difference
+                d3 = v_diffs[3:-1, :]
+                d4 = v_diffs[4:, :]
+
+                # Apply Kovalevsky condition
+                v_condition = (
+                    (d2 > threshold) & (d2 > d0) & (d2 > d1) & (d2 > d3) & (d2 > d4)
+                )
+                # Mark detected edges in the edge map
+                edge_map[3:-2, i : i + chunk_size][v_condition] = 255
 
         # Convert the NumPy array back to an image
         edge_image = Image.fromarray(edge_map, mode="L")
