@@ -337,12 +337,20 @@ class TestImageBlurAndSharpen(unittest.TestCase):
         self.assertGreater(sharp_gradient, blur_gradient)
 
         # Test invalid values
-        with self.assertRaises(TypeError):
-            apply_sharpen(self.test_image, "invalid")
-        with self.assertRaises(ValueError):
-            apply_sharpen(self.test_image, -1)
         with self.assertRaises(ValueError):
             apply_sharpen(self.test_image, 101)
+        with self.assertRaises(ValueError):
+            apply_sharpen(self.test_image, -1)
+        with self.assertRaises(TypeError):
+            apply_sharpen(self.test_image, "invalid")
+        with self.assertRaises(TypeError):
+            apply_sharpen(self.test_image, 50.5)
+        with self.assertRaises(TypeError):
+            apply_sharpen(self.test_image, [50])
+        with self.assertRaises(TypeError):
+            apply_sharpen(self.test_image, {"value": 50})
+        with self.assertRaises(TypeError):
+            apply_sharpen(self.test_image, None)
 
 
 class TestImageColorOps(unittest.TestCase):
