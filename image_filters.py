@@ -77,35 +77,41 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
 
         # --- Horizontal Scan ---
         if width >= 6:
-            for y in range(height):
-                for x in range(width - 5):
-                    pixels = img_array[y, x : x + 6]
-                    diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
-                    center_diff = diffs[2]
-                    if (
-                        center_diff > threshold
-                        and center_diff > diffs[0]
-                        and center_diff > diffs[1]
-                        and center_diff > diffs[3]
-                        and center_diff > diffs[4]
-                    ):
-                        edge_map[y, x + 3] = 255
+            # Vectorized horizontal scan
+            # Calculate absolute differences between adjacent pixels in the same row
+            h_diffs = np.abs(img_array[:, 1:, :] - img_array[:, :-1, :]).sum(axis=2)
+            # Create slices for the 5-pixel comparison window
+            d0 = h_diffs[:, :-4]
+            d1 = h_diffs[:, 1:-3]
+            d2 = h_diffs[:, 2:-2]  # The center difference
+            d3 = h_diffs[:, 3:-1]
+            d4 = h_diffs[:, 4:]
+
+            # Apply Kovalevsky condition: center is a local maximum and above threshold
+            h_condition = (
+                (d2 > threshold) & (d2 > d0) & (d2 > d1) & (d2 > d3) & (d2 > d4)
+            )
+            # Mark detected edges in the edge map
+            edge_map[:, 3:-2][h_condition] = 255
 
         # --- Vertical Scan ---
         if height >= 6:
-            for x in range(width):
-                for y in range(height - 5):
-                    pixels = img_array[y : y + 6, x]
-                    diffs = np.abs(pixels[1:] - pixels[:-1]).sum(axis=1)
-                    center_diff = diffs[2]
-                    if (
-                        center_diff > threshold
-                        and center_diff > diffs[0]
-                        and center_diff > diffs[1]
-                        and center_diff > diffs[3]
-                        and center_diff > diffs[4]
-                    ):
-                        edge_map[y + 3, x] = 255
+            # Vectorized vertical scan
+            # Calculate absolute differences between adjacent pixels in the same column
+            v_diffs = np.abs(img_array[1:, :, :] - img_array[:-1, :, :]).sum(axis=2)
+            # Create slices for the 5-pixel comparison window
+            d0 = v_diffs[:-4, :]
+            d1 = v_diffs[1:-3, :]
+            d2 = v_diffs[2:-2, :]  # The center difference
+            d3 = v_diffs[3:-1, :]
+            d4 = v_diffs[4:, :]
+
+            # Apply Kovalevsky condition
+            v_condition = (
+                (d2 > threshold) & (d2 > d0) & (d2 > d1) & (d2 > d3) & (d2 > d4)
+            )
+            # Mark detected edges in the edge map
+            edge_map[3:-2, :][v_condition] = 255
 
         # Convert the NumPy array back to an image
         edge_image = Image.fromarray(edge_map, mode="L")
