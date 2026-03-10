@@ -1,5 +1,4 @@
 import os
-import inspect
 from types import SimpleNamespace
 from PIL import Image
 import questionary
@@ -128,7 +127,7 @@ def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=Fal
 # --- Submenu Functions ---
 
 
-def prompt_for_flip_options():
+def prompt_for_flip_options(extra_args=None):
     choice = questionary.select(
         "Select flip direction:", choices=["Horizontal", "Vertical", "Both"]
     ).ask()
@@ -137,7 +136,7 @@ def prompt_for_flip_options():
     return {"dest": "flip", "values": [choice.lower()]}
 
 
-def prompt_for_scale_options(extra_args):
+def prompt_for_scale_options(extra_args=None):
     print("\n--- Scale Options ---")
 
     def scale_validator(val_str):
@@ -187,7 +186,7 @@ def prompt_for_scale_options(extra_args):
     return {"dest": "scale", "values": values}
 
 
-def prompt_for_edge_detection_options(extra_args):
+def prompt_for_edge_detection_options(extra_args=None):
     method = questionary.select(
         "Select Edge Detection Method:", choices=["Sobel", "Canny", "Kovalevsky"]
     ).ask()
@@ -208,7 +207,7 @@ def prompt_for_edge_detection_options(extra_args):
     return {"dest": "edge_detection", "values": [method]}
 
 
-def prompt_for_brightness_options():
+def prompt_for_brightness_options(extra_args=None):
     val_str = _ask_text(
         "Enter brightness value (-100 to 100)",
         default_val=0,
@@ -217,7 +216,7 @@ def prompt_for_brightness_options():
     return {"dest": "brightness", "values": [int(val_str) if val_str else 0]}
 
 
-def prompt_for_contrast_options():
+def prompt_for_contrast_options(extra_args=None):
     val_str = _ask_text(
         "Enter contrast value (-100 to 100)",
         default_val=0,
@@ -226,7 +225,7 @@ def prompt_for_contrast_options():
     return {"dest": "contrast", "values": [int(val_str) if val_str else 0]}
 
 
-def prompt_for_saturation_options():
+def prompt_for_saturation_options(extra_args=None):
     val_str = _ask_text(
         "Enter saturation value (-100 to 100)",
         default_val=0,
@@ -235,7 +234,7 @@ def prompt_for_saturation_options():
     return {"dest": "saturation", "values": [int(val_str) if val_str else 0]}
 
 
-def prompt_for_blur_options():
+def prompt_for_blur_options(extra_args=None):
     val_str = _ask_text(
         "Enter blur radius (min 0.0)",
         default_val=2.0,
@@ -244,7 +243,7 @@ def prompt_for_blur_options():
     return {"dest": "blur", "values": [float(val_str) if val_str else 2.0]}
 
 
-def prompt_for_sharpen_options():
+def prompt_for_sharpen_options(extra_args=None):
     val_str = _ask_text(
         "Enter sharpness intensity (0-100)",
         default_val=50,
@@ -253,7 +252,7 @@ def prompt_for_sharpen_options():
     return {"dest": "sharpen", "values": [int(val_str) if val_str else 50]}
 
 
-def prompt_for_color_balance_options():
+def prompt_for_color_balance_options(extra_args=None):
     print(
         "Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change)."
     )
@@ -284,7 +283,7 @@ def prompt_for_color_balance_options():
     }
 
 
-def prompt_for_hue_rotation_options():
+def prompt_for_hue_rotation_options(extra_args=None):
     val_str = _ask_text(
         "Enter hue rotation degrees (0-360)",
         default_val=90,
@@ -293,7 +292,7 @@ def prompt_for_hue_rotation_options():
     return {"dest": "hue_rotation", "values": [int(val_str) if val_str else 90]}
 
 
-def prompt_for_posterize_options():
+def prompt_for_posterize_options(extra_args=None):
     val_str = _ask_text(
         "Enter number of bits (1-8)",
         default_val=4,
@@ -302,7 +301,7 @@ def prompt_for_posterize_options():
     return {"dest": "posterize", "values": [int(val_str) if val_str else 4]}
 
 
-def prompt_for_border_options():
+def prompt_for_border_options(extra_args=None):
     thickness_str = _ask_text(
         "Enter border thickness (0-500)",
         default_val=10,
@@ -328,7 +327,7 @@ def prompt_for_border_options():
     }
 
 
-def prompt_for_rotation_options():
+def prompt_for_rotation_options(extra_args=None):
     angle_str = _ask_text(
         "Enter rotation angle (will clamp to nearest 90)",
         default_val=90,
@@ -523,11 +522,7 @@ def select_manipulations():
 
             op_details = None
             if handler:
-                sig = inspect.signature(handler)
-                if "extra_args" in sig.parameters:
-                    op_details = handler(extra_args)
-                else:
-                    op_details = handler()
+                op_details = handler(extra_args)
             else:
                 op_details = {"dest": manip["dest"], "values": []}
 
