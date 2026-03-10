@@ -534,6 +534,24 @@ class TestImageBorder(unittest.TestCase):
         with self.assertRaises(ValueError):
             apply_border(self.test_image, 10, "red", "invalid_pos")
 
+    def test_border_thickness_limit(self):
+        from image_filters import MAX_BORDER_THICKNESS
+
+        with self.assertRaises(ValueError) as cm:
+            apply_border(self.test_image, MAX_BORDER_THICKNESS + 1, "red")
+        self.assertIn("Thickness exceeds maximum allowed limit", str(cm.exception))
+
+    def test_border_output_size_limit(self):
+        # Create a large image but within limits
+        # 5000 * 5000 = 25MP
+        large_img = Image.new("RGB", (5000, 5000), (100, 100, 100))
+        # Adding 3000px border: new size = (5000 + 6000) * (5000 + 6000) = 11000 * 11000 = 121MP
+        # This should exceed 100MP (MAX_TOTAL_PIXELS)
+        thickness = 3000
+        with self.assertRaises(ValueError) as cm:
+            apply_border(large_img, thickness, "red", "expand")
+        self.assertIn("exceeds maximum allowed limit", str(cm.exception))
+
 
 class TestImageRotation(unittest.TestCase):
     def setUp(self):

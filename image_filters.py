@@ -385,6 +385,10 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     return posterized
 
 
+MAX_BORDER_THICKNESS = 10000
+MAX_TOTAL_PIXELS = 100000000  # 100MP
+
+
 def apply_border(
     image: Image.Image, thickness: int, color_str: str, position: str = "expand"
 ) -> Image.Image:
@@ -409,10 +413,25 @@ def apply_border(
     if thickness < 0:
         raise ValueError("Thickness must be non-negative.")
 
+    if thickness > MAX_BORDER_THICKNESS:
+        raise ValueError(
+            f"Thickness exceeds maximum allowed limit ({MAX_BORDER_THICKNESS})."
+        )
+
     if thickness == 0:
         return image
 
     if position == "expand":
+        # Security guard: check for potential memory exhaustion if expanded size is too large
+        orig_w, orig_h = image.size
+        new_w = orig_w + 2 * thickness
+        new_h = orig_h + 2 * thickness
+
+        if new_w * new_h > MAX_TOTAL_PIXELS:
+            raise ValueError(
+                f"Expanded image size ({new_w}x{new_h}) exceeds maximum allowed limit ({MAX_TOTAL_PIXELS} pixels)."
+            )
+
         return ImageOps.expand(image, border=thickness, fill=color)
     elif position == "inside":
         from PIL import ImageDraw
