@@ -385,6 +385,9 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     return posterized
 
 
+MAX_BORDER_THICKNESS = 10000
+
+
 def apply_border(
     image: Image.Image, thickness: int, color_str: str, position: str = "expand"
 ) -> Image.Image:
@@ -408,6 +411,9 @@ def apply_border(
 
     if thickness < 0:
         raise ValueError("Thickness must be non-negative.")
+
+    if thickness > MAX_BORDER_THICKNESS:
+        raise ValueError(f"Thickness exceeds maximum allowed limit ({MAX_BORDER_THICKNESS}).")
 
     if thickness == 0:
         return image
