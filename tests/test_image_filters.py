@@ -536,6 +536,7 @@ class TestImageBorder(unittest.TestCase):
 
     def test_border_thickness_limit(self):
         from image_filters import MAX_BORDER_THICKNESS
+
         with self.assertRaises(ValueError) as cm:
             apply_border(self.test_image, MAX_BORDER_THICKNESS + 1, "red")
         self.assertIn("Thickness exceeds maximum allowed limit", str(cm.exception))

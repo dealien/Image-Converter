@@ -413,7 +413,9 @@ def apply_border(
         raise ValueError("Thickness must be non-negative.")
 
     if thickness > MAX_BORDER_THICKNESS:
-        raise ValueError(f"Thickness exceeds maximum allowed limit ({MAX_BORDER_THICKNESS}).")
+        raise ValueError(
+            f"Thickness exceeds maximum allowed limit ({MAX_BORDER_THICKNESS})."
+        )
 
     if thickness == 0:
         return image
