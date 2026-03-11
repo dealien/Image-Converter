@@ -263,3 +263,4 @@ Output/
 Base Images/*
 
 .agent/
+.vscode/

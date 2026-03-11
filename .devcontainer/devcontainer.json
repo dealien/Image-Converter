@@ -12,7 +12,9 @@
         "charliermarsh.ruff",
         "meta.pyrefly",
         "pflannery.vscode-versionlens",
-        "fill-labs.dependi"
+        "fill-labs.dependi",
+        "SharashchandraDesai.simple-scratch",
+        "ldez.ignore-files"
       ]
     }
   }
