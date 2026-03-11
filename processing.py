@@ -227,9 +227,11 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             fd, temp_path = tempfile.mkstemp(
                 dir="Output", prefix=".tmp.", suffix=".png"
             )
-            os.close(fd)
+            with os.fdopen(fd, "wb") as f:
+                output_image.save(f, format="PNG")
+                f.flush()
+                os.fsync(f.fileno())
 
-            output_image.save(temp_path, "PNG")
             os.replace(temp_path, output_path)
             logger.info(f"  [SUCCESS] Saved to: {output_path}")
         except Exception:
