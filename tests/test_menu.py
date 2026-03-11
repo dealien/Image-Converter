@@ -270,11 +270,7 @@ def test_interactive_menu_flow(mock_questionary):
             "menu.select_manipulations", return_value=([{"dest": "flip"}], {})
         ) as mock_sel_manips,
         patch("menu.process_images_and_save") as mock_process,
-        patch("menu.Image.open") as mock_open,
     ):
-        mock_img = MagicMock()
-        mock_open.return_value.__enter__.return_value = mock_img
-
         menu.interactive_menu()
 
         mock_sel_imgs.assert_called_once()

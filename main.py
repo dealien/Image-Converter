@@ -220,10 +220,8 @@ def main():
             return
         for filepath in filepaths:
             if os.path.isfile(filepath):
-                with Image.open(filepath) as input_image:
-                    input_image.load()
-                    filename = Path(filepath).name
-                    images_data.append([filename, input_image.copy()])
+                filename = Path(filepath).name
+                images_data.append([filename, filepath])
     except Exception as e:
         print(f"Error while loading file(s): {e}")
         return
