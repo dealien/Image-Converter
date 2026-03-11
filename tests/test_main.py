@@ -112,7 +112,9 @@ class TestMain(unittest.TestCase):
             main()
 
         # Check that the exception message was printed
-        mock_print.assert_called_with("Error while loading file(s): Mocked loading error")
+        mock_print.assert_called_with(
+            "Error while loading file(s): Mocked loading error"
+        )
 
 
 if __name__ == "__main__":
