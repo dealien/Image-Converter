@@ -172,15 +172,15 @@ class TestImageAdjustments(unittest.TestCase):
             adjust_brightness(self.test_image, 101)
         with self.assertRaises(ValueError):
             adjust_brightness(self.test_image, -101)
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
             adjust_brightness(self.test_image, "invalid")
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
             adjust_brightness(self.test_image, 50.5)
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
             adjust_brightness(self.test_image, [50])
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
             adjust_brightness(self.test_image, {"value": 50})
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
             adjust_brightness(self.test_image, None)
 
     def test_adjust_contrast(self):
@@ -306,7 +306,7 @@ class TestImageBlurAndSharpen(unittest.TestCase):
         self.assertLess(diff, 200)
 
         # Test invalid values
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Radius must be a number\.$"):
             apply_blur(self.test_image, "invalid")
         with self.assertRaises(ValueError):
             apply_blur(self.test_image, -1)
@@ -341,15 +341,15 @@ class TestImageBlurAndSharpen(unittest.TestCase):
             apply_sharpen(self.test_image, 101)
         with self.assertRaises(ValueError):
             apply_sharpen(self.test_image, -1)
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
             apply_sharpen(self.test_image, "invalid")
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
             apply_sharpen(self.test_image, 50.5)
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
             apply_sharpen(self.test_image, [50])
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
             apply_sharpen(self.test_image, {"value": 50})
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
             apply_sharpen(self.test_image, None)
 
 
@@ -370,11 +370,13 @@ class TestImageColorOps(unittest.TestCase):
         # Test invalid values
         with self.assertRaises(TypeError):
             apply_color_balance(self.test_image, "a", 1, 1)
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(
+            ValueError, r"^Color balance factors must be non-negative\.$"
+        ):
             apply_color_balance(self.test_image, -1, 1, 1)
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, r"^Factors must be finite numbers\.$"):
             apply_color_balance(self.test_image, float("nan"), 1, 1)
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, r"^Factors must be finite numbers\.$"):
             apply_color_balance(self.test_image, 1, float("inf"), 1)
 
     def test_color_balance_clamping(self):
