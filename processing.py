@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import logging
+import tempfile
 
 from PIL import Image
 
@@ -222,7 +223,10 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 os.makedirs("Output/")
             output_filename = Path(image_name).stem + ".png"
             output_path = os.path.join("Output", output_filename)
-            temp_path = os.path.join("Output", f".tmp.{output_filename}")
+
+            fd, temp_path = tempfile.mkstemp(dir="Output", prefix=".tmp.", suffix=".png")
+            os.close(fd)
+
             output_image.save(temp_path, "PNG")
             os.replace(temp_path, output_path)
             logger.info(f"  [SUCCESS] Saved to: {output_path}")
