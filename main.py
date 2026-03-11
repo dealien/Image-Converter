@@ -32,7 +32,7 @@ class StoreInOrder(argparse.Action):
 def main():
     # Configure logging to mimic print output (stdout, message only) regarding format,
     # but allowing for future extension (file logging, etc.)
-    coloredlogs.install(level='INFO', fmt='%(message)s', stream=sys.stdout)
+    coloredlogs.install(level="INFO", fmt="%(message)s", stream=sys.stdout)
 
     # If --menu is used or no arguments are provided, start the menu.
 
