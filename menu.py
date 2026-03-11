@@ -1,6 +1,5 @@
 import os
 from types import SimpleNamespace
-from PIL import Image
 import questionary
 from prompt_toolkit import PromptSession, print_formatted_text
 from prompt_toolkit.formatted_text import FormattedText
@@ -552,9 +551,7 @@ def interactive_menu():
         print(f"\nProcessing {len(paths)} images...")
         images_data = []
         for p in paths:
-            with Image.open(p) as img:
-                img.load()
-                images_data.append([os.path.basename(p), img.copy()])
+            images_data.append([os.path.basename(p), p])
 
         process_images_and_save(images_data, ops, mock_args)
         print("\n--- Processing Complete ---")
