@@ -224,7 +224,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             output_filename = Path(image_name).stem + ".png"
             output_path = os.path.join("Output", output_filename)
 
-            fd, temp_path = tempfile.mkstemp(dir="Output", prefix=".tmp.", suffix=".png")
+            fd, temp_path = tempfile.mkstemp(
+                dir="Output", prefix=".tmp.", suffix=".png"
+            )
             os.close(fd)
 
             output_image.save(temp_path, "PNG")
