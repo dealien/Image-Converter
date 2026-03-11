@@ -2,7 +2,6 @@ import argparse
 import glob
 import os
 import sys
-import logging
 import coloredlogs
 
 from pathlib import Path
