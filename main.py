@@ -6,6 +6,13 @@ import logging
 
 from pathlib import Path
 
+try:
+    import coloredlogs
+
+    HAS_COLOREDLOGS = True
+except ModuleNotFoundError:
+    HAS_COLOREDLOGS = False
+
 from file_management import move_images_to_subdirectory
 from processing import process_images_and_save
 
@@ -30,7 +37,10 @@ class StoreInOrder(argparse.Action):
 def main():
     # Configure logging to mimic print output (stdout, message only) regarding format,
     # but allowing for future extension (file logging, etc.)
-    logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
+    if HAS_COLOREDLOGS:
+        coloredlogs.install(level="INFO", fmt="%(message)s", stream=sys.stdout)
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
 
     # If --menu is used or no arguments are provided, start the menu.
 
