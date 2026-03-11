@@ -99,6 +99,21 @@ class TestMain(unittest.TestCase):
         if os.path.exists(output_image_path):
             os.remove(output_image_path)
 
+    @patch("main.move_images_to_subdirectory")
+    @patch("glob.glob")
+    @patch("builtins.print")
+    def test_loading_exception(self, mock_print, mock_glob, mock_move):
+        """Test that an exception during file loading is caught and printed."""
+        # Make glob.glob raise an exception
+        mock_glob.side_effect = Exception("Mocked loading error")
+
+        # Run main with valid arguments so it attempts to load files
+        with patch.object(sys, "argv", ["main.py", "-bg", "*"]):
+            main()
+
+        # Check that the exception message was printed
+        mock_print.assert_called_with("Error while loading file(s): Mocked loading error")
+
 
 if __name__ == "__main__":
     unittest.main()
