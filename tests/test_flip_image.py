@@ -49,7 +49,7 @@ class TestFlipImage(unittest.TestCase):
 
     def test_invalid_direction(self):
         """Test that a ValueError is raised for an invalid flip direction."""
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, r"^Invalid flip direction: invalid_direction\. Available directions: 'horizontal', 'vertical', 'both'$"):
             flip_image(self.original_image, "invalid_direction")
 
 
