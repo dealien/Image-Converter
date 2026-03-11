@@ -53,9 +53,9 @@ class TestMain(unittest.TestCase):
         # Mock os.path.isfile to always return True for the dummy paths
         mock_isfile.return_value = True
 
-        # Image.open is called from within main.py, so patching it there is correct
+        # Image.open is called from within processing.py during the process loop
         with patch(
-            "main.Image.open", MagicMock(return_value=Image.new("RGB", (10, 10)))
+            "processing.Image.open", MagicMock(return_value=Image.new("RGB", (10, 10)))
         ):
             with patch.object(sys, "argv", ["main.py", "-bg", "*"]):
                 main()
