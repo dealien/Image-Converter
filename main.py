@@ -13,8 +13,6 @@ try:
 except ModuleNotFoundError:
     HAS_COLOREDLOGS = False
 
-from PIL import Image
-
 from file_management import move_images_to_subdirectory
 from processing import process_images_and_save
 
