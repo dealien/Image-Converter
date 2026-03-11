@@ -370,7 +370,9 @@ class TestImageColorOps(unittest.TestCase):
         # Test invalid values
         with self.assertRaises(TypeError):
             apply_color_balance(self.test_image, "a", 1, 1)
-        with self.assertRaisesRegex(ValueError, "^Color balance factors must be non-negative.$"):
+        with self.assertRaisesRegex(
+            ValueError, "^Color balance factors must be non-negative.$"
+        ):
             apply_color_balance(self.test_image, -1, 1, 1)
         with self.assertRaisesRegex(ValueError, "^Factors must be finite numbers.$"):
             apply_color_balance(self.test_image, float("nan"), 1, 1)
