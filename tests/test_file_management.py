@@ -2,6 +2,8 @@ import os
 import sys
 import shutil
 import unittest
+from unittest.mock import patch
+import io
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -39,6 +41,23 @@ class TestFileManagement(unittest.TestCase):
         self.assertTrue(os.path.exists(self.moved_file_path))
         # Check that the original file is gone
         self.assertFalse(os.path.exists("Hill Castle.png"))
+
+    @patch("file_management.os.listdir")
+    @patch("sys.stdout", new_callable=io.StringIO)
+    def test_move_images_to_subdirectory_error_handling(
+        self, mock_stdout, mock_listdir
+    ):
+        """Test that move_images_to_subdirectory handles and prints errors correctly."""
+        # Setup mock to raise an exception
+        error_message = "Mocked listdir error"
+        mock_listdir.side_effect = Exception(error_message)
+
+        # Call the function
+        move_images_to_subdirectory(self.base_dir)
+
+        # Assert output
+        output = mock_stdout.getvalue()
+        self.assertIn(f"An error occurred: {error_message}", output)
 
 
 if __name__ == "__main__":
