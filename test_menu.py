@@ -18,25 +18,36 @@ console = Console()
 # Define the tree structure
 interactive_items = [
     {"type": "category", "label": "⚡ Actions", "style": "bold bright_yellow"},
-    {"type": "action", "label": "▶ Run Processing", "value": "PROCESS", "style": "bold bright_green"},
-    {"type": "action", "label": "❌ Remove an Operation", "value": "REMOVE", "style": "bold bright_red"},
-    
+    {
+        "type": "action",
+        "label": "▶ Run Processing",
+        "value": "PROCESS",
+        "style": "bold bright_green",
+    },
+    {
+        "type": "action",
+        "label": "❌ Remove an Operation",
+        "value": "REMOVE",
+        "style": "bold bright_red",
+    },
     {"type": "category", "label": "🎨 Color", "style": "bold bright_magenta"},
     {"type": "op", "label": "Convert to Grayscale", "value": "grayscale"},
     {"type": "op", "label": "Invert Colors", "value": "invert"},
     {"type": "op", "label": "Adjust Brightness", "value": "brightness"},
-    
     {"type": "category", "label": "📐 Transform", "style": "bold bright_blue"},
     {"type": "op", "label": "Scale Image", "value": "scale"},
     {"type": "op", "label": "Flip Image", "value": "flip"},
 ]
 
 # Only index the selectable items
-selectable_indices = [i for i, item in enumerate(interactive_items) if item["type"] in ("action", "op")]
+selectable_indices = [
+    i for i, item in enumerate(interactive_items) if item["type"] in ("action", "op")
+]
+
 
 def run_test_menu():
     cursor_idx = 0
-    
+
     bindings = KeyBindings()
 
     @bindings.add("up")
@@ -75,25 +86,25 @@ def run_test_menu():
         img_table.add_row("test2.png")
 
         # Build Interactive Tree
-        ops_tree = Tree(
-            "🛠️  [bold bright_white]Menu[/]", guide_style="dim white"
-        )
-        
+        ops_tree = Tree("🛠️  [bold bright_white]Menu[/]", guide_style="dim white")
+
         current_node = ops_tree
         actual_cursor_index = selectable_indices[cursor_idx]
 
         for i, item in enumerate(interactive_items):
             # Check if this item is selected
-            is_cursor = (i == actual_cursor_index)
-            
+            is_cursor = i == actual_cursor_index
+
             label_text = item["label"]
-            
+
             if is_cursor:
                 # Wrap label with selection style
                 rendered_label = Text(label_text, style="bold black on white")
             else:
                 # Use default item style or just white
-                rendered_label = Text(label_text, style=item.get("style", "bright_white"))
+                rendered_label = Text(
+                    label_text, style=item.get("style", "bright_white")
+                )
 
             if item["type"] == "category":
                 current_node = ops_tree.add(rendered_label)
@@ -116,20 +127,27 @@ def run_test_menu():
         )
 
         with console.capture() as capture:
-            console.print("✨ [bold cyan]Image Converter[/] | [italic white]Interactive Image Processor[/]\n")
+            console.print(
+                "✨ [bold cyan]Image Converter[/] | [italic white]Interactive Image Processor[/]\n"
+            )
             console.print(top_layout)
             console.print(pipeline_panel)
-            console.print("\n[dim]Use Up/Down arrows to navigate, Enter to select, Ctrl-C to quit.[/]")
+            console.print(
+                "\n[dim]Use Up/Down arrows to navigate, Enter to select, Ctrl-C to quit.[/]"
+            )
 
         return ANSI(capture.get())
 
     control = FormattedTextControl(get_render_text)
     window = Window(content=control)
     layout = Layout(window)
-    
-    app = Application(layout=layout, key_bindings=bindings, full_screen=False, erase_when_done=True)
-    
+
+    app = Application(
+        layout=layout, key_bindings=bindings, full_screen=False, erase_when_done=True
+    )
+
     return app.run()
+
 
 if __name__ == "__main__":
     result = run_test_menu()

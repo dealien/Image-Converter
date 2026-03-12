@@ -11,8 +11,6 @@ from rich.console import Console
 console = Console()
 
 
-
-
 def _get_image_metadata(path):
     try:
         size_bytes = os.path.getsize(path)
@@ -48,15 +46,21 @@ def run_image_selector(image_files, image_dir):
     for f in image_files:
         path = os.path.join(image_dir, f)
         dims, size_str, fmt = _get_image_metadata(path)
-        images_data.append({"name": f, "path": path, "dims": dims, "size": size_str, "fmt": fmt})
+        images_data.append(
+            {"name": f, "path": path, "dims": dims, "size": size_str, "fmt": fmt}
+        )
 
     # Header
     console.print()
     console.print("📁 [bold bright_cyan]Select Images to Process[/]")
     console.rule(style="dim cyan")
-    console.print("  [dim white]#[/] │ [bright_white]Filename[/]" + " " * 23 + "│ [bright_green]Dimensions[/]   │ [bright_yellow]Size[/]      │ [bright_magenta]Format[/]")
+    console.print(
+        "  [dim white]#[/] │ [bright_white]Filename[/]"
+        + " " * 23
+        + "│ [bright_green]Dimensions[/]   │ [bright_yellow]Size[/]      │ [bright_magenta]Format[/]"
+    )
     console.rule(style="dim cyan")
-    
+
     # Build choices
     choices = []
     for i, img in enumerate(images_data, 1):
@@ -66,9 +70,9 @@ def run_image_selector(image_files, image_dir):
         dims_col = f"{img['dims']:>12}"
         size_col = f"{img['size']:>9}"
         fmt_col = f"{img['fmt']:>6}"
-        
+
         display_str = f"{i:>2} │ {name_col} │ {dims_col} │ {size_col} │ {fmt_col}"
-        choices.append(questionary.Choice(display_str, value=img['path']))
+        choices.append(questionary.Choice(display_str, value=img["path"]))
 
     selected = questionary.checkbox(
         "",
@@ -78,6 +82,7 @@ def run_image_selector(image_files, image_dir):
     ).ask()
 
     return selected or []
+
 
 def render_combined_menu(images_data, operations, extra_args):
     """
@@ -119,9 +124,9 @@ def render_combined_menu(images_data, operations, extra_args):
 
     # ── Pipeline & CLI Panel ──
     from menu import _format_operation_display
-    
+
     pipeline_content = Text()
-    
+
     cli_args_list = []
 
     if not operations:
@@ -131,22 +136,27 @@ def render_combined_menu(images_data, operations, extra_args):
             # Formats beautifully with numbers
             pretty_op = _format_operation_display(i, op, extra_args)
             pipeline_content.append(f"  {pretty_op}\n", style="bright_white")
-            
+
             # Build raw CLI equivalent separately
             arg_name = op["dest"].replace("_", "-")
             arg_vals = " ".join(map(str, op.get("values", [])))
             cli_args_list.append(f"--{arg_name} {arg_vals}".strip())
-            
+
             if op["dest"] == "scale" and "resample" in extra_args:
                 cli_args_list.append(f"--resample {extra_args['resample']}")
-            if op["dest"] == "edge_detection" and op.get("values", [""])[0] == "kovalevsky":
+            if (
+                op["dest"] == "edge_detection"
+                and op.get("values", [""])[0] == "kovalevsky"
+            ):
                 cli_args_list.append(f"--threshold {extra_args.get('threshold', 50)}")
 
     pipeline_content.append("\n")
     pipeline_content.append("  Equivalent CLI Command:\n", style="dim cyan")
-    
+
     cli_str = " ".join(cli_args_list) if cli_args_list else "None"
-    pipeline_content.append(f"  > python main.py \[images] {cli_str}", style="italic bright_cyan")
+    pipeline_content.append(
+        f"  > python main.py \[images] {cli_str}", style="italic bright_cyan"
+    )
 
     pipeline_panel = Panel(
         pipeline_content,
@@ -160,7 +170,7 @@ def render_combined_menu(images_data, operations, extra_args):
     # ── Combined Layout ──
     # Top row: Image Table
     # Bottom row: Pipeline Panel
-    
+
     console.print(img_table)
     console.print()
     console.print(pipeline_panel)

@@ -130,9 +130,9 @@ def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=Fal
 
 def prompt_for_flip_options(extra_args=None):
     choice = questionary.select(
-        "Select flip direction:", 
+        "Select flip direction:",
         choices=["Horizontal", "Vertical", "Both"],
-        instruction="(Use arrow keys to navigate, Enter to select)"
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
     if not choice:
         return None
@@ -179,7 +179,7 @@ def prompt_for_scale_options(extra_args=None):
         "Select Resample Filter:",
         choices=["Nearest", "Bilinear", "Bicubic", "Lanczos"],
         default="Bilinear",
-        instruction="(Use arrow keys to navigate, Enter to select)"
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
 
     if not resample_choice:
@@ -192,9 +192,9 @@ def prompt_for_scale_options(extra_args=None):
 
 def prompt_for_edge_detection_options(extra_args=None):
     method = questionary.select(
-        "Select Edge Detection Method:", 
+        "Select Edge Detection Method:",
         choices=["Sobel", "Canny", "Kovalevsky"],
-        instruction="(Use arrow keys to navigate, Enter to select)"
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
 
     if not method:
@@ -317,9 +317,9 @@ def prompt_for_border_options(extra_args=None):
     color_str = _ask_text("Enter border color (Name or Hex)", default_val="black")
 
     position = questionary.select(
-        "Border Position:", 
+        "Border Position:",
         choices=["Expand", "Inside"],
-        instruction="(Use arrow keys to navigate, Enter to select)"
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
 
     if not position:
@@ -408,9 +408,9 @@ def remove_manipulation(operations, extra_args):
     choices.append(questionary.Choice(title="Cancel", value=-1))
 
     choice_idx = questionary.select(
-        "Select operation to remove:", 
+        "Select operation to remove:",
         choices=choices,
-        instruction="(Use arrow keys to navigate, Enter to select)"
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
 
     if choice_idx == -1 or choice_idx is None:
@@ -464,7 +464,7 @@ def select_images():
     while True:
         selected_paths = run_image_selector(image_files, image_dir)
 
-        if selected_paths is None: # User pressed Ctrl-C
+        if selected_paths is None:  # User pressed Ctrl-C
             return []
 
         if selected_paths:
@@ -484,17 +484,29 @@ def select_manipulations(images_data):
     # Define Categories mapping to format the interactive tree
     CATEGORIES = {
         "Color": (
-            "🎨 Color", 
-            ["Convert to Grayscale", "Invert Colors", "Adjust Brightness", "Adjust Contrast", "Adjust Saturation", "Adjust Color Balance", "Rotate Hue"]
+            "🎨 Color",
+            [
+                "Convert to Grayscale",
+                "Invert Colors",
+                "Adjust Brightness",
+                "Adjust Contrast",
+                "Adjust Saturation",
+                "Adjust Color Balance",
+                "Rotate Hue",
+            ],
         ),
-        "Transform": (
-            "📐 Transform", 
-            ["Scale Image", "Flip Image", "Rotate Image"]
-        ),
+        "Transform": ("📐 Transform", ["Scale Image", "Flip Image", "Rotate Image"]),
         "Effects": (
-            "✨ Effects & Filters", 
-            ["Remove Background", "Apply Gaussian Blur", "Apply Sharpen", "Apply Edge Detection", "Apply Posterize", "Add Border"]
-        )
+            "✨ Effects & Filters",
+            [
+                "Remove Background",
+                "Apply Gaussian Blur",
+                "Apply Sharpen",
+                "Apply Edge Detection",
+                "Apply Posterize",
+                "Add Border",
+            ],
+        ),
     }
 
     # Map name back to original list index so handlers can be triggered correctly
@@ -511,7 +523,9 @@ def select_manipulations(images_data):
         choices.append(questionary.Separator(line="⚡ Actions"))
         choices.append(questionary.Choice("   ▶ Run Processing", value="PROCESS"))
         if selected_operations:
-            choices.append(questionary.Choice("   ❌ Remove an Operation", value="REMOVE"))
+            choices.append(
+                questionary.Choice("   ❌ Remove an Operation", value="REMOVE")
+            )
         choices.append(questionary.Separator(line=""))
 
         # Operations Tree Root
@@ -519,21 +533,21 @@ def select_manipulations(images_data):
 
         cats = list(CATEGORIES.items())
         for c_idx, (cat_key, (cat_label, op_names)) in enumerate(cats):
-            is_last_cat = (c_idx == len(cats) - 1)
+            is_last_cat = c_idx == len(cats) - 1
             cat_prefix = "└── " if is_last_cat else "├── "
-            
+
             choices.append(questionary.Separator(line=f"{cat_prefix}{cat_label}"))
-            
+
             for o_idx, op_name in enumerate(op_names):
-                is_last_op = (o_idx == len(op_names) - 1)
-                
+                is_last_op = o_idx == len(op_names) - 1
+
                 # Determine proper indentation based on parent branch
                 indent = "    " if is_last_cat else "│   "
                 op_prefix = "└── " if is_last_op else "├── "
-                
+
                 idx = name_to_idx.get(op_name, -1)
                 display_str = f"{indent}{op_prefix}{op_name}"
-                
+
                 # We skip missing operations robustly
                 if idx != -1:
                     choices.append(questionary.Choice(display_str, value=idx))
@@ -589,7 +603,15 @@ def interactive_menu():
         images_data = []
         for p in paths:
             dims, size_str, fmt = _get_image_metadata(p)
-            images_data.append({"name": os.path.basename(p), "dims": dims, "size": size_str, "fmt": fmt, "path": p})
+            images_data.append(
+                {
+                    "name": os.path.basename(p),
+                    "dims": dims,
+                    "size": size_str,
+                    "fmt": fmt,
+                    "path": p,
+                }
+            )
 
         ops, extra_args = select_manipulations(images_data)
 
@@ -602,7 +624,7 @@ def interactive_menu():
         # Process expects a list of [name, path] lists as per existing logic
         process_images_data = [[img["name"], img["path"]] for img in images_data]
         process_images_and_save(process_images_data, ops, mock_args)
-        
+
         console.print("\n[bright_green]✨ Processing Complete ✨[/]\n")
 
     except KeyboardInterrupt:

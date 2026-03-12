@@ -35,7 +35,6 @@ img_table = Table(
     title_style="bold bright_cyan",
     border_style="dim cyan",
     header_style="bold bright_white",
-
     padding=(0, 1),
 )
 img_table.add_column("#", style="dim white", justify="right", width=3)
@@ -78,9 +77,7 @@ for num, name, color in color_ops:
     color_branch.add(label)
 
 # Transform Operations
-transform_branch = tree.add(
-    "📐 [bold bright_blue]Transform[/]", guide_style="dim blue"
-)
+transform_branch = tree.add("📐 [bold bright_blue]Transform[/]", guide_style="dim blue")
 transform_ops = [
     ("[9]", "Flip", "bright_blue"),
     ("[10]", "Scale", "bright_blue"),
@@ -93,9 +90,7 @@ for num, name, color in transform_ops:
     transform_branch.add(label)
 
 # Effects
-effects_branch = tree.add(
-    "🖼️  [bold bright_green]Effects[/]", guide_style="dim green"
-)
+effects_branch = tree.add("🖼️  [bold bright_green]Effects[/]", guide_style="dim green")
 effects_ops = [
     ("[12]", "Edge Detection", "bright_green"),
     ("[13]", "Blur", "bright_green"),
@@ -132,7 +127,7 @@ pipeline_content.append(" (1.5x, bilinear)", style="blue")
 pipeline_content.append("\n\n")
 pipeline_content.append("  CLI: ", style="bold dim white")
 pipeline_content.append(
-    '--sharpen 50 --border 10 red expand --scale 1.5x --resample bilinear',
+    "--sharpen 50 --border 10 red expand --scale 1.5x --resample bilinear",
     style="italic bright_white",
 )
 

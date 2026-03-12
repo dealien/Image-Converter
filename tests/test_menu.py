@@ -199,7 +199,9 @@ def test_select_images(mock_isfile, mock_isdir, mock_listdir, mock_run_image_sel
 
 
 @patch("menu.run_image_selector")
-def test_select_images_none_selected_confirm_cancel(mock_run_image_selector, mock_questionary):
+def test_select_images_none_selected_confirm_cancel(
+    mock_run_image_selector, mock_questionary
+):
     with (
         patch("menu.os.path.isdir", return_value=True),
         patch("menu.os.listdir", return_value=["i.png"]),

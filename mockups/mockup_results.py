@@ -43,21 +43,30 @@ console.print()
 images = [
     {
         "name": "Hill Castle.png",
-        "ops": [("Applying Sharpen", "intensity: 50"), ("Adding border", "10px, red, expand")],
+        "ops": [
+            ("Applying Sharpen", "intensity: 50"),
+            ("Adding border", "10px, red, expand"),
+        ],
         "success": True,
         "out_dims": "1940 × 1100",
         "out_size": "2.6 MB",
     },
     {
         "name": "Spacecraft.png",
-        "ops": [("Applying Sharpen", "intensity: 50"), ("Adding border", "10px, red, expand")],
+        "ops": [
+            ("Applying Sharpen", "intensity: 50"),
+            ("Adding border", "10px, red, expand"),
+        ],
         "success": True,
         "out_dims": "1300 × 740",
         "out_size": "1.9 MB",
     },
     {
         "name": "Tree Clear Sky 1.png",
-        "ops": [("Applying Sharpen", "intensity: 50"), ("Adding border", "10px, red, expand")],
+        "ops": [
+            ("Applying Sharpen", "intensity: 50"),
+            ("Adding border", "10px, red, expand"),
+        ],
         "success": False,
         "error": "Unsupported color mode for border operation",
         "out_dims": "—",
@@ -65,7 +74,10 @@ images = [
     },
     {
         "name": "Tree Clear Sky 2.png",
-        "ops": [("Applying Sharpen", "intensity: 50"), ("Adding border", "10px, red, expand")],
+        "ops": [
+            ("Applying Sharpen", "intensity: 50"),
+            ("Adding border", "10px, red, expand"),
+        ],
         "success": True,
         "out_dims": "2580 × 1460",
         "out_size": "3.2 MB",
@@ -107,9 +119,7 @@ with Progress(
         # Operations
         for op_name, op_detail in img["ops"]:
             detail_str = f" ({op_detail})" if op_detail else ""
-            console.print(
-                f"  [bright_yellow]›[/] [yellow]{op_name}{detail_str}...[/]"
-            )
+            console.print(f"  [bright_yellow]›[/] [yellow]{op_name}{detail_str}...[/]")
             time.sleep(0.2)
 
         # Result
@@ -136,7 +146,6 @@ results_table = Table(
     title_style="bold bright_cyan",
     border_style="dim cyan",
     header_style="bold bright_white",
-
     padding=(0, 1),
 )
 results_table.add_column("#", style="dim white", justify="right", width=3)

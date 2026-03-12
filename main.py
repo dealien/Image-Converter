@@ -192,7 +192,9 @@ def main():
     args = parser.parse_args()
 
     if not hasattr(args, "ordered_operations"):
-        console.print("[yellow]No actions specified. To see available options, run with --help.[/]")
+        console.print(
+            "[yellow]No actions specified. To see available options, run with --help.[/]"
+        )
         return
 
     move_images_to_subdirectory("Base Images")
@@ -204,7 +206,9 @@ def main():
     try:
         filepaths = glob.glob(image_path_pattern)
         if not filepaths:
-            console.print(f"[yellow]No files found matching pattern: {image_path_pattern}[/]")
+            console.print(
+                f"[yellow]No files found matching pattern: {image_path_pattern}[/]"
+            )
             return
         for filepath in filepaths:
             if os.path.isfile(filepath):

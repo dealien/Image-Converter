@@ -33,7 +33,12 @@ console.print(
 
 console.print()
 console.print("[bold bright_cyan]Selected:[/] ", end="")
-files = ["Hill Castle.png", "Spacecraft.png", "Tree Clear Sky 1.png", "Tree Clear Sky 2.png"]
+files = [
+    "Hill Castle.png",
+    "Spacecraft.png",
+    "Tree Clear Sky 1.png",
+    "Tree Clear Sky 2.png",
+]
 for i, f in enumerate(files):
     console.print(f"[bright_white]{f}[/]", end="")
     if i < len(files) - 1:
@@ -67,9 +72,7 @@ for num, name, color in color_ops:
     color_branch.add(label)
 
 # Transform Operations
-transform_branch = tree.add(
-    "📐 [bold bright_blue]Transform[/]", guide_style="dim blue"
-)
+transform_branch = tree.add("📐 [bold bright_blue]Transform[/]", guide_style="dim blue")
 transform_ops = [
     ("[9]", "Flip", "bright_blue"),
     ("[10]", "Scale", "bright_blue"),
@@ -82,9 +85,7 @@ for num, name, color in transform_ops:
     transform_branch.add(label)
 
 # Effects
-effects_branch = tree.add(
-    "🖼️  [bold bright_green]Effects[/]", guide_style="dim green"
-)
+effects_branch = tree.add("🖼️  [bold bright_green]Effects[/]", guide_style="dim green")
 effects_ops = [
     ("[12]", "Edge Detection", "bright_green"),
     ("[13]", "Blur", "bright_green"),

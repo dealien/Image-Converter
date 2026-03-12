@@ -66,7 +66,12 @@ images = [
 with Progress(
     SpinnerColumn("dots", style="bright_cyan"),
     TextColumn("[bold bright_white]{task.description}"),
-    BarColumn(bar_width=30, style="dim white", complete_style="bright_cyan", finished_style="bright_green"),
+    BarColumn(
+        bar_width=30,
+        style="dim white",
+        complete_style="bright_cyan",
+        finished_style="bright_green",
+    ),
     TaskProgressColumn(),
     TimeElapsedColumn(),
     console=console,
@@ -93,9 +98,7 @@ with Progress(
         # Operations
         for op_name, op_detail in img["ops"]:
             detail_str = f" ({op_detail})" if op_detail else ""
-            console.print(
-                f"  [bright_yellow]›[/] [yellow]{op_name}{detail_str}...[/]"
-            )
+            console.print(f"  [bright_yellow]›[/] [yellow]{op_name}{detail_str}...[/]")
             time.sleep(0.3)  # Simulate work
 
         # Result
