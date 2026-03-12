@@ -3,13 +3,14 @@ import glob
 import os
 import sys
 from pathlib import Path
-from rich.console import Console
 
-# Create a global console instance to be shared across modules
-console = Console()
+from rich.console import Console
 
 from file_management import move_images_to_subdirectory
 from processing import process_images_and_save
+
+# Create a global console instance to be shared across modules
+console = Console()
 
 
 class StoreInOrder(argparse.Action):
