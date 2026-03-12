@@ -9,7 +9,6 @@ Usage: .venv\Scripts\python.exe mockups\mockup_image_select.py
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-from rich.rule import Rule
 from rich import box
 
 console = Console()

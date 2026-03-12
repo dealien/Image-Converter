@@ -20,8 +20,6 @@ from rich.rule import Rule
 from rich import box
 from rich.console import Console
 
-console = Console()
-
 from flip_image import flip_image
 from image_filters import (
     adjust_brightness,
@@ -40,6 +38,8 @@ from image_filters import (
 )
 from remove_background import remove_background
 from scale_image import scale_image
+
+console = Console()
 
 # --- Operation Handlers ---
 

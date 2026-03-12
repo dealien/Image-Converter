@@ -101,8 +101,8 @@ class TestMain(unittest.TestCase):
 
     @patch("main.move_images_to_subdirectory")
     @patch("glob.glob")
-    @patch("builtins.print")
-    def test_loading_exception(self, mock_print, mock_glob, mock_move):
+    @patch("main.console.print")
+    def test_loading_exception(self, mock_console_print, mock_glob, mock_move):
         """Test that an exception during file loading is caught and printed."""
         # Make glob.glob raise an exception
         mock_glob.side_effect = Exception("Mocked loading error")
@@ -112,8 +112,8 @@ class TestMain(unittest.TestCase):
             main()
 
         # Check that the exception message was printed
-        mock_print.assert_called_with(
-            "Error while loading file(s): Mocked loading error"
+        mock_console_print.assert_called_with(
+            "[red]Error while loading file(s): Mocked loading error[/]"
         )
 
 

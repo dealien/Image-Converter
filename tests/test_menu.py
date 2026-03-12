@@ -181,29 +181,31 @@ def test_prompt_for_rotation(mock_ask_text):
 # --- Main Logic Tests ---
 
 
+@patch("menu.run_image_selector")
 @patch("menu.os.listdir")
 @patch("menu.os.path.isdir")
 @patch("menu.os.path.isfile")
-def test_select_images(mock_isfile, mock_isdir, mock_listdir, mock_questionary):
+def test_select_images(mock_isfile, mock_isdir, mock_listdir, mock_run_image_selector):
     mock_isdir.return_value = True
     mock_listdir.return_value = ["img1.png", "img2.jpg"]
     mock_isfile.return_value = True
 
     # Select both
-    mock_questionary.checkbox.return_value.ask.return_value = ["img1.png", "img2.jpg"]
+    mock_run_image_selector.return_value = ["img1.png", "img2.jpg"]
 
     paths = menu.select_images()
     assert len(paths) == 2
     assert paths[0].endswith("img1.png")
 
 
-def test_select_images_none_selected_confirm_cancel(mock_questionary):
+@patch("menu.run_image_selector")
+def test_select_images_none_selected_confirm_cancel(mock_run_image_selector, mock_questionary):
     with (
         patch("menu.os.path.isdir", return_value=True),
         patch("menu.os.listdir", return_value=["i.png"]),
         patch("menu.os.path.isfile", return_value=True),
     ):
-        mock_questionary.checkbox.return_value.ask.return_value = []  # None selected
+        mock_run_image_selector.return_value = []  # None selected
         mock_questionary.confirm.return_value.ask.return_value = False  # Cancel
 
         paths = menu.select_images()
@@ -236,7 +238,7 @@ def test_select_manipulations_basic_flow(mock_questionary):
     menu.AVAILABLE_MANIPULATIONS[flip_idx]["handler"] = mock_handler
 
     try:
-        ops, extra = menu.select_manipulations()
+        ops, extra = menu.select_manipulations([])
         assert len(ops) == 1
         assert ops[0]["dest"] == "flip"
     finally:

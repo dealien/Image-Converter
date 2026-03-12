@@ -10,7 +10,6 @@ from rich.panel import Panel
 from rich.tree import Tree
 from rich.text import Text
 from rich.rule import Rule
-from rich.columns import Columns
 from rich import box
 
 console = Console()
