@@ -271,27 +271,14 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         TaskProgressColumn(),
         TimeElapsedColumn(),
         console=console,
+        transient=False,
     ) as progress:
         overall = progress.add_task("Total", total=total_images)
 
         for i, (original_name, image_path) in enumerate(images_data, 1):
-            console.print()
-
-            header = Text()
-            header.append(f"[{i}/{total_images}] ", style="bold bright_yellow")
-            header.append(original_name, style="bold bright_white")
-
-            # We don't know success yet, so set border grey initially
-            # We'll update after processing.
-            console.print(
-                Panel(
-                    header,
-                    border_style="dim white",
-                    box=box.HEAVY,
-                    padding=(0, 1),
-                    expand=True,
-                )
-            )
+            # Calculate total steps for this image: Open(1) + Ops(N) + Save(1)
+            image_total = 1 + len(ordered_operations) + 1
+            image_task = progress.add_task(original_name, total=image_total)
 
             temp_path = None
             success = False
@@ -303,19 +290,27 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             output_filename = Path(original_name).stem + ".png"
 
             try:
+                # Step 1: Open
+                progress.update(image_task, description=f"{original_name} [dim](Opening...)[/]")
                 with Image.open(image_path) as img:
                     img.load()
                     output_image = img.copy()
+                progress.advance(image_task)
 
+                # Step 2: Operations
                 for operation in ordered_operations:
                     op_dest = operation["dest"]
                     op_values = operation.get("values", [])
                     handler = operation_handlers.get(op_dest)
                     if handler:
+                        progress.update(image_task, description=f"{original_name} [dim]({op_dest.replace('_', ' ')}...)[/]")
                         output_image = handler(
                             output_image, original_name, op_values, cli_args
                         )
+                    progress.advance(image_task)
 
+                # Step 3: Save
+                progress.update(image_task, description=f"{original_name} [dim](Saving...)[/]")
                 if not os.path.exists("Output/"):
                     os.makedirs("Output/")
 
@@ -330,19 +325,20 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                     os.fsync(f.fileno())
 
                 os.replace(temp_path, output_path)
+                progress.advance(image_task)
 
                 # Fetch output info
                 out_size_bytes = os.path.getsize(output_path)
                 out_dims = f"{output_image.width} × {output_image.height}"
 
-                console.print(f"  [bright_green]✓[/] [green]Saved to: {output_path}[/]")
+                progress.update(image_task, description=f"{original_name} [bright_green](Done)[/]")
                 success = True
 
             except Exception as e:
                 error_msg = str(e)
-                console.print(
-                    f"  [bright_red]✗[/] [red]Error processing {original_name}: {e}[/]"
-                )
+                progress.update(image_task, description=f"{original_name} [bright_red](Error: {e})[/]")
+                # Advance to total to show it finished even with error
+                progress.update(image_task, completed=image_total)
 
             finally:
                 if temp_path and os.path.exists(temp_path):
