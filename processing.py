@@ -1,39 +1,38 @@
 import os
-from pathlib import Path
 import tempfile
 import time
+from pathlib import Path
 
 from PIL import Image
-
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    BarColumn,
-    TaskProgressColumn,
-    TimeElapsedColumn,
-)
-from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
-from rich.rule import Rule
 from rich import box
 from rich.console import Console
+from rich.panel import Panel
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
+from rich.rule import Rule
+from rich.table import Table
+from rich.text import Text
 
 from flip_image import flip_image
 from image_filters import (
     adjust_brightness,
     adjust_contrast,
     adjust_saturation,
+    apply_blur,
+    apply_border,
+    apply_color_balance,
+    apply_posterize,
+    apply_sharpen,
     edge_detection,
     grayscale,
     invert_colors,
-    apply_blur,
-    apply_sharpen,
-    apply_color_balance,
     rotate_hue,
-    apply_posterize,
-    apply_border,
     rotate_image,
 )
 from remove_background import remove_background
@@ -61,7 +60,9 @@ def handle_scale(image, image_name, values, args):
             clean_param = scale_params[0].lower().replace("x", "")
             scale_factor = float(clean_param)
         except ValueError:
-            console.print(f"  [bright_red]✗[/] [red]Invalid scale factor: {scale_params[0]}[/]")
+            console.print(
+                f"  [bright_red]✗[/] [red]Invalid scale factor: {scale_params[0]}[/]"
+            )
             return image
 
     elif len(scale_params) == 2:
@@ -70,7 +71,9 @@ def handle_scale(image, image_name, values, args):
             height = int(scale_params[1].lower().replace("px", ""))
             new_size = (width, height)
         except ValueError:
-            console.print(f"  [bright_red]✗[/] [red]Invalid size format: {scale_params}[/]")
+            console.print(
+                f"  [bright_red]✗[/] [red]Invalid size format: {scale_params}[/]"
+            )
             return image
     else:
         console.print(
@@ -78,9 +81,13 @@ def handle_scale(image, image_name, values, args):
         )
         return image
     if scale_factor is not None:
-        console.print(f"  [bright_yellow]›[/] [yellow]Scaling by factor: {scale_factor}...[/]")
+        console.print(
+            f"  [bright_yellow]›[/] [yellow]Scaling by factor: {scale_factor}...[/]"
+        )
     elif new_size is not None:
-        console.print(f"  [bright_yellow]›[/] [yellow]Scaling to dimensions: {new_size[0]}x{new_size[1]}...[/]")
+        console.print(
+            f"  [bright_yellow]›[/] [yellow]Scaling to dimensions: {new_size[0]}x{new_size[1]}...[/]"
+        )
     else:
         console.print("  [bright_yellow]›[/] [yellow]Scaling...[/]")
     return scale_image(
@@ -114,32 +121,44 @@ def handle_edge_detection(image, image_name, values, args):
         )
         return edge_detection(image, "kovalevsky", args.threshold)
     else:
-        console.print(f"  [bright_yellow]›[/] [yellow]Applying {method} edge detection...[/]")
+        console.print(
+            f"  [bright_yellow]›[/] [yellow]Applying {method} edge detection...[/]"
+        )
         return edge_detection(image, method)
 
 
 def handle_brightness(image, image_name, values, args):
-    console.print(f"  [bright_yellow]›[/] [yellow]Adjusting brightness by {values[0]}...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Adjusting brightness by {values[0]}...[/]"
+    )
     return adjust_brightness(image, values[0])
 
 
 def handle_contrast(image, image_name, values, args):
-    console.print(f"  [bright_yellow]›[/] [yellow]Adjusting contrast by {values[0]}...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Adjusting contrast by {values[0]}...[/]"
+    )
     return adjust_contrast(image, values[0])
 
 
 def handle_saturation(image, image_name, values, args):
-    console.print(f"  [bright_yellow]›[/] [yellow]Adjusting saturation by {values[0]}...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Adjusting saturation by {values[0]}...[/]"
+    )
     return adjust_saturation(image, values[0])
 
 
 def handle_blur(image, image_name, values, args):
-    console.print(f"  [bright_yellow]›[/] [yellow]Applying Gaussian Blur (radius: {values[0]})...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Applying Gaussian Blur (radius: {values[0]})...[/]"
+    )
     return apply_blur(image, values[0])
 
 
 def handle_sharpen(image, image_name, values, args):
-    console.print(f"  [bright_yellow]›[/] [yellow]Applying Sharpen (intensity: {values[0]})...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Applying Sharpen (intensity: {values[0]})...[/]"
+    )
     return apply_sharpen(image, values[0])
 
 
@@ -151,12 +170,16 @@ def handle_color_balance(image, image_name, values, args):
 
 
 def handle_hue_rotation(image, image_name, values, args):
-    console.print(f"  [bright_yellow]›[/] [yellow]Rotating Hue by {values[0]} degrees...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Rotating Hue by {values[0]} degrees...[/]"
+    )
     return rotate_hue(image, values[0])
 
 
 def handle_posterize(image, image_name, values, args):
-    console.print(f"  [bright_yellow]›[/] [yellow]Posterizing to {values[0]} bits...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Posterizing to {values[0]} bits...[/]"
+    )
     return apply_posterize(image, values[0])
 
 
@@ -169,10 +192,14 @@ def handle_border(image, image_name, values, args):
         thickness = int(values[0])
         color = values[1]
         position = values[2]
-        console.print(f"  [bright_yellow]›[/] [yellow]Adding border: {thickness}px, {color}, {position}[/]")
+        console.print(
+            f"  [bright_yellow]›[/] [yellow]Adding border: {thickness}px, {color}, {position}[/]"
+        )
         return apply_border(image, thickness, color, position)
     except (ValueError, IndexError) as e:
-        console.print(f"  [bright_red]✗[/] [red]Invalid border arguments: {values}. Error: {e}[/]")
+        console.print(
+            f"  [bright_red]✗[/] [red]Invalid border arguments: {values}. Error: {e}[/]"
+        )
         return image
 
 
@@ -181,7 +208,9 @@ def handle_rotate(image, image_name, values, args):
     values: [angle]
     Expects angle to be int.
     """
-    logger_str = f"  [bright_yellow]›[/] [yellow]Rotating image by {values[0]} degrees...[/]"
+    logger_str = (
+        f"  [bright_yellow]›[/] [yellow]Rotating image by {values[0]} degrees...[/]"
+    )
     console.print(logger_str)
     return rotate_image(image, values[0])
 
@@ -227,7 +256,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
     console.print()
 
     total_images = len(images_data)
-    results = [] # Store tuple of (filename, success, output_dims, output_size_bytes, error_msg)
+    results = []  # Store tuple of (filename, success, output_dims, output_size_bytes, error_msg)
     start_time = time.time()
 
     with Progress(
@@ -247,7 +276,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
 
         for i, (original_name, image_path) in enumerate(images_data, 1):
             console.print()
-            
+
             header = Text()
             header.append(f"[{i}/{total_images}] ", style="bold bright_yellow")
             header.append(original_name, style="bold bright_white")
@@ -289,7 +318,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
 
                 if not os.path.exists("Output/"):
                     os.makedirs("Output/")
-                    
+
                 output_path = os.path.join("Output", output_filename)
 
                 fd, temp_path = tempfile.mkstemp(
@@ -301,33 +330,37 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                     os.fsync(f.fileno())
 
                 os.replace(temp_path, output_path)
-                
+
                 # Fetch output info
                 out_size_bytes = os.path.getsize(output_path)
                 out_dims = f"{output_image.width} × {output_image.height}"
-                
+
                 console.print(f"  [bright_green]✓[/] [green]Saved to: {output_path}[/]")
                 success = True
 
             except Exception as e:
                 error_msg = str(e)
-                console.print(f"  [bright_red]✗[/] [red]Error processing {original_name}: {e}[/]")
-                
+                console.print(
+                    f"  [bright_red]✗[/] [red]Error processing {original_name}: {e}[/]"
+                )
+
             finally:
                 if temp_path and os.path.exists(temp_path):
                     try:
                         os.remove(temp_path)
                     except OSError:
                         pass
-                
-                results.append((output_filename, success, out_dims, out_size_bytes, error_msg))
+
+                results.append(
+                    (output_filename, success, out_dims, out_size_bytes, error_msg)
+                )
                 progress.advance(overall)
 
     elapsed = time.time() - start_time
 
     # ── Equivalent CLI Command ────────────────────────
     cli_args_list = []
-    
+
     # 1. Add formatted file paths
     for img_name, img_path in images_data:
         # Wrap paths in quotes if they contain spaces
@@ -340,14 +373,23 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             arg_name = op["dest"].replace("_", "-")
             arg_vals = " ".join(map(str, op.get("values", [])))
             cli_args_list.append(f"--{arg_name} {arg_vals}".strip())
-            
-            if op["dest"] == "scale" and hasattr(cli_args, "resample") and cli_args.resample:
+
+            if (
+                op["dest"] == "scale"
+                and hasattr(cli_args, "resample")
+                and cli_args.resample
+            ):
                 cli_args_list.append(f"--resample {cli_args.resample}")
-            if op["dest"] == "edge_detection" and op.get("values", [""])[0] == "kovalevsky":
-                cli_args_list.append(f"--threshold {getattr(cli_args, 'threshold', 50)}")
-                
+            if (
+                op["dest"] == "edge_detection"
+                and op.get("values", [""])[0] == "kovalevsky"
+            ):
+                cli_args_list.append(
+                    f"--threshold {getattr(cli_args, 'threshold', 50)}"
+                )
+
     cli_str = " ".join(cli_args_list)
-    
+
     if cli_str:
         cli_panel = Panel(
             f"> python main.py {cli_str}",
@@ -384,7 +426,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             status = Text("✓ OK", style="bold bright_green")
             fname_style = "bright_white"
             dims = Text(dims, style="bright_green")
-            
+
             # Format file size nicely
             if size_bytes >= 1024 * 1024:
                 size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
@@ -392,7 +434,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 size_str = f"{size_bytes / 1024:.1f} KB"
             else:
                 size_str = f"{size_bytes} B"
-                
+
             size = Text(size_str, style="bright_yellow")
         else:
             status = Text("✗ FAIL", style="bold bright_red")
