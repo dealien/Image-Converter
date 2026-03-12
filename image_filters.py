@@ -300,35 +300,26 @@ def apply_color_balance(
     if image.mode != "RGB" and image.mode != "RGBA":
         image = image.convert("RGB")
 
-    # Split the image into color bands
-    bands = image.split()
-
-    def _scale_channel(factor: float):
+    def _scale_lut(factor: float):
         """
-        Scales a channel by a given factor, clamping values to [0, 255].
+        Creates a Look-Up Table (LUT) for scaling a channel, clamping to [0, 255].
         :param factor: The scaling factor.
-        :return: A function that scales a channel.
+        :return: A list of 256 mapped values.
         """
+        return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
 
-        def _fn(i):
-            v = int(round(i * factor))
-            if v < 0:
-                return 0
-            if v > 255:
-                return 255
-            return v
+    # Precompute the LUT for R, G, and B channels
+    lut = _scale_lut(r_f) + _scale_lut(g_f) + _scale_lut(b_f)
 
-        return _fn
+    # For images with more than 3 bands (e.g., RGBA), preserve the extra bands
+    # by adding an identity mapping to the LUT
+    num_bands = len(image.getbands())
+    if num_bands > 3:
+        for _ in range(3, num_bands):
+            lut += list(range(256))
 
-    # Apply the scaling to each band
-    r = bands[0].point(_scale_channel(r_f))
-    g = bands[1].point(_scale_channel(g_f))
-    b = bands[2].point(_scale_channel(b_f))
-
-    # Merge the bands back into an image
-    if len(bands) >= 4:
-        return Image.merge(image.mode, (r, g, b, bands[3]))
-    return Image.merge("RGB", (r, g, b))
+    # Apply the LUT directly to the image (faster than split, point with lambda, merge)
+    return image.point(lut)
 
 
 def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
