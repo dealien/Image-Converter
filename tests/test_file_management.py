@@ -59,6 +59,25 @@ class TestFileManagement(unittest.TestCase):
         output = mock_stdout.getvalue()
         self.assertIn(f"An error occurred: {error_message}", output)
 
+    @patch("file_management.os.path.exists")
+    @patch("file_management.os.makedirs")
+    @patch("sys.stdout", new_callable=io.StringIO)
+    def test_move_images_to_subdirectory_makedirs_error(
+        self, mock_stdout, mock_makedirs, mock_exists
+    ):
+        """Test that move_images_to_subdirectory handles and prints makedirs errors correctly."""
+        # Setup mock to ensure makedirs is called, and then raise an exception
+        mock_exists.return_value = False
+        error_message = "Mocked makedirs error"
+        mock_makedirs.side_effect = Exception(error_message)
+
+        # Call the function
+        move_images_to_subdirectory(self.base_dir)
+
+        # Assert output
+        output = mock_stdout.getvalue()
+        self.assertIn(f"An error occurred: {error_message}", output)
+
 
 if __name__ == "__main__":
     unittest.main()
