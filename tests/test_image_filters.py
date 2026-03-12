@@ -385,6 +385,26 @@ class TestImageColorOps(unittest.TestCase):
         # 100 * 10 = 1000 -> clamped to 255
         self.assertEqual(red_enhanced.getpixel((0, 0))[0], 255)
 
+    def test_color_balance_rgba(self):
+        # Create an RGBA image for testing
+        rgba_image = self.test_image.copy().convert("RGBA")
+        # Set a semi-transparent alpha channel
+        alpha = Image.new("L", rgba_image.size, 128)
+        rgba_image.putalpha(alpha)
+
+        # Enhance Red
+        red_enhanced = apply_color_balance(rgba_image, 2.0, 1.0, 1.0)
+
+        # Check that the image is still RGBA
+        self.assertEqual(red_enhanced.mode, "RGBA")
+
+        # Check that the RGB values are correctly scaled
+        self.assertEqual(red_enhanced.getpixel((0, 0))[:3], (200, 100, 100))
+
+        # Check that the alpha channel is preserved
+        _, _, _, new_alpha = red_enhanced.split()
+        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+
     def test_posterize(self):
         # Create a gradient image
         img = Image.new("RGB", (256, 1))
