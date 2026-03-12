@@ -8,11 +8,11 @@ from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import (
+    BarColumn,
     Progress,
     SpinnerColumn,
-    TextColumn,
-    BarColumn,
     TaskProgressColumn,
+    TextColumn,
     TimeElapsedColumn,
 )
 from rich.rule import Rule
@@ -310,9 +310,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             # Print a separator above each image's log
             progress.console.print()
             progress.console.print(
-                f"[bright_cyan][{elapsed_now: >4.1f}s][/]  "
-                f"[bold bright_yellow]▸ [{i}/{total_images}][/]  "
-                f"[bold bright_white]{original_name}[/]"
+                f"  [bold bright_yellow]▸ [{i}/{total_images}][/]  "
+                f"[bold bright_white]{original_name}[/]  "
+                f"[bright_cyan][{elapsed_now: >4.1f}s ][/]"
             )
             progress.console.print(
                 Rule(style="dim white"),
