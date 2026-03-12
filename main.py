@@ -2,19 +2,15 @@ import argparse
 import glob
 import os
 import sys
-import logging
-
 from pathlib import Path
 
-try:
-    import coloredlogs
-
-    HAS_COLOREDLOGS = True
-except ModuleNotFoundError:
-    HAS_COLOREDLOGS = False
+from rich.console import Console
 
 from file_management import move_images_to_subdirectory
 from processing import process_images_and_save
+
+# Create a global console instance to be shared across modules
+console = Console()
 
 
 class StoreInOrder(argparse.Action):
@@ -35,12 +31,6 @@ class StoreInOrder(argparse.Action):
 
 
 def main():
-    # Configure logging to mimic print output (stdout, message only) regarding format,
-    # but allowing for future extension (file logging, etc.)
-    if HAS_COLOREDLOGS:
-        coloredlogs.install(level="INFO", fmt="%(message)s", stream=sys.stdout)
-    else:
-        logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
 
     # If --menu is used or no arguments are provided, start the menu.
 
@@ -202,7 +192,9 @@ def main():
     args = parser.parse_args()
 
     if not hasattr(args, "ordered_operations"):
-        print("No actions specified. To see available options, run with --help.")
+        console.print(
+            "[yellow]No actions specified. To see available options, run with --help.[/]"
+        )
         return
 
     move_images_to_subdirectory("Base Images")
@@ -214,14 +206,16 @@ def main():
     try:
         filepaths = glob.glob(image_path_pattern)
         if not filepaths:
-            print(f"No files found matching pattern: {image_path_pattern}")
+            console.print(
+                f"[yellow]No files found matching pattern: {image_path_pattern}[/]"
+            )
             return
         for filepath in filepaths:
             if os.path.isfile(filepath):
                 filename = Path(filepath).name
                 images_data.append([filename, filepath])
     except Exception as e:
-        print(f"Error while loading file(s): {e}")
+        console.print(f"[red]Error while loading file(s): {e}[/]")
         return
 
     process_images_and_save(images_data, args.ordered_operations, args)

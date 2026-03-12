@@ -8,6 +8,8 @@ from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.styles import Style
 from prompt_toolkit.application.current import get_app
 from processing import process_images_and_save
+from rich_menu import run_image_selector, render_combined_menu, _get_image_metadata
+from main import console
 
 
 # --- Helper Functions ---
@@ -128,7 +130,9 @@ def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=Fal
 
 def prompt_for_flip_options(extra_args=None):
     choice = questionary.select(
-        "Select flip direction:", choices=["Horizontal", "Vertical", "Both"]
+        "Select flip direction:",
+        choices=["Horizontal", "Vertical", "Both"],
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
     if not choice:
         return None
@@ -175,6 +179,7 @@ def prompt_for_scale_options(extra_args=None):
         "Select Resample Filter:",
         choices=["Nearest", "Bilinear", "Bicubic", "Lanczos"],
         default="Bilinear",
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
 
     if not resample_choice:
@@ -187,7 +192,9 @@ def prompt_for_scale_options(extra_args=None):
 
 def prompt_for_edge_detection_options(extra_args=None):
     method = questionary.select(
-        "Select Edge Detection Method:", choices=["Sobel", "Canny", "Kovalevsky"]
+        "Select Edge Detection Method:",
+        choices=["Sobel", "Canny", "Kovalevsky"],
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
 
     if not method:
@@ -310,7 +317,9 @@ def prompt_for_border_options(extra_args=None):
     color_str = _ask_text("Enter border color (Name or Hex)", default_val="black")
 
     position = questionary.select(
-        "Border Position:", choices=["Expand", "Inside"]
+        "Border Position:",
+        choices=["Expand", "Inside"],
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
 
     if not position:
@@ -399,7 +408,9 @@ def remove_manipulation(operations, extra_args):
     choices.append(questionary.Choice(title="Cancel", value=-1))
 
     choice_idx = questionary.select(
-        "Select operation to remove:", choices=choices
+        "Select operation to remove:",
+        choices=choices,
+        instruction="(Use arrow keys to navigate, Enter to select)",
     ).ask()
 
     if choice_idx == -1 or choice_idx is None:
@@ -427,7 +438,7 @@ def remove_manipulation(operations, extra_args):
 def select_images():
     image_dir = "Base Images"
     if not os.path.isdir(image_dir):
-        print(f"Error: Directory '{image_dir}' not found.")
+        console.print(f"[red]Error: Directory '{image_dir}' not found.[/]")
         return []
 
     try:
@@ -443,24 +454,21 @@ def select_images():
             ]
         )
     except Exception as e:
-        print(f"Read error: {e}")
+        console.print(f"[red]Read error: {e}[/]")
         return []
 
     if not image_files:
-        print(f"No images found in '{image_dir}'.")
+        console.print(f"[yellow]No images found in '{image_dir}'.[/]")
         return []
 
     while True:
-        selected = questionary.checkbox(
-            "Select images to process (Space to select, Enter to confirm):",
-            choices=image_files,
-        ).ask()
+        selected_paths = run_image_selector(image_files, image_dir)
 
-        if selected is None:
+        if selected_paths is None:  # User pressed Ctrl-C
             return []
 
-        if selected:
-            return [os.path.join(image_dir, f) for f in selected]
+        if selected_paths:
+            return selected_paths
 
         confirm = questionary.confirm(
             "No images selected. Re-select images?", default=True
@@ -469,35 +477,87 @@ def select_images():
             return []
 
 
-def select_manipulations():
+def select_manipulations(images_data):
     selected_operations = []
     extra_args = {}
 
+    # Define Categories mapping to format the interactive tree
+    CATEGORIES = {
+        "Color": (
+            "🎨 Color",
+            [
+                "Convert to Grayscale",
+                "Invert Colors",
+                "Adjust Brightness",
+                "Adjust Contrast",
+                "Adjust Saturation",
+                "Adjust Color Balance",
+                "Rotate Hue",
+            ],
+        ),
+        "Transform": ("📐 Transform", ["Scale Image", "Flip Image", "Rotate Image"]),
+        "Effects": (
+            "✨ Effects & Filters",
+            [
+                "Remove Background",
+                "Apply Gaussian Blur",
+                "Apply Sharpen",
+                "Apply Edge Detection",
+                "Apply Posterize",
+                "Add Border",
+            ],
+        ),
+    }
+
+    # Map name back to original list index so handlers can be triggered correctly
+    name_to_idx = {m["name"]: i for i, m in enumerate(AVAILABLE_MANIPULATIONS)}
+
     while True:
-        # Build main menu based on current state
+        # Render the beautiful combined layout first
+        render_combined_menu(images_data, selected_operations, extra_args)
+
+        # Build interactive tree as questionary choices
         choices = []
 
         # Action Groups
-        choices.append(questionary.Separator(line="--- Actions ---"))
-        choices.append(questionary.Choice("Run Processing", value="PROCESS"))
+        choices.append(questionary.Separator(line="⚡ Actions"))
+        choices.append(questionary.Choice("   ▶ Run Processing", value="PROCESS"))
         if selected_operations:
-            choices.append(questionary.Choice("Remove an Operation", value="REMOVE"))
+            choices.append(
+                questionary.Choice("   ❌ Remove an Operation", value="REMOVE")
+            )
+        choices.append(questionary.Separator(line=""))
 
-        choices.append(questionary.Separator(line="--- Add Operation ---"))
-        for i, manip in enumerate(AVAILABLE_MANIPULATIONS):
-            choices.append(questionary.Choice(manip["name"], value=i))
+        # Operations Tree Root
+        choices.append(questionary.Separator(line="🛠️  Available Operations"))
 
-        # Show current ops summary
-        print("\nCurrent Pipeline:")
-        if not selected_operations:
-            print("  (Empty)")
-        else:
-            for i, op in enumerate(selected_operations):
-                print(f"  {_format_operation_display(i, op, extra_args)}")
-        print("")
+        cats = list(CATEGORIES.items())
+        for c_idx, (cat_key, (cat_label, op_names)) in enumerate(cats):
+            is_last_cat = c_idx == len(cats) - 1
+            cat_prefix = "└── " if is_last_cat else "├── "
+
+            choices.append(questionary.Separator(line=f"{cat_prefix}{cat_label}"))
+
+            for o_idx, op_name in enumerate(op_names):
+                is_last_op = o_idx == len(op_names) - 1
+
+                # Determine proper indentation based on parent branch
+                indent = "    " if is_last_cat else "│   "
+                op_prefix = "└── " if is_last_op else "├── "
+
+                idx = name_to_idx.get(op_name, -1)
+                display_str = f"{indent}{op_prefix}{op_name}"
+
+                # We skip missing operations robustly
+                if idx != -1:
+                    choices.append(questionary.Choice(display_str, value=idx))
 
         selection = questionary.select(
-            "What would you like to do?", choices=choices
+            "",
+            choices=choices,
+            pointer="▶",
+            use_indicator=False,
+            instruction="(Use arrow keys to navigate, Enter to select)",
         ).ask()
 
         if selection is None:  # C-c
@@ -527,20 +587,33 @@ def select_manipulations():
 
             if op_details:
                 selected_operations.append(op_details)
-                print(f"Added '{manip['name']}'.")
+                # print(f"Added '{manip['name']}'.") # Status is now implied by UI update
 
     return selected_operations, extra_args
 
 
 def interactive_menu():
     try:
-        print("--- Welcome to the Interactive Image Processor ---")
+        # We don't need the basic print anymore, the menu handles it.
         paths = select_images()
         if not paths:
-            print("No images selected. Exiting.")
+            console.print("[yellow]No images selected. Exiting.[/]")
             return
 
-        ops, extra_args = select_manipulations()
+        images_data = []
+        for p in paths:
+            dims, size_str, fmt = _get_image_metadata(p)
+            images_data.append(
+                {
+                    "name": os.path.basename(p),
+                    "dims": dims,
+                    "size": size_str,
+                    "fmt": fmt,
+                    "path": p,
+                }
+            )
+
+        ops, extra_args = select_manipulations(images_data)
 
         # Prepare args
         mock_args = SimpleNamespace(
@@ -548,15 +621,13 @@ def interactive_menu():
             threshold=extra_args.get("threshold", 50),
         )
 
-        print(f"\nProcessing {len(paths)} images...")
-        images_data = []
-        for p in paths:
-            images_data.append([os.path.basename(p), p])
+        # Process expects a list of [name, path] lists as per existing logic
+        process_images_data = [[img["name"], img["path"]] for img in images_data]
+        process_images_and_save(process_images_data, ops, mock_args)
 
-        process_images_and_save(images_data, ops, mock_args)
-        print("\n--- Processing Complete ---")
+        console.print("\n[bright_green]✨ Processing Complete ✨[/]\n")
 
     except KeyboardInterrupt:
-        print("\nCancelled.")
+        console.print("\n[yellow]Cancelled.[/]")
     except Exception as e:
-        print(f"Error: {e}")
+        console.print(f"[red]Error: {e}[/]")

@@ -14,7 +14,7 @@ class TestFileManagement(unittest.TestCase):
         """Set up a temporary directory and a dummy file for testing."""
         self.test_dir = "tests/test_images"
         self.test_file = os.path.join(self.test_dir, "Hill Castle.png")
-        self.base_dir = "Base Images"
+        self.base_dir = "test_base_images"
         self.moved_file_path = os.path.join(self.base_dir, "Hill Castle.png")
 
         # Ensure the base directory exists and is empty

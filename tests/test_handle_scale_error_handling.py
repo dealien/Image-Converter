@@ -5,9 +5,9 @@ import processing
 
 
 class TestHandleScaleErrorHandling(unittest.TestCase):
-    @patch("processing.logger")
+    @patch("processing.console.print")
     @patch("processing.scale_image")
-    def test_handle_scale_invalid_factor(self, mock_scale_image, mock_logger):
+    def test_handle_scale_invalid_factor(self, mock_scale_image, mock_console_print):
         # Setup
         image = MagicMock()
         args = SimpleNamespace(resample="bilinear")
@@ -17,13 +17,15 @@ class TestHandleScaleErrorHandling(unittest.TestCase):
         result = processing.handle_scale(image, "test.png", values, args)
 
         # Verify
-        mock_logger.error.assert_called_with("Invalid scale factor: invalid_factor")
+        mock_console_print.assert_called_with(
+            "  [bright_red]✗[/] [red]Invalid scale factor: invalid_factor[/]"
+        )
         self.assertEqual(result, image)
         mock_scale_image.assert_not_called()
 
-    @patch("processing.logger")
+    @patch("processing.console.print")
     @patch("processing.scale_image")
-    def test_handle_scale_invalid_size(self, mock_scale_image, mock_logger):
+    def test_handle_scale_invalid_size(self, mock_scale_image, mock_console_print):
         # Setup
         image = MagicMock()
         args = SimpleNamespace(resample="bilinear")
@@ -33,13 +35,17 @@ class TestHandleScaleErrorHandling(unittest.TestCase):
         result = processing.handle_scale(image, "test.png", values, args)
 
         # Verify
-        mock_logger.error.assert_called_with(f"Invalid size format: {values}")
+        mock_console_print.assert_called_with(
+            f"  [bright_red]✗[/] [red]Invalid size format: {values}[/]"
+        )
         self.assertEqual(result, image)
         mock_scale_image.assert_not_called()
 
-    @patch("processing.logger")
+    @patch("processing.console.print")
     @patch("processing.scale_image")
-    def test_handle_scale_invalid_args_count(self, mock_scale_image, mock_logger):
+    def test_handle_scale_invalid_args_count(
+        self, mock_scale_image, mock_console_print
+    ):
         # Setup
         image = MagicMock()
         args = SimpleNamespace(resample="bilinear")
@@ -49,8 +55,8 @@ class TestHandleScaleErrorHandling(unittest.TestCase):
         result = processing.handle_scale(image, "test.png", values, args)
 
         # Verify
-        mock_logger.error.assert_called_with(
-            "Invalid format for --scale argument. Use '1.5', '1.5x' or '400px 300px'."
+        mock_console_print.assert_called_with(
+            "  [bright_red]✗[/] [red]Invalid format for --scale argument. Use '1.5', '1.5x' or '400px 300px'.[/]"
         )
         self.assertEqual(result, image)
         mock_scale_image.assert_not_called()
