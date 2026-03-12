@@ -405,6 +405,22 @@ class TestImageColorOps(unittest.TestCase):
         _, _, _, new_alpha = red_enhanced.split()
         self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
 
+    def test_apply_color_balance_4_plus_bands(self):
+        # Create an RGBA image for testing 4+ bands edge case
+        rgba_image = self.test_image.copy().convert("RGBA")
+        alpha = Image.new("L", rgba_image.size, 100)
+        rgba_image.putalpha(alpha)
+
+        # Enhance Color
+        color_balanced = apply_color_balance(rgba_image, 1.5, 1.0, 1.0)
+
+        # Check output mode
+        self.assertEqual(color_balanced.mode, "RGBA")
+
+        # Verify alpha channel is preserved
+        _, _, _, result_alpha = color_balanced.split()
+        self.assertEqual(list(result_alpha.getdata()), list(alpha.getdata()))
+
     def test_posterize(self):
         # Create a gradient image
         img = Image.new("RGB", (256, 1))
