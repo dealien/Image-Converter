@@ -8,11 +8,11 @@ from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import (
-    BarColumn,
     Progress,
     SpinnerColumn,
-    TaskProgressColumn,
     TextColumn,
+    BarColumn,
+    TaskProgressColumn,
     TimeElapsedColumn,
 )
 from rich.rule import Rule
@@ -37,6 +37,21 @@ from image_filters import (
 )
 from remove_background import remove_background
 from scale_image import scale_image
+
+
+class StyledTimeElapsedColumn(TimeElapsedColumn):
+    """A TimeElapsedColumn that supports custom styling."""
+
+    def __init__(self, style="none"):
+        super().__init__()
+        self.style = style
+
+    def render(self, task):
+        from rich.text import Text
+
+        text = super().render(task)
+        return Text(str(text), style=self.style)
+
 
 console = Console()
 
@@ -272,7 +287,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             finished_style="bright_green",
         ),
         TaskProgressColumn(),
-        TimeElapsedColumn(),
+        StyledTimeElapsedColumn(style="bright_cyan"),
         console=console,
         transient=False,
     ) as progress:
@@ -289,10 +304,14 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             image_task = image_tasks[i - 1]
             progress.update(image_task, visible=True)
 
+            # Calculate elapsed time for log marker
+            elapsed_now = time.time() - start_time
+
             # Print a separator above each image's log
             progress.console.print()
             progress.console.print(
-                f"  [bold bright_yellow]▸ [{i}/{total_images}][/]  "
+                f"[bright_cyan][{elapsed_now: >4.1f}s][/]  "
+                f"[bold bright_yellow]▸ [{i}/{total_images}][/]  "
                 f"[bold bright_white]{original_name}[/]"
             )
             progress.console.print(
