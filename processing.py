@@ -259,6 +259,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
     results = []  # Store tuple of (filename, success, output_dims, output_size_bytes, error_msg)
     start_time = time.time()
 
+    # Steps per image: Open(1) + Ops(N) + Save(1)
+    image_total = 1 + len(ordered_operations) + 1
+
     with Progress(
         SpinnerColumn("dots", style="bright_cyan"),
         TextColumn("[bold bright_white]{task.description}"),
@@ -273,12 +276,28 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         console=console,
         transient=False,
     ) as progress:
+        # Pre-add all image tasks (hidden) so they appear above Total
+        image_tasks = []
+        for original_name, _ in images_data:
+            task_id = progress.add_task(original_name, total=image_total, visible=False)
+            image_tasks.append(task_id)
+
+        # Add Total last so it stays at the bottom
         overall = progress.add_task("Total", total=total_images)
 
         for i, (original_name, image_path) in enumerate(images_data, 1):
-            # Calculate total steps for this image: Open(1) + Ops(N) + Save(1)
-            image_total = 1 + len(ordered_operations) + 1
-            image_task = progress.add_task(original_name, total=image_total)
+            image_task = image_tasks[i - 1]
+            progress.update(image_task, visible=True)
+
+            # Print a separator above each image's log
+            progress.console.print()
+            progress.console.print(
+                f"  [bold bright_yellow]▸ [{i}/{total_images}][/]  "
+                f"[bold bright_white]{original_name}[/]"
+            )
+            progress.console.print(
+                Rule(style="dim white"),
+            )
 
             temp_path = None
             success = False
@@ -291,7 +310,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
 
             try:
                 # Step 1: Open
-                progress.update(image_task, description=f"{original_name} [dim](Opening...)[/]")
+                progress.update(
+                    image_task, description=f"{original_name} [dim](Opening...)[/]"
+                )
                 with Image.open(image_path) as img:
                     img.load()
                     output_image = img.copy()
@@ -303,14 +324,19 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                     op_values = operation.get("values", [])
                     handler = operation_handlers.get(op_dest)
                     if handler:
-                        progress.update(image_task, description=f"{original_name} [dim]({op_dest.replace('_', ' ')}...)[/]")
+                        progress.update(
+                            image_task,
+                            description=f"{original_name} [dim]({op_dest.replace('_', ' ')}...)[/]",
+                        )
                         output_image = handler(
                             output_image, original_name, op_values, cli_args
                         )
                     progress.advance(image_task)
 
                 # Step 3: Save
-                progress.update(image_task, description=f"{original_name} [dim](Saving...)[/]")
+                progress.update(
+                    image_task, description=f"{original_name} [dim](Saving...)[/]"
+                )
                 if not os.path.exists("Output/"):
                     os.makedirs("Output/")
 
@@ -331,12 +357,17 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 out_size_bytes = os.path.getsize(output_path)
                 out_dims = f"{output_image.width} × {output_image.height}"
 
-                progress.update(image_task, description=f"{original_name} [bright_green](Done)[/]")
+                progress.update(
+                    image_task, description=f"{original_name} [bright_green]✓ Done[/]"
+                )
                 success = True
 
             except Exception as e:
                 error_msg = str(e)
-                progress.update(image_task, description=f"{original_name} [bright_red](Error: {e})[/]")
+                progress.update(
+                    image_task,
+                    description=f"{original_name} [bright_red]✗ Error: {e}[/]",
+                )
                 # Advance to total to show it finished even with error
                 progress.update(image_task, completed=image_total)
 
