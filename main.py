@@ -6,7 +6,12 @@ import logging
 
 from pathlib import Path
 
-from PIL import Image
+try:
+    import coloredlogs
+
+    HAS_COLOREDLOGS = True
+except ModuleNotFoundError:
+    HAS_COLOREDLOGS = False
 
 from file_management import move_images_to_subdirectory
 from processing import process_images_and_save
@@ -32,7 +37,10 @@ class StoreInOrder(argparse.Action):
 def main():
     # Configure logging to mimic print output (stdout, message only) regarding format,
     # but allowing for future extension (file logging, etc.)
-    logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
+    if HAS_COLOREDLOGS:
+        coloredlogs.install(level="INFO", fmt="%(message)s", stream=sys.stdout)
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
 
     # If --menu is used or no arguments are provided, start the menu.
 
@@ -210,10 +218,8 @@ def main():
             return
         for filepath in filepaths:
             if os.path.isfile(filepath):
-                with Image.open(filepath) as input_image:
-                    input_image.load()
-                    filename = Path(filepath).name
-                    images_data.append([filename, input_image.copy()])
+                filename = Path(filepath).name
+                images_data.append([filename, filepath])
     except Exception as e:
         print(f"Error while loading file(s): {e}")
         return

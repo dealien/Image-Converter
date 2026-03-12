@@ -1,7 +1,9 @@
 import os
 from pathlib import Path
 import logging
+import tempfile
 
+from PIL import Image
 
 from flip_image import flip_image
 from image_filters import (
@@ -198,14 +200,17 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         return
     logger.info(f"\nProcessing {len(images_data)} image(s)...")
     total_images = len(images_data)
-    for i, (image_name, image_to_process) in enumerate(images_data, 1):
+    for i, (image_name, image_path) in enumerate(images_data, 1):
         logger.info(f"\n{'=' * 50}")
         logger.info(f'[{i}/{total_images}] Processing: "{image_name}"')
         logger.info(f"{'=' * 50}")
 
         temp_path = None  # Initialize temp_path to None
         try:
-            output_image = image_to_process.copy()
+            with Image.open(image_path) as img:
+                img.load()
+                output_image = img.copy()
+
             for operation in ordered_operations:
                 op_dest = operation["dest"]
                 op_values = operation.get("values", [])
@@ -218,8 +223,15 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 os.makedirs("Output/")
             output_filename = Path(image_name).stem + ".png"
             output_path = os.path.join("Output", output_filename)
-            temp_path = os.path.join("Output", f".tmp.{output_filename}")
-            output_image.save(temp_path, "PNG")
+
+            fd, temp_path = tempfile.mkstemp(
+                dir="Output", prefix=".tmp.", suffix=".png"
+            )
+            with os.fdopen(fd, "wb") as f:
+                output_image.save(f, format="PNG")
+                f.flush()
+                os.fsync(f.fileno())
+
             os.replace(temp_path, output_path)
             logger.info(f"  [SUCCESS] Saved to: {output_path}")
         except Exception:
