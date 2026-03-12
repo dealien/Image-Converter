@@ -294,7 +294,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         # Pre-add all image tasks (hidden) so they appear above Total
         image_tasks = []
         for original_name, _ in images_data:
-            task_id = progress.add_task(original_name, total=image_total, visible=False)
+            task_id = progress.add_task(
+                original_name, total=image_total, visible=False, start=False
+            )
             image_tasks.append(task_id)
 
         # Add Total last so it stays at the bottom
@@ -302,6 +304,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
 
         for i, (original_name, image_path) in enumerate(images_data, 1):
             image_task = image_tasks[i - 1]
+            progress.start_task(image_task)
             progress.update(image_task, visible=True)
 
             # Calculate elapsed time for log marker
@@ -312,7 +315,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             progress.console.print(
                 f"  [bold bright_yellow]▸ [{i}/{total_images}][/]  "
                 f"[bold bright_white]{original_name}[/]  "
-                f"[bright_cyan][{elapsed_now: >4.1f}s ][/]"
+                f"[bright_cyan][{elapsed_now:>5.1f}s ][/]"
             )
             progress.console.print(
                 Rule(style="dim white"),
@@ -437,16 +440,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
     cli_str = " ".join(cli_args_list)
 
     if cli_str:
-        cli_panel = Panel(
-            f"> python main.py {cli_str}",
-            title="💻  Equivalent CLI Command",
-            title_align="left",
-            border_style="bright_blue",
-            box=box.ROUNDED,
-            padding=(1, 2),
-        )
         console.print()
-        console.print(cli_panel)
+        console.print("💻  [bold bright_cyan]Equivalent CLI Command[/]")
+        console.print(f"[bright_yellow]> python main.py {cli_str}[/]")
 
     # ── Results Table ──────────────────────────────────
     console.print()
