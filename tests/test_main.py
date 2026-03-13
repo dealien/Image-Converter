@@ -55,7 +55,8 @@ class TestMain(unittest.TestCase):
 
         # Image.open is called from within processing.py during the process loop
         with patch(
-            "processing.Image.open", MagicMock(side_effect=lambda *args: Image.new("RGB", (10, 10)))
+            "processing.Image.open",
+            MagicMock(side_effect=lambda *args: Image.new("RGB", (10, 10))),
         ):
             with patch.object(sys, "argv", ["main.py", "-bg", "*"]):
                 main()
