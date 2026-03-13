@@ -335,25 +335,31 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 progress.update(
                     image_task, description=f"{original_name} [dim](Opening...)[/]"
                 )
-                with Image.open(image_path) as img:
+                img = Image.open(image_path)
+                try:
                     img.load()
-                    output_image = img.copy()
-                progress.advance(image_task)
-
-                # Step 2: Operations
-                for operation in ordered_operations:
-                    op_dest = operation["dest"]
-                    op_values = operation.get("values", [])
-                    handler = operation_handlers.get(op_dest)
-                    if handler:
-                        progress.update(
-                            image_task,
-                            description=f"{original_name} [dim]({op_dest.replace('_', ' ')}...)[/]",
-                        )
-                        output_image = handler(
-                            output_image, original_name, op_values, cli_args
-                        )
+                    output_image = img
                     progress.advance(image_task)
+
+                    # Step 2: Operations
+                    for operation in ordered_operations:
+                        op_dest = operation["dest"]
+                        op_values = operation.get("values", [])
+                        handler = operation_handlers.get(op_dest)
+                        if handler:
+                            progress.update(
+                                image_task,
+                                description=f"{original_name} [dim]({op_dest.replace('_', ' ')}...)[/]",
+                            )
+                            output_image = handler(
+                                output_image, original_name, op_values, cli_args
+                            )
+                        progress.advance(image_task)
+
+                    if output_image is img:
+                        output_image = img.copy()
+                finally:
+                    img.close()
 
                 # Step 3: Save
                 progress.update(
