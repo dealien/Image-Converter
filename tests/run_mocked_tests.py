@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 
 def setup_mocks():
     """Mock dependencies that might not be installed."""
-    # Mock PIL and submodules
     mock_pil = MagicMock()
     sys.modules["PIL"] = mock_pil
     sys.modules["PIL.Image"] = mock_pil.Image
@@ -17,9 +16,36 @@ def setup_mocks():
     sys.modules["PIL.ImageOps"] = mock_pil.ImageOps
     sys.modules["PIL.ImageDraw"] = mock_pil.ImageDraw
     sys.modules["PIL.ImageFont"] = mock_pil.ImageFont
+    sys.modules["PIL.ImageChops"] = mock_pil.ImageChops
 
-    # Mock rembg
     sys.modules["rembg"] = MagicMock()
+    sys.modules["pytest"] = MagicMock()
+    sys.modules["pytest.fixture"] = lambda f: f
+    sys.modules["questionary"] = MagicMock()
+
+    sys.modules["rich"] = MagicMock()
+    sys.modules["rich.table"] = MagicMock()
+    sys.modules["rich.text"] = MagicMock()
+    sys.modules["rich.panel"] = MagicMock()
+    sys.modules["rich.box"] = MagicMock()
+    sys.modules["rich.console"] = MagicMock()
+    sys.modules["rich.progress"] = MagicMock()
+    sys.modules["rich.rule"] = MagicMock()
+    sys.modules["rich.live"] = MagicMock()
+
+    sys.modules["prompt_toolkit"] = MagicMock()
+    sys.modules["prompt_toolkit.formatted_text"] = MagicMock()
+    sys.modules["prompt_toolkit.lexers"] = MagicMock()
+    sys.modules["prompt_toolkit.validation"] = MagicMock()
+    sys.modules["prompt_toolkit.styles"] = MagicMock()
+    sys.modules["prompt_toolkit.application"] = MagicMock()
+    sys.modules["prompt_toolkit.application.current"] = MagicMock()
+
+    sys.modules["coloredlogs"] = MagicMock()
+    sys.modules["skimage"] = MagicMock()
+    sys.modules["skimage.filters"] = MagicMock()
+    sys.modules["skimage.feature"] = MagicMock()
+    sys.modules["numpy"] = MagicMock()
 
 
 if __name__ == "__main__":
