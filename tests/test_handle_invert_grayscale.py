@@ -1,25 +1,8 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from types import SimpleNamespace
-import sys
-
-# Mocking external dependencies that might not be present in the environment
-sys.modules['PIL'] = MagicMock()
-sys.modules['PIL.Image'] = MagicMock()
-sys.modules['rich'] = MagicMock()
-sys.modules['rich.console'] = MagicMock()
-sys.modules['rich.progress'] = MagicMock()
-sys.modules['rich.table'] = MagicMock()
-sys.modules['rich.panel'] = MagicMock()
-sys.modules['rich.rule'] = MagicMock()
-sys.modules['rich.text'] = MagicMock()
-sys.modules['rich.box'] = MagicMock()
-sys.modules['flip_image'] = MagicMock()
-sys.modules['image_filters'] = MagicMock()
-sys.modules['remove_background'] = MagicMock()
-sys.modules['scale_image'] = MagicMock()
-
 import processing
+
 
 class TestHandleInvertGrayscale(unittest.TestCase):
     @patch("processing.console.print")
