@@ -1,16 +1,16 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 import sys
-import os
 
 # Mock PIL.Image before importing scale_image
 mock_image = MagicMock()
 mock_image_file = MagicMock()
-sys.modules['PIL'] = MagicMock()
-sys.modules['PIL.Image'] = mock_image
-sys.modules['PIL.ImageFile'] = mock_image_file
+sys.modules["PIL"] = MagicMock()
+sys.modules["PIL.Image"] = mock_image
+sys.modules["PIL.ImageFile"] = mock_image_file
 
-from scale_image import scale_image
+from scale_image import scale_image  # noqa: E402
+
 
 class TestScaleImageDoS(unittest.TestCase):
     def test_unbounded_scaling(self):
@@ -25,6 +25,7 @@ class TestScaleImageDoS(unittest.TestCase):
             scale_image(img, scale_factor=1000000.0)
 
         self.assertIn("exceeds maximum allowed limit", str(cm.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

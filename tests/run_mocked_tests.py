@@ -26,28 +26,34 @@ def setup_mocks():
         def mock_resize(new_size, resample=None):
             new_img = mock_new(img.mode, new_size)
             return new_img
+
         img.resize.side_effect = mock_resize
 
         def mock_copy():
             return mock_new(img.mode, img.size)
+
         img.copy.side_effect = mock_copy
 
         def mock_getchannel(channel):
             c = MagicMock()
             c.point.return_value = c
             return c
+
         img.getchannel.side_effect = mock_getchannel
 
         def mock_rotate(angle, expand=False):
             if expand and angle in [90, 270]:
                 return mock_new(img.mode, (img.height, img.width))
             return mock_new(img.mode, img.size)
+
         img.rotate.side_effect = mock_rotate
 
         return img
 
     mock_pil.Image.new.side_effect = mock_new
-    mock_pil.Image.fromarray.side_effect = lambda arr, mode="RGB": mock_new(mode, (10, 10))
+    mock_pil.Image.fromarray.side_effect = lambda arr, mode="RGB": mock_new(
+        mode, (10, 10)
+    )
     mock_pil.Image.Resampling.NEAREST = 0
     mock_pil.Image.Resampling.BILINEAR = 1
     mock_pil.Image.Resampling.BICUBIC = 2
@@ -55,8 +61,12 @@ def setup_mocks():
 
     mock_pil.ImageOps.grayscale.side_effect = lambda img: mock_new("L", img.size)
     mock_pil.ImageOps.invert.side_effect = lambda img: mock_new(img.mode, img.size)
-    mock_pil.ImageOps.posterize.side_effect = lambda img, bits: mock_new(img.mode, img.size)
-    mock_pil.ImageOps.expand.side_effect = lambda img, border=0, fill=0: mock_new(img.mode, (img.width + 2*border, img.height + 2*border))
+    mock_pil.ImageOps.posterize.side_effect = lambda img, bits: mock_new(
+        img.mode, img.size
+    )
+    mock_pil.ImageOps.expand.side_effect = lambda img, border=0, fill=0: mock_new(
+        img.mode, (img.width + 2 * border, img.height + 2 * border)
+    )
 
     sys.modules["PIL"] = mock_pil
     sys.modules["PIL.Image"] = mock_pil.Image
