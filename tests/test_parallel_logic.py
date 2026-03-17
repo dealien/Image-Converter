@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch, MagicMock
-import os
 import sys
 
 # We need to mock dependencies before importing rich_menu or menu
@@ -31,8 +30,8 @@ sys.modules["skimage.feature"] = MagicMock()
 sys.modules["numpy"] = MagicMock()
 sys.modules["rembg"] = MagicMock()
 
-import rich_menu
-import menu
+import rich_menu  # noqa: E402
+import menu  # noqa: E402
 
 
 class TestParallelLogic(unittest.TestCase):

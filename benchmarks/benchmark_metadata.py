@@ -3,9 +3,8 @@ import time
 import unittest
 from unittest.mock import MagicMock, patch
 import sys
-import concurrent.futures
 
-# Mock dependencies
+# Mock dependencies before importing rich_menu
 sys.modules["questionary"] = MagicMock()
 sys.modules["PIL"] = MagicMock()
 sys.modules["PIL.Image"] = MagicMock()
@@ -16,7 +15,7 @@ sys.modules["rich.panel"] = MagicMock()
 sys.modules["rich.box"] = MagicMock()
 sys.modules["rich.console"] = MagicMock()
 
-import rich_menu
+import rich_menu  # noqa: E402
 
 
 # Define a mock Image.open that takes some time
