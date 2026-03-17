@@ -14,7 +14,17 @@ console = Console()
 
 
 class StoreInOrder(argparse.Action):
+    """Custom argparse Action to store arguments in the order they are provided."""
+
     def __call__(self, parser, namespace, values, option_string=None):
+        """Stores the argument destination and values in the 'ordered_operations' list.
+
+        Args:
+            parser (argparse.ArgumentParser): The ArgumentParser object.
+            namespace (argparse.Namespace): The Namespace object that will hold the parsed attributes.
+            values (str | list): The parsed argument values.
+            option_string (str, optional): The option string that was used to invoke this action. Defaults to None.
+        """
         if not hasattr(namespace, "ordered_operations"):
             setattr(namespace, "ordered_operations", [])
         if values is None:
@@ -31,6 +41,12 @@ class StoreInOrder(argparse.Action):
 
 
 def main():
+    """Main entry point for the image conversion CLI application.
+
+    Parses command-line arguments and executes the specified image processing
+    pipeline. If no arguments are provided or the `--menu` flag is used, it
+    launches the interactive menu interface.
+    """
 
     # If --menu is used or no arguments are provided, start the menu.
 

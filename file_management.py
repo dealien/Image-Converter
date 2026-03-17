@@ -9,12 +9,15 @@ import shutil
 # move_images_to_subdirectory("my_picture_folder")
 
 
-def move_images_to_subdirectory(subdirectory_name):
+def move_images_to_subdirectory(subdirectory_name: str):
     """Moves all image files from the current directory to a specified subdirectory.
 
     Args:
-        subdirectory_name: The name of the subdirectory to create and move
-                           the images into.
+        subdirectory_name (str): The name of the subdirectory to create and move
+            the images into.
+
+    Raises:
+        Exception: If an error occurs during directory creation or file moving.
     """
 
     try:

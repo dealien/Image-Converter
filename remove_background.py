@@ -3,12 +3,14 @@ from PIL import Image, ImageOps, ImageChops, ImageFile
 
 
 def remove_background(image_input: ImageFile, opt_border_width: int = 0):
-    """
-    Remove the background from an image.
+    """Remove the background from an image.
 
-    :param image_input: The image to modify.
-    :param opt_border_width: The number of pixels to be removed from the border.
-    :return:
+    Args:
+        image_input (ImageFile): The image to modify.
+        opt_border_width (int, optional): The number of pixels to be added and later removed from the border. Defaults to 0.
+
+    Returns:
+        Image.Image: The image with its background removed and trimmed.
     """
 
     # Add white border
@@ -20,7 +22,15 @@ def remove_background(image_input: ImageFile, opt_border_width: int = 0):
     return output
 
 
-def trim(image):
+def trim(image: ImageFile):
+    """Trim empty background space from an image by finding its bounding box.
+
+    Args:
+        image (ImageFile): The image to be trimmed.
+
+    Returns:
+        Image.Image: The cropped image if a bounding box was found, otherwise the original image.
+    """
     bg = Image.new(image.mode, image.size, image.getpixel((0, 0)))
     diff = ImageChops.difference(image, bg)
     diff = ImageChops.add(diff, diff, 2.0, -100)

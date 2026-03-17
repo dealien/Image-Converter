@@ -1,0 +1,17 @@
+site_name: Image Converter Documentation
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+
+nav:
+  - Home: index.md
+  - CLI Usage: cli_usage.md
+  - Interactive Menu: menu_usage.md
+  - API Reference: api_reference.md
