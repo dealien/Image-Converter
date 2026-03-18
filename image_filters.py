@@ -2,30 +2,43 @@ from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
 
 
 def invert_colors(image: Image.Image) -> Image.Image:
-    """
-    Inverts the colors of an image.
-    :param image: The input image.
-    :return: The image with inverted colors.
+    """Inverts the colors of an image.
+
+    Args:
+        image (Image.Image): The input image.
+
+    Returns:
+        Image.Image: The image with inverted colors.
     """
     return ImageOps.invert(image.convert("RGB"))
 
 
 def grayscale(image: Image.Image) -> Image.Image:
-    """
-    Converts an image to grayscale.
-    :param image: The input image.
-    :return: The grayscale image.
+    """Converts an image to grayscale.
+
+    Args:
+        image (Image.Image): The input image.
+
+    Returns:
+        Image.Image: The grayscale image.
     """
     return ImageOps.grayscale(image)
 
 
 def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Image.Image:
-    """
-    Applies edge detection to an image using one of three methods.
-    :param image: The input image.
-    :param method: The edge detection method ('sobel', 'canny', 'kovalevsky').
-    :param threshold: The sensitivity threshold for the Kovalevsky method.
-    :return: The image with edges detected.
+    """Applies edge detection to an image using one of three methods.
+
+    Args:
+        image (Image.Image): The input image.
+        method (str): The edge detection method ('sobel', 'canny', 'kovalevsky').
+        threshold (int, optional): The sensitivity threshold for the Kovalevsky method. Defaults to 50.
+
+    Returns:
+        Image.Image: The image with edges detected.
+
+    Raises:
+        ImportError: If scikit-image or numpy is not installed.
+        ValueError: If an invalid edge detection method is provided.
     """
 
     try:
@@ -128,11 +141,18 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
 
 
 def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
-    """
-    Adjusts the brightness of an image.
-    :param image: The input image.
-    :param brightness: An integer from -100 to 100.
-    :return: The image with adjusted brightness.
+    """Adjusts the brightness of an image.
+
+    Args:
+        image (Image.Image): The input image.
+        brightness (int): An integer from -100 to 100 representing the brightness level.
+
+    Returns:
+        Image.Image: The image with adjusted brightness.
+
+    Raises:
+        TypeError: If brightness is not an integer.
+        ValueError: If brightness is not between -100 and 100.
     """
     if not isinstance(brightness, int):
         raise TypeError("Brightness must be an integer.")
@@ -156,11 +176,18 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
 
 
 def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
-    """
-    Adjusts the contrast of an image.
-    :param image: The input image.
-    :param contrast: An integer from -100 to 100.
-    :return: The image with adjusted contrast.
+    """Adjusts the contrast of an image.
+
+    Args:
+        image (Image.Image): The input image.
+        contrast (int): An integer from -100 to 100 representing the contrast level.
+
+    Returns:
+        Image.Image: The image with adjusted contrast.
+
+    Raises:
+        TypeError: If contrast is not an integer.
+        ValueError: If contrast is not between -100 and 100.
     """
     if not isinstance(contrast, int):
         raise TypeError("Contrast must be an integer.")
@@ -184,11 +211,18 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
 
 
 def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
-    """
-    Adjusts the saturation of an image.
-    :param image: The input image.
-    :param saturation: An integer from -100 to 100.
-    :return: The image with adjusted saturation.
+    """Adjusts the saturation of an image.
+
+    Args:
+        image (Image.Image): The input image.
+        saturation (int): An integer from -100 to 100 representing the saturation level.
+
+    Returns:
+        Image.Image: The image with adjusted saturation.
+
+    Raises:
+        TypeError: If saturation is not an integer.
+        ValueError: If saturation is not between -100 and 100.
     """
     if not isinstance(saturation, int):
         raise TypeError("Saturation must be an integer.")
@@ -216,11 +250,18 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
 
 
 def apply_blur(image: Image.Image, radius: int) -> Image.Image:
-    """
-    Applies Gaussian Blur to the image.
-    :param image: The input image.
-    :param radius: The radius of the blur.
-    :return: The blurred image.
+    """Applies Gaussian Blur to the image.
+
+    Args:
+        image (Image.Image): The input image.
+        radius (int): The radius of the blur.
+
+    Returns:
+        Image.Image: The blurred image.
+
+    Raises:
+        TypeError: If radius is not a number.
+        ValueError: If radius is negative.
     """
     if not isinstance(radius, (int, float)):
         raise TypeError("Radius must be a number.")
@@ -232,11 +273,18 @@ def apply_blur(image: Image.Image, radius: int) -> Image.Image:
 
 
 def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
-    """
-    Applies sharpening to the image.
-    :param image: The input image.
-    :param sharpness: An integer from 0 to 100 representing intensity.
-    :return: The sharpened image.
+    """Applies sharpening to the image.
+
+    Args:
+        image (Image.Image): The input image.
+        sharpness (int): An integer from 0 to 100 representing intensity.
+
+    Returns:
+        Image.Image: The sharpened image.
+
+    Raises:
+        TypeError: If sharpness is not an integer.
+        ValueError: If sharpness is not between 0 and 100.
     """
     if not isinstance(sharpness, int):
         raise TypeError("Sharpness must be an integer.")
@@ -265,13 +313,20 @@ def apply_color_balance(
     image: Image.Image, red_factor: float, green_factor: float, blue_factor: float
 ) -> Image.Image:
     # pylint: disable=too-many-branches, complex-logic
-    """
-    Adjusts the color balance of an image by scaling RGB channels.
-    :param image: The input image.
-    :param red_factor: Multiplier for the red channel.
-    :param green_factor: Multiplier for the green channel.
-    :param blue_factor: Multiplier for the blue channel.
-    :return: The color-balanced image.
+    """Adjusts the color balance of an image by scaling RGB channels.
+
+    Args:
+        image (Image.Image): The input image.
+        red_factor (float): Multiplier for the red channel.
+        green_factor (float): Multiplier for the green channel.
+        blue_factor (float): Multiplier for the blue channel.
+
+    Returns:
+        Image.Image: The color-balanced image.
+
+    Raises:
+        TypeError: If color balance factors are not numbers.
+        ValueError: If factors are infinite, NaN, or negative.
     """
     # Handle float conversion and validation
     try:
@@ -301,10 +356,13 @@ def apply_color_balance(
         image = image.convert("RGB")
 
     def _scale_lut(factor: float):
-        """
-        Creates a Look-Up Table (LUT) for scaling a channel, clamping to [0, 255].
-        :param factor: The scaling factor.
-        :return: A list of 256 mapped values.
+        """Creates a Look-Up Table (LUT) for scaling a channel, clamping to [0, 255].
+
+        Args:
+            factor (float): The scaling factor.
+
+        Returns:
+            list: A list of 256 mapped values.
         """
         return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
 
@@ -323,11 +381,17 @@ def apply_color_balance(
 
 
 def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
-    """
-    Rotates the hue of the image.
-    :param image: The input image.
-    :param degrees: The angle to rotate the hue (0-360).
-    :return: The image with rotated hue.
+    """Rotates the hue of the image.
+
+    Args:
+        image (Image.Image): The input image.
+        degrees (int): The angle to rotate the hue (0-360).
+
+    Returns:
+        Image.Image: The image with rotated hue.
+
+    Raises:
+        TypeError: If degrees is not a number.
     """
     if not isinstance(degrees, (int, float)):
         raise TypeError("Degrees must be a number.")
@@ -361,11 +425,18 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
 
 
 def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
-    """
-    Reduces the number of bits for each color channel.
-    :param image: The input image.
-    :param bits: The number of bits to keep (1-8).
-    :return: The posterized image.
+    """Reduces the number of bits for each color channel.
+
+    Args:
+        image (Image.Image): The input image.
+        bits (int): The number of bits to keep (1-8).
+
+    Returns:
+        Image.Image: The posterized image.
+
+    Raises:
+        TypeError: If bits is not an integer.
+        ValueError: If bits is not between 1 and 8.
     """
     if not isinstance(bits, int):
         raise TypeError("Bits must be an integer.")
@@ -398,13 +469,20 @@ MAX_TOTAL_PIXELS = 100000000  # 100MP
 def apply_border(
     image: Image.Image, thickness: int, color_str: str, position: str = "expand"
 ) -> Image.Image:
-    """
-    Adds a solid color border to the image.
-    :param image: The input image.
-    :param thickness: Thickness of the border in pixels.
-    :param color_str: Color in Hex or RGB format (e.g., '#FF0000', 'red', '255,0,0').
-    :param position: 'expand' to add border outside, 'inside' to overlay border.
-    :return: Image with border.
+    """Adds a solid color border to the image.
+
+    Args:
+        image (Image.Image): The input image.
+        thickness (int): Thickness of the border in pixels.
+        color_str (str): Color in Hex or RGB format (e.g., '#FF0000', 'red', '255,0,0').
+        position (str, optional): 'expand' to add border outside, 'inside' to overlay border. Defaults to "expand".
+
+    Returns:
+        Image.Image: Image with border.
+
+    Raises:
+        ValueError: If color format is invalid, thickness is negative, thickness exceeds maximum allowed limit,
+            expanded image size exceeds maximum allowed limit, or position is invalid.
     """
     try:
         # Handle "255,0,0" format manually as ImageColor doesn't standardized it
@@ -468,11 +546,14 @@ def apply_border(
 
 
 def rotate_image(image: Image.Image, angle: int) -> Image.Image:
-    """
-    Rotates the image by a given angle, clamped to 90-degree increments.
-    :param image: The input image.
-    :param angle: The angle to rotate (will be rounded to nearest 90).
-    :return: Rotated image.
+    """Rotates the image by a given angle, clamped to 90-degree increments.
+
+    Args:
+        image (Image.Image): The input image.
+        angle (int): The angle to rotate (will be rounded to nearest 90).
+
+    Returns:
+        Image.Image: Rotated image.
     """
     # Clamp to nearest 90 degrees
     # 0, 90, 180, 270. 360 -> 0. -90 -> 270.

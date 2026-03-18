@@ -2,12 +2,17 @@ from PIL import Image, ImageFile
 
 
 def flip_image(image_input: ImageFile, direction: str):
-    """
-    Flip an image horizontally, vertically, or both.
+    """Flip an image horizontally, vertically, or both.
 
-    :param image_input: The image to modify.
-    :param direction: The direction to flip the image. Can be 'horizontal', 'vertical', or 'both'.
-    :return: The flipped image.
+    Args:
+        image_input (ImageFile): The image to modify.
+        direction (str): The direction to flip the image. Can be 'horizontal', 'vertical', or 'both'.
+
+    Returns:
+        Image.Image: The flipped image.
+
+    Raises:
+        ValueError: If an invalid direction is provided.
     """
     if direction == "horizontal":
         return image_input.transpose(Image.FLIP_LEFT_RIGHT)

@@ -13,6 +13,15 @@ console = Console()
 
 
 def _get_image_metadata(path):
+    """Retrieves basic metadata for an image file.
+
+    Args:
+        path (str): The file path to the image.
+
+    Returns:
+        tuple: A tuple containing the formatted dimensions string (e.g., '1920 x 1080'),
+            the formatted file size string (e.g., '1.5 MB'), and the image format (e.g., 'JPEG').
+    """
     try:
         size_bytes = os.path.getsize(path)
         if size_bytes >= 1024 * 1024:
@@ -36,8 +45,14 @@ def _get_image_metadata(path):
 
 
 def run_image_selector(image_files, image_dir):
-    """
-    Renders a tabular-style selection menu using questionary.
+    """Renders a tabular-style selection menu using questionary.
+
+    Args:
+        image_files (list): A list of image filenames.
+        image_dir (str): The directory containing the image files.
+
+    Returns:
+        list: A list of selected image file paths.
     """
     if not image_files:
         return []
@@ -86,8 +101,15 @@ def run_image_selector(image_files, image_dir):
 
 
 def render_combined_menu(images_data, operations, extra_args):
-    """
-    Renders the combined menu mockup layout to the console.
+    """Renders the combined menu mockup layout to the console.
+
+    Displays a summary of selected images and the current sequence of operations
+    (the pipeline), along with the equivalent CLI command.
+
+    Args:
+        images_data (list): A list of dictionaries containing image metadata.
+        operations (list): A list of dictionaries detailing the ordered operations.
+        extra_args (dict): A dictionary of extra global arguments (like resample filter).
     """
     console.clear()
     console.print()

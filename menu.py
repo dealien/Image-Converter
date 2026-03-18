@@ -26,9 +26,17 @@ _CUSTOM_STYLE = Style.from_dict(
 
 
 def _ask_text(message, default_val=None, validate=None):
-    """
-    Custom text prompt helper using prompt_toolkit to support colored defaults.
-    Replaces questionary.text(...).ask()
+    """Custom text prompt helper using prompt_toolkit to support colored defaults.
+
+    Replaces `questionary.text(...).ask()`.
+
+    Args:
+        message (str): The prompt message to display.
+        default_val (any, optional): The default value to show and return if input is empty. Defaults to None.
+        validate (callable, optional): A validation function for the input. Defaults to None.
+
+    Returns:
+        str: The user's input, or the default value if no input was provided.
     """
 
     def get_prompt_text():
@@ -92,6 +100,16 @@ def _ask_text(message, default_val=None, validate=None):
 
 
 def _format_operation_display(index, op, extra_args):
+    """Formats an operation dictionary into a readable CLI-like string for display.
+
+    Args:
+        index (int): The 0-based index of the operation in the pipeline.
+        op (dict): The operation dictionary containing 'dest' and 'values'.
+        extra_args (dict): Extra arguments (like resample, threshold) that modify the display.
+
+    Returns:
+        str: A formatted string representing the operation (e.g., "1. --scale 2.0x --resample bicubic").
+    """
     op_name = op["dest"].replace("_", "-")
     op_vals = " ".join(map(str, op.get("values", [])))
     display_string = f"{index + 1}. --{op_name} {op_vals}"
@@ -106,6 +124,18 @@ def _format_operation_display(index, op, extra_args):
 
 
 def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=False):
+    """Creates a validation function for numeric input within a specified range.
+
+    Args:
+        min_val (number, optional): The minimum allowed value. Defaults to None.
+        max_val (number, optional): The maximum allowed value. Defaults to None.
+        value_type (type, optional): The numeric type to cast to (e.g., int, float). Defaults to int.
+        allow_empty (bool, optional): Whether an empty string is considered valid. Defaults to False.
+
+    Returns:
+        callable: A validation function that takes a string and returns True if valid, or an error message string otherwise.
+    """
+
     def validator(val_str):
         if not val_str:
             if allow_empty:
@@ -130,6 +160,14 @@ def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=Fal
 
 
 def prompt_for_flip_options(extra_args=None):
+    """Prompts the user for image flipping options.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'flip', or None if canceled.
+    """
     choice = questionary.select(
         "Select flip direction:",
         choices=["Horizontal", "Vertical", "Both"],
@@ -141,6 +179,14 @@ def prompt_for_flip_options(extra_args=None):
 
 
 def prompt_for_scale_options(extra_args=None):
+    """Prompts the user for image scaling options and resampling filter.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary, modified in-place to store 'resample'. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'scale', or None if canceled.
+    """
     print("\n--- Scale Options ---")
 
     def scale_validator(val_str):
@@ -192,6 +238,14 @@ def prompt_for_scale_options(extra_args=None):
 
 
 def prompt_for_edge_detection_options(extra_args=None):
+    """Prompts the user for edge detection method and threshold (if applicable).
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary, modified in-place to store 'threshold'. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'edge_detection', or None if canceled.
+    """
     method = questionary.select(
         "Select Edge Detection Method:",
         choices=["Sobel", "Canny", "Kovalevsky"],
@@ -215,6 +269,14 @@ def prompt_for_edge_detection_options(extra_args=None):
 
 
 def prompt_for_brightness_options(extra_args=None):
+    """Prompts the user for a brightness adjustment value.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'brightness'.
+    """
     val_str = _ask_text(
         "Enter brightness value (-100 to 100)",
         default_val=0,
@@ -224,6 +286,14 @@ def prompt_for_brightness_options(extra_args=None):
 
 
 def prompt_for_contrast_options(extra_args=None):
+    """Prompts the user for a contrast adjustment value.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'contrast'.
+    """
     val_str = _ask_text(
         "Enter contrast value (-100 to 100)",
         default_val=0,
@@ -233,6 +303,14 @@ def prompt_for_contrast_options(extra_args=None):
 
 
 def prompt_for_saturation_options(extra_args=None):
+    """Prompts the user for a saturation adjustment value.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'saturation'.
+    """
     val_str = _ask_text(
         "Enter saturation value (-100 to 100)",
         default_val=0,
@@ -242,6 +320,14 @@ def prompt_for_saturation_options(extra_args=None):
 
 
 def prompt_for_blur_options(extra_args=None):
+    """Prompts the user for a blur radius.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'blur'.
+    """
     val_str = _ask_text(
         "Enter blur radius (min 0.0)",
         default_val=2.0,
@@ -251,6 +337,14 @@ def prompt_for_blur_options(extra_args=None):
 
 
 def prompt_for_sharpen_options(extra_args=None):
+    """Prompts the user for a sharpness intensity.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'sharpen'.
+    """
     val_str = _ask_text(
         "Enter sharpness intensity (0-100)",
         default_val=50,
@@ -260,6 +354,14 @@ def prompt_for_sharpen_options(extra_args=None):
 
 
 def prompt_for_color_balance_options(extra_args=None):
+    """Prompts the user for RGB color balance multipliers.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'color_balance'.
+    """
     print(
         "Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change)."
     )
@@ -291,6 +393,14 @@ def prompt_for_color_balance_options(extra_args=None):
 
 
 def prompt_for_hue_rotation_options(extra_args=None):
+    """Prompts the user for hue rotation degrees.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'hue_rotation'.
+    """
     val_str = _ask_text(
         "Enter hue rotation degrees (0-360)",
         default_val=90,
@@ -300,6 +410,14 @@ def prompt_for_hue_rotation_options(extra_args=None):
 
 
 def prompt_for_posterize_options(extra_args=None):
+    """Prompts the user for the number of bits for posterization.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'posterize'.
+    """
     val_str = _ask_text(
         "Enter number of bits (1-8)",
         default_val=4,
@@ -309,6 +427,14 @@ def prompt_for_posterize_options(extra_args=None):
 
 
 def prompt_for_border_options(extra_args=None):
+    """Prompts the user for border thickness, color, and position.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'border', or None if canceled.
+    """
     thickness_str = _ask_text(
         "Enter border thickness (0-500)",
         default_val=10,
@@ -337,6 +463,14 @@ def prompt_for_border_options(extra_args=None):
 
 
 def prompt_for_rotation_options(extra_args=None):
+    """Prompts the user for an image rotation angle.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'rotate'.
+    """
     angle_str = _ask_text(
         "Enter rotation angle (will clamp to nearest 90)",
         default_val=90,
@@ -398,6 +532,15 @@ AVAILABLE_MANIPULATIONS = [
 
 
 def remove_manipulation(operations, extra_args):
+    """Presents a menu to remove a previously added manipulation from the pipeline.
+
+    Args:
+        operations (list): The list of current operation dictionaries. Modified in-place.
+        extra_args (dict): The extra arguments dictionary. Modified in-place to clean up orphaned arguments.
+
+    Returns:
+        list: The updated list of operations.
+    """
     if not operations:
         print("\nThere are no operations to remove.")
         return operations
@@ -437,6 +580,11 @@ def remove_manipulation(operations, extra_args):
 
 
 def select_images():
+    """Finds images in the 'Base Images' directory and prompts the user to select them.
+
+    Returns:
+        list: A list of selected image file paths.
+    """
     image_dir = "Base Images"
     if not os.path.isdir(image_dir):
         console.print(f"[red]Error: Directory '{image_dir}' not found.[/]")
@@ -479,6 +627,14 @@ def select_images():
 
 
 def select_manipulations(images_data):
+    """Presents the main interactive menu for building the image processing pipeline.
+
+    Args:
+        images_data (list): A list of dictionaries containing metadata for the selected images.
+
+    Returns:
+        tuple: A tuple containing the list of selected operations and the extra arguments dictionary.
+    """
     selected_operations = []
     extra_args = {}
 
@@ -594,6 +750,10 @@ def select_manipulations(images_data):
 
 
 def interactive_menu():
+    """Main entry point for the interactive terminal UI.
+
+    Handles image selection, pipeline construction, and executes the processing.
+    """
     try:
         # We don't need the basic print anymore, the menu handles it.
         paths = select_images()
