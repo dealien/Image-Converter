@@ -1,6 +1,14 @@
+import os
 import subprocess
 import sys
-import os
+import time
+
+from rich import box
+from rich.console import Console
+from rich.table import Table
+
+# Initialize Rich Console
+console = Console()
 
 """
 Normal testing of the program is done using pytest.
@@ -9,17 +17,23 @@ This file is for automated testing of all arguments and operations of the
 program by running it as a user would from the command line.
 
 Just run this file and it will run all the commands in the commands list.
+
+This file should be kept up to date when new arguments or operations are 
+added to the program.
 """
 
 
 def run_command(args):
-    """Runs a single command with the current python executable."""
+    """Runs a single command with the current python executable and returns elapsed time."""
     cmd = [sys.executable, "main.py"] + args
-    print(f"Running: {' '.join(cmd)}")
+    console.print(f"🚀 [bold cyan]Running:[/] [white]{' '.join(cmd)}[/]")
+    start_time = time.time()
     result = subprocess.run(cmd, cwd=os.getcwd())
+    end_time = time.time()
     if result.returncode != 0:
-        print(f"Command failed with return code {result.returncode}")
+        console.print(f"❌ [bold red]Command failed with return code {result.returncode}[/]")
         sys.exit(result.returncode)
+    return end_time - start_time
 
 
 def main():
@@ -54,6 +68,13 @@ def main():
         ],
         [".\\tests\\test_images\\*", "--flip", "both"],
         [".\\tests\\test_images\\*", "--edge-detection", "sobel"],
+        [
+            ".\\tests\\test_images\\*",
+            "--edge-detection",
+            "kovalevsky",
+            "--threshold",
+            "60",
+        ],
         [".\\tests\\test_images\\*", "--contrast", "50"],
         [".\\tests\\test_images\\*", "--color-balance", "1.2", "0.8", "0.8"],
         [".\\tests\\test_images\\*", "--hue-rotation", "90"],
@@ -64,10 +85,36 @@ def main():
         [".\\tests\\test_images\\*", "--rotate", "90"],
     ]
 
-    print("Starting automated scenario...")
+    console.print("\n[bold bright_magenta]✨ Starting automated testing scenario...[/]")
+    results = []
+
     for args in commands:
-        run_command(args)
-    print("Automated scenario completed successfully.")
+        elapsed = run_command(args)
+        command_str = " ".join(args[1:])
+        results.append((command_str, elapsed))
+
+    console.print("\n[bold bright_green]✅ Automated testing scenario completed successfully![/]")
+
+    table = Table(
+        title="📊 Benchmark Results",
+        box=box.ROUNDED,
+        title_style="bold bright_cyan",
+        border_style="dim cyan",
+        header_style="bold bright_white",
+    )
+    table.add_column("Command Target", style="cyan")
+    table.add_column("Time (s)", justify="right", style="bright_green")
+
+    total_time = 0
+    for cmd, elapsed in results:
+        table.add_row(cmd, f"{elapsed:.2f}")
+        total_time += elapsed
+
+    table.add_section()
+    table.add_row("[bold]Total Time[/bold]", f"[bold]{total_time:.2f}[/bold]")
+
+    console.print()
+    console.print(table)
 
 
 if __name__ == "__main__":
