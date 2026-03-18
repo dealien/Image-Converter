@@ -7,6 +7,8 @@ RESAMPLE_FILTERS = {
     "lanczos": Image.Resampling.LANCZOS,
 }
 
+MAX_TOTAL_PIXELS = 100000000  # 100MP
+
 
 def scale_image(
     image_input: ImageFile,
@@ -39,6 +41,12 @@ def scale_image(
         ratio = min(target_width / original_width, target_height / original_height)
         new_width = int(original_width * ratio)
         new_height = int(original_height * ratio)
+
+    # Security check to prevent memory exhaustion
+    if new_width * new_height > MAX_TOTAL_PIXELS:
+        raise ValueError(
+            f"Scaled image size ({new_width}x{new_height}) exceeds maximum allowed limit ({MAX_TOTAL_PIXELS} pixels)."
+        )
 
     resample = RESAMPLE_FILTERS.get(resample_filter.lower())
     if resample is None:

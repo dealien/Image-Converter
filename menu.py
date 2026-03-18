@@ -1,4 +1,5 @@
 import os
+import concurrent.futures
 from types import SimpleNamespace
 import questionary
 from prompt_toolkit import PromptSession, print_formatted_text
@@ -760,18 +761,18 @@ def interactive_menu():
             console.print("[yellow]No images selected. Exiting.[/]")
             return
 
-        images_data = []
-        for p in paths:
+        def _fetch_selected_image_data(p):
             dims, size_str, fmt = _get_image_metadata(p)
-            images_data.append(
-                {
-                    "name": os.path.basename(p),
-                    "dims": dims,
-                    "size": size_str,
-                    "fmt": fmt,
-                    "path": p,
-                }
-            )
+            return {
+                "name": os.path.basename(p),
+                "dims": dims,
+                "size": size_str,
+                "fmt": fmt,
+                "path": p,
+            }
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            images_data = list(executor.map(_fetch_selected_image_data, paths))
 
         ops, extra_args = select_manipulations(images_data)
 
