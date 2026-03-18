@@ -1,0 +1,30 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_testing.py"]
+addopts = "--cov=. --cov-report=term-missing --cov-report=html --cov-report=xml"
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "tests/*",
+    "setup_env.py",
+    "run_mocked_tests.py",
+    "verify_ui.py",
+    "*/__pycache__/*",
+    ".venv/*",
+    "mockups/*",
+    "site/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "pass",
+    "break",
+]
+show_missing = true
