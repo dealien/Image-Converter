@@ -100,6 +100,59 @@ class TestMain(unittest.TestCase):
         if os.path.exists(output_image_path):
             os.remove(output_image_path)
 
+    def test_store_in_order_action(self):
+        """Test the StoreInOrder argparse action handles None, scalars, and multiple ops."""
+        from main import StoreInOrder
+        import argparse
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--scale", action=StoreInOrder, dest="scale")
+        parser.add_argument("--invert", action=StoreInOrder, dest="invert")
+        parser.add_argument("--blur", action=StoreInOrder, dest="blur")
+
+        namespace = argparse.Namespace()
+
+        # parser._actions[0] is typically the help action
+        action_scale = parser._actions[1]
+        action_invert = parser._actions[2]
+        action_blur = parser._actions[3]
+
+        # Test with None (like a flag without args)
+        action_invert(parser, namespace, None)
+        self.assertEqual(len(namespace.ordered_operations), 1)
+        self.assertEqual(
+            namespace.ordered_operations[0], {"dest": "invert", "values": []}
+        )
+
+        # Test with scalar value
+        action_blur(parser, namespace, 2.5)
+        self.assertEqual(len(namespace.ordered_operations), 2)
+        self.assertEqual(
+            namespace.ordered_operations[1], {"dest": "blur", "values": [2.5]}
+        )
+
+        # Test with list (multiple values)
+        action_scale(parser, namespace, ["800px", "600px"])
+        self.assertEqual(len(namespace.ordered_operations), 3)
+        self.assertEqual(
+            namespace.ordered_operations[2],
+            {"dest": "scale", "values": ["800px", "600px"]},
+        )
+
+    @patch("menu.interactive_menu")
+    def test_menu_flag_triggers_interactive_menu(self, mock_menu):
+        """Test that the --menu flag triggers the interactive menu."""
+        with patch.object(sys, "argv", ["main.py", "--menu"]):
+            main()
+        mock_menu.assert_called_once()
+
+    @patch("menu.interactive_menu")
+    def test_no_args_triggers_interactive_menu(self, mock_menu):
+        """Test that running without args triggers the interactive menu."""
+        with patch.object(sys, "argv", ["main.py"]):
+            main()
+        mock_menu.assert_called_once()
+
     @patch("main.move_images_to_subdirectory")
     @patch("glob.glob")
     @patch("main.console.print")
