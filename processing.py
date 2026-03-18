@@ -40,13 +40,30 @@ from scale_image import scale_image
 
 
 class StyledTimeElapsedColumn(TimeElapsedColumn):
-    """A TimeElapsedColumn that supports custom styling."""
+    """A TimeElapsedColumn that supports custom styling.
+
+    Attributes:
+        style (str): The Rich style string to apply to the time elapsed text.
+    """
 
     def __init__(self, style="none"):
+        """Initializes the StyledTimeElapsedColumn.
+
+        Args:
+            style (str, optional): The Rich style string to apply. Defaults to "none".
+        """
         super().__init__()
         self.style = style
 
     def render(self, task):
+        """Renders the time elapsed for a given task with the configured style.
+
+        Args:
+            task (Task): The progress task.
+
+        Returns:
+            Text: A Rich Text object representing the styled time elapsed.
+        """
         from rich.text import Text
 
         text = super().render(task)
@@ -59,11 +76,33 @@ console = Console()
 
 
 def handle_flip(image, image_name, values, args):
+    """Handles the 'flip' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (direction).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The flipped image.
+    """
     console.print(f"  [bright_yellow]›[/] [yellow]Flipping {values[0]}...[/]")
     return flip_image(image, values[0])
 
 
 def handle_scale(image, image_name, values, args):
+    """Handles the 'scale' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (scale factor or dimensions).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The scaled image, or the original image if scaling fails.
+    """
     scale_params = values
     scale_factor = None
     new_size = None
@@ -114,21 +153,65 @@ def handle_scale(image, image_name, values, args):
 
 
 def handle_remove_background(image, image_name, values, args):
+    """Handles the 'remove_background' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with the background removed.
+    """
     console.print("  [bright_yellow]›[/] [yellow]Removing background...[/]")
     return remove_background(image)
 
 
 def handle_invert(image, image_name, values, args):
+    """Handles the 'invert' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with inverted colors.
+    """
     console.print("  [bright_yellow]›[/] [yellow]Inverting colors...[/]")
     return invert_colors(image)
 
 
 def handle_grayscale(image, image_name, values, args):
+    """Handles the 'grayscale' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The grayscale image.
+    """
     console.print("  [bright_yellow]›[/] [yellow]Converting to grayscale...[/]")
     return grayscale(image)
 
 
 def handle_edge_detection(image, image_name, values, args):
+    """Handles the 'edge_detection' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (method).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with edge detection applied.
+    """
     method = values[0]
     if method == "kovalevsky":
         console.print(
@@ -143,6 +226,17 @@ def handle_edge_detection(image, image_name, values, args):
 
 
 def handle_brightness(image, image_name, values, args):
+    """Handles the 'brightness' adjustment operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (brightness level).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with adjusted brightness.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Adjusting brightness by {values[0]}...[/]"
     )
@@ -150,6 +244,17 @@ def handle_brightness(image, image_name, values, args):
 
 
 def handle_contrast(image, image_name, values, args):
+    """Handles the 'contrast' adjustment operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (contrast level).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with adjusted contrast.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Adjusting contrast by {values[0]}...[/]"
     )
@@ -157,6 +262,17 @@ def handle_contrast(image, image_name, values, args):
 
 
 def handle_saturation(image, image_name, values, args):
+    """Handles the 'saturation' adjustment operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (saturation level).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with adjusted saturation.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Adjusting saturation by {values[0]}...[/]"
     )
@@ -164,6 +280,17 @@ def handle_saturation(image, image_name, values, args):
 
 
 def handle_blur(image, image_name, values, args):
+    """Handles the 'blur' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (blur radius).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The blurred image.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Applying Gaussian Blur (radius: {values[0]})...[/]"
     )
@@ -171,6 +298,17 @@ def handle_blur(image, image_name, values, args):
 
 
 def handle_sharpen(image, image_name, values, args):
+    """Handles the 'sharpen' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (sharpness intensity).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The sharpened image.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Applying Sharpen (intensity: {values[0]})...[/]"
     )
@@ -178,6 +316,17 @@ def handle_sharpen(image, image_name, values, args):
 
 
 def handle_color_balance(image, image_name, values, args):
+    """Handles the 'color_balance' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (R, G, B factors).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The color-balanced image.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Applying Color Balance (R:{values[0]}, G:{values[1]}, B:{values[2]})...[/]"
     )
@@ -185,6 +334,17 @@ def handle_color_balance(image, image_name, values, args):
 
 
 def handle_hue_rotation(image, image_name, values, args):
+    """Handles the 'hue_rotation' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (degrees).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with rotated hue.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Rotating Hue by {values[0]} degrees...[/]"
     )
@@ -192,6 +352,17 @@ def handle_hue_rotation(image, image_name, values, args):
 
 
 def handle_posterize(image, image_name, values, args):
+    """Handles the 'posterize' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): The arguments for the operation (bits).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The posterized image.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Posterizing to {values[0]} bits...[/]"
     )
@@ -199,9 +370,17 @@ def handle_posterize(image, image_name, values, args):
 
 
 def handle_border(image, image_name, values, args):
-    """
-    values: [thickness, color, position]
-    Expects thickness to be int (or convertible string), color (str), position (str).
+    """Handles the 'border' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing [thickness, color, position].
+            Expects thickness to be int (or convertible string), color (str), position (str).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with the border added, or the original image if arguments are invalid.
     """
     try:
         thickness = int(values[0])
@@ -219,9 +398,16 @@ def handle_border(image, image_name, values, args):
 
 
 def handle_rotate(image, image_name, values, args):
-    """
-    values: [angle]
-    Expects angle to be int.
+    """Handles the 'rotate' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing [angle]. Expects angle to be int.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The rotated image.
     """
     logger_str = (
         f"  [bright_yellow]›[/] [yellow]Rotating image by {values[0]} degrees...[/]"
@@ -234,6 +420,14 @@ def handle_rotate(image, image_name, values, args):
 
 
 def process_images_and_save(images_data, ordered_operations, cli_args):
+    """Processes a list of images by applying a sequence of operations and saves the results.
+
+    Args:
+        images_data (list): A list of tuples, where each tuple contains (filename, filepath).
+        ordered_operations (list): A list of dictionaries detailing the operations to apply.
+            Each dict should have 'dest' (operation name) and 'values' (operation arguments).
+        cli_args (argparse.Namespace): The parsed command-line arguments.
+    """
     operation_handlers = {
         "flip": handle_flip,
         "scale": handle_scale,
@@ -335,25 +529,31 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 progress.update(
                     image_task, description=f"{original_name} [dim](Opening...)[/]"
                 )
-                with Image.open(image_path) as img:
+                img = Image.open(image_path)
+                try:
                     img.load()
-                    output_image = img.copy()
-                progress.advance(image_task)
-
-                # Step 2: Operations
-                for operation in ordered_operations:
-                    op_dest = operation["dest"]
-                    op_values = operation.get("values", [])
-                    handler = operation_handlers.get(op_dest)
-                    if handler:
-                        progress.update(
-                            image_task,
-                            description=f"{original_name} [dim]({op_dest.replace('_', ' ')}...)[/]",
-                        )
-                        output_image = handler(
-                            output_image, original_name, op_values, cli_args
-                        )
+                    output_image = img
                     progress.advance(image_task)
+
+                    # Step 2: Operations
+                    for operation in ordered_operations:
+                        op_dest = operation["dest"]
+                        op_values = operation.get("values", [])
+                        handler = operation_handlers.get(op_dest)
+                        if handler:
+                            progress.update(
+                                image_task,
+                                description=f"{original_name} [dim]({op_dest.replace('_', ' ')}...)[/]",
+                            )
+                            output_image = handler(
+                                output_image, original_name, op_values, cli_args
+                            )
+                        progress.advance(image_task)
+
+                    if output_image is img:
+                        output_image = img.copy()
+                finally:
+                    img.close()
 
                 # Step 3: Save
                 progress.update(

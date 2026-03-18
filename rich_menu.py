@@ -1,5 +1,6 @@
 import os
 import questionary
+import concurrent.futures
 from PIL import Image
 
 from rich.table import Table
@@ -12,6 +13,15 @@ console = Console()
 
 
 def _get_image_metadata(path):
+    """Retrieves basic metadata for an image file.
+
+    Args:
+        path (str): The file path to the image.
+
+    Returns:
+        tuple: A tuple containing the formatted dimensions string (e.g., '1920 x 1080'),
+            the formatted file size string (e.g., '1.5 MB'), and the image format (e.g., 'JPEG').
+    """
     try:
         size_bytes = os.path.getsize(path)
         if size_bytes >= 1024 * 1024:
@@ -35,20 +45,26 @@ def _get_image_metadata(path):
 
 
 def run_image_selector(image_files, image_dir):
-    """
-    Renders a tabular-style selection menu using questionary.
+    """Renders a tabular-style selection menu using questionary.
+
+    Args:
+        image_files (list): A list of image filenames.
+        image_dir (str): The directory containing the image files.
+
+    Returns:
+        list: A list of selected image file paths.
     """
     if not image_files:
         return []
 
-    images_data = []
-    # Pre-fetch metadata to build nicely aligned strings
-    for f in image_files:
+    def _fetch_image_data(f):
         path = os.path.join(image_dir, f)
         dims, size_str, fmt = _get_image_metadata(path)
-        images_data.append(
-            {"name": f, "path": path, "dims": dims, "size": size_str, "fmt": fmt}
-        )
+        return {"name": f, "path": path, "dims": dims, "size": size_str, "fmt": fmt}
+
+    # Pre-fetch metadata in parallel to build nicely aligned strings
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        images_data = list(executor.map(_fetch_image_data, image_files))
 
     # Header
     console.print()
@@ -85,8 +101,15 @@ def run_image_selector(image_files, image_dir):
 
 
 def render_combined_menu(images_data, operations, extra_args):
-    """
-    Renders the combined menu mockup layout to the console.
+    """Renders the combined menu mockup layout to the console.
+
+    Displays a summary of selected images and the current sequence of operations
+    (the pipeline), along with the equivalent CLI command.
+
+    Args:
+        images_data (list): A list of dictionaries containing image metadata.
+        operations (list): A list of dictionaries detailing the ordered operations.
+        extra_args (dict): A dictionary of extra global arguments (like resample filter).
     """
     console.clear()
     console.print()
@@ -155,7 +178,7 @@ def render_combined_menu(images_data, operations, extra_args):
 
     cli_str = " ".join(cli_args_list) if cli_args_list else "None"
     pipeline_content.append(
-        f"  > python main.py \[images] {cli_str}", style="italic bright_cyan"
+        rf"  > python main.py \[images] {cli_str}", style="italic bright_cyan"
     )
 
     pipeline_panel = Panel(

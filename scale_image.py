@@ -7,6 +7,8 @@ RESAMPLE_FILTERS = {
     "lanczos": Image.Resampling.LANCZOS,
 }
 
+MAX_TOTAL_PIXELS = 100000000  # 100MP
+
 
 def scale_image(
     image_input: ImageFile,
@@ -14,14 +16,19 @@ def scale_image(
     new_size: tuple = None,
     resample_filter: str = "bilinear",
 ):
-    """
-    Scale an image up or down, preserving aspect ratio.
+    """Scale an image up or down, preserving aspect ratio.
 
-    :param image_input: The image to modify.
-    :param scale_factor: The factor to scale the image by.
-    :param new_size: The new size of the image as a tuple (width, height) to fit within.
-    :param resample_filter: The resampling filter to use.
-    :return: The scaled image.
+    Args:
+        image_input (ImageFile): The image to modify.
+        scale_factor (float, optional): The factor to scale the image by. Defaults to None.
+        new_size (tuple, optional): The new size of the image as a tuple (width, height) to fit within. Defaults to None.
+        resample_filter (str, optional): The resampling filter to use. Defaults to "bilinear".
+
+    Returns:
+        Image.Image: The scaled image.
+
+    Raises:
+        ValueError: If an invalid resample filter is provided.
     """
     original_width, original_height = image_input.size
     new_width, new_height = original_width, original_height
@@ -34,6 +41,12 @@ def scale_image(
         ratio = min(target_width / original_width, target_height / original_height)
         new_width = int(original_width * ratio)
         new_height = int(original_height * ratio)
+
+    # Security check to prevent memory exhaustion
+    if new_width * new_height > MAX_TOTAL_PIXELS:
+        raise ValueError(
+            f"Scaled image size ({new_width}x{new_height}) exceeds maximum allowed limit ({MAX_TOTAL_PIXELS} pixels)."
+        )
 
     resample = RESAMPLE_FILTERS.get(resample_filter.lower())
     if resample is None:
