@@ -1,3 +1,10 @@
+"""A collection of image filtering and adjustment functions.
+
+Provides various image manipulations including color inversion, grayscale
+conversion, contrast/brightness/saturation adjustments, blurring, sharpening,
+edge detection, color balance, hue rotation, posterization, borders, and rotation.
+"""
+
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
 
 

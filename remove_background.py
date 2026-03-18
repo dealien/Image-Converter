@@ -1,3 +1,9 @@
+"""Functions for removing backgrounds from images.
+
+Provides functionality to remove image backgrounds using `rembg`
+and trim empty space from the resulting image.
+"""
+
 from rembg import remove
 from PIL import Image, ImageOps, ImageChops, ImageFile
 

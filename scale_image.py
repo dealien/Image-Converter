@@ -1,3 +1,9 @@
+"""Functions for scaling and resizing images.
+
+Handles scaling by a factor or to a specific dimensions, supporting various
+resampling filters such as nearest, bilinear, bicubic, and lanczos.
+"""
+
 from PIL import Image, ImageFile
 
 RESAMPLE_FILTERS = {

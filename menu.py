@@ -1,3 +1,8 @@
+"""Interactive terminal menu.
+
+Provides a fully interactive UI to select images and build an image processing pipeline.
+"""
+
 import os
 import concurrent.futures
 from types import SimpleNamespace
