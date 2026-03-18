@@ -1,3 +1,9 @@
+"""Core image processing pipeline and handlers.
+
+Applies chained operations in sequence to a list of images and handles
+the saving of the processed outputs, managing UI progress reporting.
+"""
+
 import os
 import tempfile
 import time
