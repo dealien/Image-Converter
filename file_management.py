@@ -1,3 +1,9 @@
+"""Utilities for managing files and directories.
+
+Provides functions to manage images, such as moving images from the
+current directory to a designated subdirectory.
+"""
+
 import os
 import shutil
 

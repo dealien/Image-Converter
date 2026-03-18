@@ -1,3 +1,8 @@
+"""Functions for flipping images.
+
+Provides a function to flip an image horizontally, vertically, or both.
+"""
+
 from PIL import Image, ImageFile
 
 

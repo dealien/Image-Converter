@@ -1,3 +1,9 @@
+"""Interactive terminal UI formatting and layout components.
+
+Utilizes the `rich` and `questionary` libraries to render formatted tables,
+selection menus, and pipeline summaries for the interactive CLI.
+"""
+
 import os
 import questionary
 import concurrent.futures

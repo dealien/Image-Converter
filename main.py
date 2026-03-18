@@ -1,3 +1,9 @@
+"""Entry point for the Image Converter CLI application.
+
+Handles command-line arguments and either launches the interactive menu
+or executes CLI-specified image processing operations.
+"""
+
 import argparse
 import glob
 import os
