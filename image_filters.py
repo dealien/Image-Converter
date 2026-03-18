@@ -163,11 +163,11 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
     factor = 1.0 + (brightness / 100.0)
 
     if image.mode == "RGBA":
-        r, g, b, a = image.split()
-        rgb = Image.merge("RGB", (r, g, b))
-        enhanced = ImageEnhance.Brightness(rgb).enhance(factor)
-        r2, g2, b2 = enhanced.split()
-        return Image.merge("RGBA", (r2, g2, b2, a))
+        # Fast path for RGBA: enhance directly and restore original alpha
+        alpha = image.getchannel("A")
+        enhanced = ImageEnhance.Brightness(image).enhance(factor)
+        enhanced.putalpha(alpha)
+        return enhanced
 
     # 'L' is supported for brightness; convert other modes to 'RGB'
     if image.mode not in ("RGB", "L"):
@@ -198,11 +198,11 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
     factor = 1.0 + (contrast / 100.0)
 
     if image.mode == "RGBA":
-        r, g, b, a = image.split()
-        rgb = Image.merge("RGB", (r, g, b))
-        enhanced = ImageEnhance.Contrast(rgb).enhance(factor)
-        r2, g2, b2 = enhanced.split()
-        return Image.merge("RGBA", (r2, g2, b2, a))
+        # Fast path for RGBA: enhance directly and restore original alpha
+        alpha = image.getchannel("A")
+        enhanced = ImageEnhance.Contrast(image).enhance(factor)
+        enhanced.putalpha(alpha)
+        return enhanced
 
     # 'L' is supported for contrast; convert other modes to 'RGB'
     if image.mode not in ("RGB", "L"):
@@ -233,11 +233,11 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
     factor = 1.0 + (saturation / 100.0)
 
     if image.mode == "RGBA":
-        r, g, b, a = image.split()
-        rgb = Image.merge("RGB", (r, g, b))
-        enhanced = ImageEnhance.Color(rgb).enhance(factor)
-        r2, g2, b2 = enhanced.split()
-        return Image.merge("RGBA", (r2, g2, b2, a))
+        # Fast path for RGBA: enhance directly and restore original alpha
+        alpha = image.getchannel("A")
+        enhanced = ImageEnhance.Color(image).enhance(factor)
+        enhanced.putalpha(alpha)
+        return enhanced
 
     # No-op for grayscale to preserve mode and avoid unintended conversion
     if image.mode == "L":
@@ -297,11 +297,11 @@ def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
     factor = 1.0 + (sharpness / 100.0)
 
     if image.mode == "RGBA":
-        r, g, b, a = image.split()
-        rgb = Image.merge("RGB", (r, g, b))
-        enhanced = ImageEnhance.Sharpness(rgb).enhance(factor)
-        r2, g2, b2 = enhanced.split()
-        return Image.merge("RGBA", (r2, g2, b2, a))
+        # Fast path for RGBA: enhance directly and restore original alpha
+        alpha = image.getchannel("A")
+        enhanced = ImageEnhance.Sharpness(image).enhance(factor)
+        enhanced.putalpha(alpha)
+        return enhanced
 
     if image.mode not in ("RGB", "L"):
         image = image.convert("RGB")
