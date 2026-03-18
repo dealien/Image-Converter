@@ -1,6 +1,17 @@
 site_name: Image Converter Documentation
 theme:
   name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
 
 plugins:
   - search
@@ -14,4 +25,7 @@ nav:
   - Home: index.md
   - CLI Usage: cli_usage.md
   - Interactive Menu: menu_usage.md
-  - API Reference: api_reference.md
+  - API Reference: 
+      - Core: api/core.md
+      - Filters: api/filters.md
+      - Utilities & Menu: api/utilities.md
