@@ -1,5 +1,6 @@
 import os
 import questionary
+import concurrent.futures
 from PIL import Image
 
 from rich.table import Table
@@ -41,14 +42,14 @@ def run_image_selector(image_files, image_dir):
     if not image_files:
         return []
 
-    images_data = []
-    # Pre-fetch metadata to build nicely aligned strings
-    for f in image_files:
+    def _fetch_image_data(f):
         path = os.path.join(image_dir, f)
         dims, size_str, fmt = _get_image_metadata(path)
-        images_data.append(
-            {"name": f, "path": path, "dims": dims, "size": size_str, "fmt": fmt}
-        )
+        return {"name": f, "path": path, "dims": dims, "size": size_str, "fmt": fmt}
+
+    # Pre-fetch metadata in parallel to build nicely aligned strings
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        images_data = list(executor.map(_fetch_image_data, image_files))
 
     # Header
     console.print()
