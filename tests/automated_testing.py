@@ -31,7 +31,9 @@ def run_command(args):
     result = subprocess.run(cmd, cwd=os.getcwd())
     end_time = time.time()
     if result.returncode != 0:
-        console.print(f"❌ [bold red]Command failed with return code {result.returncode}[/]")
+        console.print(
+            f"❌ [bold red]Command failed with return code {result.returncode}[/]"
+        )
         sys.exit(result.returncode)
     return end_time - start_time
 
@@ -93,7 +95,9 @@ def main():
         command_str = " ".join(args[1:])
         results.append((command_str, elapsed))
 
-    console.print("\n[bold bright_green]✅ Automated testing scenario completed successfully![/]")
+    console.print(
+        "\n[bold bright_green]✅ Automated testing scenario completed successfully![/]"
+    )
 
     table = Table(
         title="📊 Benchmark Results",
