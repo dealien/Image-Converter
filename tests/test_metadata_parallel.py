@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import patch
 import os
-import rich_menu
-import menu
+from image_converter import rich_menu
+from image_converter import menu
 
 
 class TestMetadataParallel(unittest.TestCase):
-    @patch("rich_menu._get_image_metadata")
-    @patch("rich_menu.questionary.checkbox")
-    @patch("rich_menu.Console")
+    @patch("image_converter.rich_menu._get_image_metadata")
+    @patch("image_converter.rich_menu.questionary.checkbox")
+    @patch("image_converter.rich_menu.Console")
     def test_run_image_selector_parallel(
         self, mock_console, mock_checkbox, mock_get_metadata
     ):
@@ -29,10 +29,10 @@ class TestMetadataParallel(unittest.TestCase):
         # Ensure it was called for all files in the list
         self.assertEqual(mock_get_metadata.call_count, 2)
 
-    @patch("menu._get_image_metadata")
-    @patch("menu.select_images")
-    @patch("menu.select_manipulations")
-    @patch("menu.process_images_and_save")
+    @patch("image_converter.menu._get_image_metadata")
+    @patch("image_converter.menu.select_images")
+    @patch("image_converter.menu.select_manipulations")
+    @patch("image_converter.menu.process_images_and_save")
     def test_interactive_menu_parallel(
         self, mock_process, mock_sel_manips, mock_sel_imgs, mock_get_metadata
     ):
@@ -47,7 +47,7 @@ class TestMetadataParallel(unittest.TestCase):
         mock_sel_manips.return_value = ([], {})
 
         # We need to mock os.path.basename since it's used in the parallel loop
-        with patch("menu.os.path.basename", side_effect=os.path.basename):
+        with patch("image_converter.menu.os.path.basename", side_effect=os.path.basename):
             menu.interactive_menu()
 
         # Ensure metadata was fetched for each selected path

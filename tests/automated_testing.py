@@ -25,7 +25,7 @@ added to the program.
 
 def run_command(args):
     """Runs a single command with the current python executable and returns elapsed time."""
-    cmd = [sys.executable, "main.py"] + args
+    cmd = [sys.executable, "-m", "image_converter"] + args
     console.print(f"🚀 [bold cyan]Running:[/] [white]{' '.join(cmd)}[/]")
     start_time = time.time()
     result = subprocess.run(cmd, cwd=os.getcwd())

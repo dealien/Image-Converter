@@ -6,19 +6,18 @@ from PIL import Image, ImageChops
 
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import the main function that we want to test
-from main import main  # noqa: E402
+from image_converter.main import main  # noqa: E402
 
 # Import the image filter functions to create an expected image
-from image_filters import invert_colors, grayscale  # noqa: E402
+from image_converter.image_filters import invert_colors, grayscale  # noqa: E402
 
 
 class TestMain(unittest.TestCase):
     # Patch the function where it is looked up: in the 'processing' module
-    @patch("processing.remove_background")
-    @patch("main.move_images_to_subdirectory")
+    @patch("image_converter.processing.remove_background")
+    @patch("image_converter.main.move_images_to_subdirectory")
     def test_wildcard_file_argument(self, mock_move, mock_remove_background):
         """Test that wildcard file arguments are handled correctly."""
         mock_remove_background.return_value = Image.new("RGBA", (10, 10))
@@ -33,8 +32,8 @@ class TestMain(unittest.TestCase):
         self.assertEqual(mock_remove_background.call_count, 2)
 
     # Patch the function where it is looked up: in the 'processing' module
-    @patch("processing.remove_background")
-    @patch("main.move_images_to_subdirectory")
+    @patch("image_converter.processing.remove_background")
+    @patch("image_converter.main.move_images_to_subdirectory")
     @patch("glob.glob")
     @patch("os.path.isfile")
     def test_all_files_argument(
@@ -53,9 +52,8 @@ class TestMain(unittest.TestCase):
         # Mock os.path.isfile to always return True for the dummy paths
         mock_isfile.return_value = True
 
-        # Image.open is called from within processing.py during the process loop
         with patch(
-            "processing.Image.open",
+            "image_converter.processing.Image.open",
             MagicMock(side_effect=lambda *args: Image.new("RGB", (10, 10))),
         ):
             with patch.object(sys, "argv", ["main.py", "-bg", "*"]):
@@ -79,7 +77,7 @@ class TestMain(unittest.TestCase):
 
         # Run the main function with command line arguments
         # We patch move_images_to_subdirectory to prevent it from moving our test images
-        with patch("main.move_images_to_subdirectory"):
+        with patch("image_converter.main.move_images_to_subdirectory"):
             with patch.object(
                 sys, "argv", ["main.py", input_image_path, "--invert", "--grayscale"]
             ):
@@ -102,7 +100,7 @@ class TestMain(unittest.TestCase):
 
     def test_store_in_order_action(self):
         """Test the StoreInOrder argparse action handles None, scalars, and multiple ops."""
-        from main import StoreInOrder
+        from image_converter.main import StoreInOrder
         import argparse
 
         parser = argparse.ArgumentParser()
@@ -139,23 +137,23 @@ class TestMain(unittest.TestCase):
             {"dest": "scale", "values": ["800px", "600px"]},
         )
 
-    @patch("menu.interactive_menu")
+    @patch("image_converter.menu.interactive_menu")
     def test_menu_flag_triggers_interactive_menu(self, mock_menu):
         """Test that the --menu flag triggers the interactive menu."""
         with patch.object(sys, "argv", ["main.py", "--menu"]):
             main()
         mock_menu.assert_called_once()
 
-    @patch("menu.interactive_menu")
+    @patch("image_converter.menu.interactive_menu")
     def test_no_args_triggers_interactive_menu(self, mock_menu):
         """Test that running without args triggers the interactive menu."""
         with patch.object(sys, "argv", ["main.py"]):
             main()
         mock_menu.assert_called_once()
 
-    @patch("main.move_images_to_subdirectory")
+    @patch("image_converter.main.move_images_to_subdirectory")
     @patch("glob.glob")
-    @patch("main.console.print")
+    @patch("image_converter.main.console.print")
     def test_loading_exception(self, mock_console_print, mock_glob, mock_move):
         """Test that an exception during file loading is caught and printed."""
         # Make glob.glob raise an exception

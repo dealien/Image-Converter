@@ -5,7 +5,7 @@ import os
 import shutil
 from PIL import Image, ImageChops
 
-import processing
+from image_converter import processing
 
 
 class TestProcessImagesAndSave(unittest.TestCase):
@@ -24,14 +24,14 @@ class TestProcessImagesAndSave(unittest.TestCase):
         if os.path.exists(self.output_dir):
             shutil.rmtree(self.output_dir)
 
-    @patch("processing.console.print")
+    @patch("image_converter.processing.console.print")
     def test_empty_images_data(self, mock_print):
         # Empty images_data -> early return with "No images to process."
         processing.process_images_and_save([], [], argparse.Namespace())
         mock_print.assert_called_once_with("[yellow]No images to process.[/]")
 
-    @patch("processing.console.print")
-    @patch("processing.Image.open")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.Image.open")
     def test_exception_during_image_load(self, mock_open, mock_print):
         # Mock opening to fail
         mock_open.side_effect = Exception("Mocked load error")
@@ -56,7 +56,7 @@ class TestProcessImagesAndSave(unittest.TestCase):
         args.threshold = 120
 
         # We'll patch `console.print` to capture the CLI string
-        with patch("processing.console.print") as mock_print:
+        with patch("image_converter.processing.console.print") as mock_print:
             processing.process_images_and_save(images_data, ordered_operations, args)
 
         # Output dir should be created
@@ -104,7 +104,7 @@ class TestProcessImagesAndSave(unittest.TestCase):
         processing.process_images_and_save(images_data, ordered_operations, args)
 
         # Expected output from manual application
-        from image_filters import invert_colors, grayscale
+        from image_converter.image_filters import invert_colors, grayscale
 
         with Image.open(self.test_image_path) as img:
             expected_image = grayscale(invert_colors(img.copy()))

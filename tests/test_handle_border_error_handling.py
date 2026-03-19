@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from types import SimpleNamespace
-import processing
+from image_converter import processing
 
 
 class TestHandleBorderErrorHandling(unittest.TestCase):
-    @patch("processing.console.print")
-    @patch("processing.apply_border")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.apply_border")
     def test_handle_border_value_error(self, mock_apply_border, mock_console_print):
         # Setup
         image = MagicMock()
@@ -23,8 +23,8 @@ class TestHandleBorderErrorHandling(unittest.TestCase):
         self.assertEqual(result, image)
         mock_apply_border.assert_not_called()
 
-    @patch("processing.console.print")
-    @patch("processing.apply_border")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.apply_border")
     def test_handle_border_index_error(self, mock_apply_border, mock_console_print):
         # Setup
         image = MagicMock()

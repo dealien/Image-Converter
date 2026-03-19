@@ -3,7 +3,7 @@ from unittest.mock import patch
 from PIL import Image
 import argparse
 
-import processing
+from image_converter import processing
 
 
 class TestOperationHandlers(unittest.TestCase):
@@ -12,8 +12,8 @@ class TestOperationHandlers(unittest.TestCase):
         self.image_name = "test.png"
         self.args = argparse.Namespace()
 
-    @patch("processing.console.print")
-    @patch("processing.flip_image")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.flip_image")
     def test_handle_flip(self, mock_flip, mock_print):
         mock_flip.return_value = "flipped_image"
         values = ["horizontal"]
@@ -23,8 +23,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_flip.assert_called_once_with(self.image, "horizontal")
         self.assertEqual(result, "flipped_image")
 
-    @patch("processing.console.print")
-    @patch("processing.remove_background")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.remove_background")
     def test_handle_remove_background(self, mock_remove, mock_print):
         mock_remove.return_value = "no_bg_image"
         values = []
@@ -36,8 +36,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_remove.assert_called_once_with(self.image)
         self.assertEqual(result, "no_bg_image")
 
-    @patch("processing.console.print")
-    @patch("processing.adjust_brightness")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.adjust_brightness")
     def test_handle_brightness(self, mock_adjust, mock_print):
         mock_adjust.return_value = "bright_image"
         values = [50]
@@ -49,8 +49,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_adjust.assert_called_once_with(self.image, 50)
         self.assertEqual(result, "bright_image")
 
-    @patch("processing.console.print")
-    @patch("processing.adjust_contrast")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.adjust_contrast")
     def test_handle_contrast(self, mock_adjust, mock_print):
         mock_adjust.return_value = "contrasted_image"
         values = [-20]
@@ -62,8 +62,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_adjust.assert_called_once_with(self.image, -20)
         self.assertEqual(result, "contrasted_image")
 
-    @patch("processing.console.print")
-    @patch("processing.adjust_saturation")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.adjust_saturation")
     def test_handle_saturation(self, mock_adjust, mock_print):
         mock_adjust.return_value = "saturated_image"
         values = [10]
@@ -75,8 +75,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_adjust.assert_called_once_with(self.image, 10)
         self.assertEqual(result, "saturated_image")
 
-    @patch("processing.console.print")
-    @patch("processing.apply_blur")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.apply_blur")
     def test_handle_blur(self, mock_apply, mock_print):
         mock_apply.return_value = "blurred_image"
         values = [2.5]
@@ -86,8 +86,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_apply.assert_called_once_with(self.image, 2.5)
         self.assertEqual(result, "blurred_image")
 
-    @patch("processing.console.print")
-    @patch("processing.apply_sharpen")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.apply_sharpen")
     def test_handle_sharpen(self, mock_apply, mock_print):
         mock_apply.return_value = "sharpened_image"
         values = [5]
@@ -99,8 +99,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_apply.assert_called_once_with(self.image, 5)
         self.assertEqual(result, "sharpened_image")
 
-    @patch("processing.console.print")
-    @patch("processing.apply_color_balance")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.apply_color_balance")
     def test_handle_color_balance(self, mock_apply, mock_print):
         mock_apply.return_value = "balanced_image"
         values = [1.2, 0.8, 1.0]
@@ -112,8 +112,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_apply.assert_called_once_with(self.image, 1.2, 0.8, 1.0)
         self.assertEqual(result, "balanced_image")
 
-    @patch("processing.console.print")
-    @patch("processing.rotate_hue")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.rotate_hue")
     def test_handle_hue_rotation(self, mock_rotate, mock_print):
         mock_rotate.return_value = "hue_rotated_image"
         values = [90]
@@ -125,8 +125,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_rotate.assert_called_once_with(self.image, 90)
         self.assertEqual(result, "hue_rotated_image")
 
-    @patch("processing.console.print")
-    @patch("processing.apply_posterize")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.apply_posterize")
     def test_handle_posterize(self, mock_apply, mock_print):
         mock_apply.return_value = "posterized_image"
         values = [4]
@@ -138,8 +138,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_apply.assert_called_once_with(self.image, 4)
         self.assertEqual(result, "posterized_image")
 
-    @patch("processing.console.print")
-    @patch("processing.rotate_image")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.rotate_image")
     def test_handle_rotate(self, mock_rotate, mock_print):
         mock_rotate.return_value = "rotated_image"
         values = [180]
@@ -151,8 +151,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_rotate.assert_called_once_with(self.image, 180)
         self.assertEqual(result, "rotated_image")
 
-    @patch("processing.console.print")
-    @patch("processing.edge_detection")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.edge_detection")
     def test_handle_edge_detection_default(self, mock_edge, mock_print):
         mock_edge.return_value = "edge_image"
         values = ["sobel"]
@@ -164,8 +164,8 @@ class TestOperationHandlers(unittest.TestCase):
         mock_edge.assert_called_once_with(self.image, "sobel")
         self.assertEqual(result, "edge_image")
 
-    @patch("processing.console.print")
-    @patch("processing.edge_detection")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.edge_detection")
     def test_handle_edge_detection_kovalevsky(self, mock_edge, mock_print):
         mock_edge.return_value = "kovalevsky_image"
         values = ["kovalevsky"]

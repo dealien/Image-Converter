@@ -5,9 +5,8 @@ from unittest.mock import patch
 from PIL import Image, ImageChops
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from remove_background import remove_background, trim  # noqa: E402
+from image_converter.remove_background import remove_background, trim  # noqa: E402
 
 
 class TestRemoveBackground(unittest.TestCase):
@@ -35,7 +34,7 @@ class TestRemoveBackground(unittest.TestCase):
         diff = ImageChops.difference(trimmed_img, img)
         self.assertFalse(diff.getbbox())
 
-    @patch("remove_background.remove")
+    @patch("image_converter.remove_background.remove")
     def test_remove_background_with_mock(self, mock_remove):
         """Test the remove_background function with a mocked rembg.remove."""
         # Open a test image

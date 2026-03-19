@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from types import SimpleNamespace
-import processing
+from image_converter import processing
 
 
 class TestHandleInvertGrayscale(unittest.TestCase):
-    @patch("processing.console.print")
-    @patch("processing.invert_colors")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.invert_colors")
     def test_handle_invert(self, mock_invert_colors, mock_console_print):
         # Setup
         image = MagicMock()
@@ -26,8 +26,8 @@ class TestHandleInvertGrayscale(unittest.TestCase):
         mock_invert_colors.assert_called_once_with(image)
         self.assertEqual(result, mock_inverted_image)
 
-    @patch("processing.console.print")
-    @patch("processing.grayscale")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.grayscale")
     def test_handle_grayscale(self, mock_grayscale, mock_console_print):
         # Setup
         image = MagicMock()

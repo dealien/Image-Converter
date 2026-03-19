@@ -25,8 +25,8 @@ from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
-from flip_image import flip_image
-from image_filters import (
+from .flip_image import flip_image
+from .image_filters import (
     adjust_brightness,
     adjust_contrast,
     adjust_saturation,
@@ -41,8 +41,8 @@ from image_filters import (
     rotate_hue,
     rotate_image,
 )
-from remove_background import remove_background
-from scale_image import scale_image
+from .remove_background import remove_background
+from .scale_image import scale_image
 
 
 class StyledTimeElapsedColumn(TimeElapsedColumn):

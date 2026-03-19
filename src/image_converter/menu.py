@@ -13,9 +13,9 @@ from prompt_toolkit.lexers import SimpleLexer
 from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.styles import Style
 from prompt_toolkit.application.current import get_app
-from processing import process_images_and_save
-from rich_menu import run_image_selector, render_combined_menu, _get_image_metadata
-from main import console
+from .processing import process_images_and_save
+from .rich_menu import run_image_selector, render_combined_menu, _get_image_metadata
+from .main import console
 
 
 # --- Helper Functions ---

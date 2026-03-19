@@ -6,9 +6,8 @@ from unittest.mock import patch
 import io
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from file_management import move_images_to_subdirectory  # noqa: E402
+from image_converter.file_management import move_images_to_subdirectory  # noqa: E402
 
 
 class TestFileManagement(unittest.TestCase):
@@ -42,7 +41,7 @@ class TestFileManagement(unittest.TestCase):
         # Check that the original file is gone
         self.assertFalse(os.path.exists("Hill Castle.png"))
 
-    @patch("file_management.os.listdir")
+    @patch("image_converter.file_management.os.listdir")
     @patch("sys.stdout", new_callable=io.StringIO)
     def test_move_images_to_subdirectory_error_handling(
         self, mock_stdout, mock_listdir
@@ -59,8 +58,8 @@ class TestFileManagement(unittest.TestCase):
         output = mock_stdout.getvalue()
         self.assertIn(f"An error occurred: {error_message}", output)
 
-    @patch("file_management.os.path.exists")
-    @patch("file_management.os.makedirs")
+    @patch("image_converter.file_management.os.path.exists")
+    @patch("image_converter.file_management.os.makedirs")
     @patch("sys.stdout", new_callable=io.StringIO)
     def test_move_images_to_subdirectory_makedirs_error(
         self, mock_stdout, mock_makedirs, mock_exists
