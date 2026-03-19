@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Main.py Menu Mode",
+            "name": "Python: Image Converter (Module)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/main.py",
+            "module": "image_converter",
             "console": "integratedTerminal",
             "args": [
                 "--menu"

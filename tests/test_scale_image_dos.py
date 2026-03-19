@@ -14,7 +14,7 @@ except ImportError:
     sys.modules["PIL.ImageFile"] = mock_image_file
     from PIL import Image
 
-from scale_image import scale_image  # noqa: E402
+from image_converter.scale_image import scale_image  # noqa: E402
 
 
 class TestScaleImageDoS(unittest.TestCase):

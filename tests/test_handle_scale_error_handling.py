@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from types import SimpleNamespace
-import processing
+from image_converter import processing
 
 
 class TestHandleScaleErrorHandling(unittest.TestCase):
-    @patch("processing.console.print")
-    @patch("processing.scale_image")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.scale_image")
     def test_handle_scale_invalid_factor(self, mock_scale_image, mock_console_print):
         # Setup
         image = MagicMock()
@@ -23,8 +23,8 @@ class TestHandleScaleErrorHandling(unittest.TestCase):
         self.assertEqual(result, image)
         mock_scale_image.assert_not_called()
 
-    @patch("processing.console.print")
-    @patch("processing.scale_image")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.scale_image")
     def test_handle_scale_invalid_size(self, mock_scale_image, mock_console_print):
         # Setup
         image = MagicMock()
@@ -41,8 +41,8 @@ class TestHandleScaleErrorHandling(unittest.TestCase):
         self.assertEqual(result, image)
         mock_scale_image.assert_not_called()
 
-    @patch("processing.console.print")
-    @patch("processing.scale_image")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.scale_image")
     def test_handle_scale_invalid_args_count(
         self, mock_scale_image, mock_console_print
     ):

@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from types import SimpleNamespace
-import processing
+from image_converter import processing
 
 
 class TestHandleScaleParsing(unittest.TestCase):
-    @patch("processing.console.print")
-    @patch("processing.scale_image")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.scale_image")
     def test_handle_scale_factor_parsing(self, mock_scale_image, mock_console_print):
         # Setup
         image = MagicMock()
@@ -31,8 +31,8 @@ class TestHandleScaleParsing(unittest.TestCase):
         )
         self.assertEqual(result, "scaled_image")
 
-    @patch("processing.console.print")
-    @patch("processing.scale_image")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.scale_image")
     def test_handle_scale_size_parsing(self, mock_scale_image, mock_console_print):
         # Setup
         image = MagicMock()
@@ -57,8 +57,8 @@ class TestHandleScaleParsing(unittest.TestCase):
         )
         self.assertEqual(result, "scaled_image")
 
-    @patch("processing.console.print")
-    @patch("processing.scale_image")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.scale_image")
     def test_handle_scale_invalid_strings(self, mock_scale_image, mock_console_print):
         # Setup
         image = MagicMock()

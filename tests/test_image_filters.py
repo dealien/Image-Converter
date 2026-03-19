@@ -2,7 +2,7 @@ import unittest
 import os
 import random
 from PIL import Image
-from image_filters import (
+from image_converter.image_filters import (
     invert_colors,
     grayscale,
     edge_detection,
@@ -581,7 +581,7 @@ class TestImageBorder(unittest.TestCase):
             apply_border(self.test_image, 10, "red", "invalid_pos")
 
     def test_border_thickness_limit(self):
-        from image_filters import MAX_BORDER_THICKNESS
+        from image_converter.image_filters import MAX_BORDER_THICKNESS
 
         with self.assertRaises(ValueError) as cm:
             apply_border(self.test_image, MAX_BORDER_THICKNESS + 1, "red")

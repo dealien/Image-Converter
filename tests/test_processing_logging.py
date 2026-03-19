@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from types import SimpleNamespace
-import processing
+from image_converter import processing
 
 
 class TestProcessingLogging(unittest.TestCase):
-    @patch("processing.console.print")
-    @patch("processing.scale_image")
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.scale_image")
     def test_handle_scale_logging(self, mock_scale_image, mock_console_print):
         # Setup
         image = MagicMock()

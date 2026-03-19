@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 import os
-import rich_menu
+from image_converter import rich_menu
 
 
 class TestRichMenu(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestRichMenu(unittest.TestCase):
         self.assertEqual(size_str, "—")
         self.assertEqual(fmt, "UNKNOWN")
 
-    @patch("rich_menu.os.path.getsize")
+    @patch("image_converter.rich_menu.os.path.getsize")
     def test_get_image_metadata_non_image_file(self, mock_getsize):
         """Test metadata extraction with a non-image file that exists."""
         # Assume it has size but is not a valid image
@@ -31,8 +31,8 @@ class TestRichMenu(unittest.TestCase):
 
         os.remove(test_file)
 
-    @patch("rich_menu.console.print")
-    @patch("rich_menu.console.clear")
+    @patch("image_converter.rich_menu.console.print")
+    @patch("image_converter.rich_menu.console.clear")
     def test_render_combined_menu_empty_operations(self, mock_clear, mock_print):
         """Test rendering the menu with no operations."""
         images_data = [
@@ -47,8 +47,8 @@ class TestRichMenu(unittest.TestCase):
         mock_clear.assert_called_once()
         self.assertTrue(mock_print.called)
 
-    @patch("rich_menu.console.print")
-    @patch("rich_menu.console.clear")
+    @patch("image_converter.rich_menu.console.print")
+    @patch("image_converter.rich_menu.console.clear")
     def test_render_combined_menu_with_operations_and_args(
         self, mock_clear, mock_print
     ):

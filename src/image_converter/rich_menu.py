@@ -152,7 +152,7 @@ def render_combined_menu(images_data, operations, extra_args):
         )
 
     # ── Pipeline & CLI Panel ──
-    from menu import _format_operation_display
+    from .menu import _format_operation_display
 
     pipeline_content = Text()
 

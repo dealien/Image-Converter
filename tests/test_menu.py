@@ -1,13 +1,13 @@
 import pytest
 from unittest.mock import patch, MagicMock
-import menu
+from image_converter import menu
 
 # --- Fixtures ---
 
 
 @pytest.fixture
 def mock_questionary():
-    with patch("menu.questionary") as q:
+    with patch("image_converter.menu.questionary") as q:
         # Defaults for common methods to return a valid chainable object
         q.select.return_value.ask.return_value = None
         q.text.return_value.ask.return_value = None  # Still used? No, verifying removal
@@ -18,7 +18,7 @@ def mock_questionary():
 
 @pytest.fixture
 def mock_ask_text():
-    with patch("menu._ask_text") as m:
+    with patch("image_converter.menu._ask_text") as m:
         m.return_value = None
         yield m
 
@@ -181,10 +181,10 @@ def test_prompt_for_rotation(mock_ask_text):
 # --- Main Logic Tests ---
 
 
-@patch("menu.run_image_selector")
-@patch("menu.os.listdir")
-@patch("menu.os.path.isdir")
-@patch("menu.os.path.isfile")
+@patch("image_converter.menu.run_image_selector")
+@patch("image_converter.menu.os.listdir")
+@patch("image_converter.menu.os.path.isdir")
+@patch("image_converter.menu.os.path.isfile")
 def test_select_images(mock_isfile, mock_isdir, mock_listdir, mock_run_image_selector):
     mock_isdir.return_value = True
     mock_listdir.return_value = ["img1.png", "img2.jpg"]
@@ -198,14 +198,14 @@ def test_select_images(mock_isfile, mock_isdir, mock_listdir, mock_run_image_sel
     assert paths[0].endswith("img1.png")
 
 
-@patch("menu.run_image_selector")
+@patch("image_converter.menu.run_image_selector")
 def test_select_images_none_selected_confirm_cancel(
     mock_run_image_selector, mock_questionary
 ):
     with (
-        patch("menu.os.path.isdir", return_value=True),
-        patch("menu.os.listdir", return_value=["i.png"]),
-        patch("menu.os.path.isfile", return_value=True),
+        patch("image_converter.menu.os.path.isdir", return_value=True),
+        patch("image_converter.menu.os.listdir", return_value=["i.png"]),
+        patch("image_converter.menu.os.path.isfile", return_value=True),
     ):
         mock_run_image_selector.return_value = []  # None selected
         mock_questionary.confirm.return_value.ask.return_value = False  # Cancel
@@ -269,11 +269,14 @@ def test_remove_manipulation_flow(mock_questionary):
 
 def test_interactive_menu_flow(mock_questionary):
     with (
-        patch("menu.select_images", return_value=["p/img.png"]) as mock_sel_imgs,
         patch(
-            "menu.select_manipulations", return_value=([{"dest": "flip"}], {})
+            "image_converter.menu.select_images", return_value=["p/img.png"]
+        ) as mock_sel_imgs,
+        patch(
+            "image_converter.menu.select_manipulations",
+            return_value=([{"dest": "flip"}], {}),
         ) as mock_sel_manips,
-        patch("menu.process_images_and_save") as mock_process,
+        patch("image_converter.menu.process_images_and_save") as mock_process,
     ):
         menu.interactive_menu()
 

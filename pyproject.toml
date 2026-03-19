@@ -33,8 +33,11 @@ docs = [
     "griffe==1.15.0",
 ]
 
-[tool.setuptools]
-py-modules = ["file_management", "flip_image", "image_filters", "main", "menu", "processing", "remove_background", "rich_menu", "scale_image", "setup_env"]
+[project.scripts]
+image-converter = "image_converter.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 line-length = 88

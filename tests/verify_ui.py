@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.append(str(Path.cwd()))
 
-from processing import process_images_and_save
+from image_converter.processing import process_images_and_save
 
 
 class MockArgs:
