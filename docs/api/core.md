@@ -2,14 +2,14 @@
 
 This section provides documentation for the core logic modules.
 
-## main.py
+## main
 
-::: main
+::: image_converter.main
 
-## processing.py
+## processing
 
-::: processing
+::: image_converter.processing
 
-## file_management.py
+## file_management
 
-::: file_management
+::: image_converter.file_management

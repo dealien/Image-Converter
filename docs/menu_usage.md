@@ -3,9 +3,9 @@
 If you don't like remembering command line flags, you can start the script with no arguments (or `--menu`) to launch a fully interactive UI to build your processing pipeline!
 
 ```bash
-python main.py
+image-converter
 # or
-python main.py --menu
+image-converter --menu
 ```
 
 ## How to use the Interactive Menu
