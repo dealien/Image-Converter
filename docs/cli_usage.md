@@ -5,7 +5,7 @@ The CLI provides a powerful way to process images programmatically or in batches
 ## Basic Usage
 
 ```bash
-python main.py [file_path] [options]
+image-converter [file_path] [options]
 ```
 
 - `[file_path]`: Path to the input image file. You can use wildcards (`*`) to process multiple files. If no file is specified, the script processes all images in the `Base Images/` directory.
@@ -41,13 +41,13 @@ python main.py [file_path] [options]
 ### Remove the background of a single image
 
 ```bash
-python main.py "path/to/your/image.jpg" --remove-background
+image-converter "path/to/your/image.jpg" --remove-background
 ```
 
 ### Scale all PNG images in a directory to 50%
 
 ```bash
-python main.py "path/to/your/images/*.png" --scale 0.5x
+image-converter "path/to/your/images/*.png" --scale 0.5x
 ```
 
 ### Chaining Multiple Operations
@@ -57,7 +57,7 @@ The manipulations are applied sequentially in the order you provide them.
 For example, to take an image, invert its colors, flip it vertically, convert it to grayscale, remove the background, and then invert the colors *again*, you can run:
 
 ```bash
-python main.py "image.jpg" --invert --flip vertical --grayscale --remove-background --invert
+image-converter "image.jpg" --invert --flip vertical --grayscale --remove-background --invert
 ```
 
 ### Process all images in the `Base Images` directory
@@ -65,5 +65,5 @@ python main.py "image.jpg" --invert --flip vertical --grayscale --remove-backgro
 This will first remove the background and then scale the images to fit within 800x600 pixels:
 
 ```bash
-python main.py * --remove-background --scale 800px 600px
+image-converter * --remove-background --scale 800px 600px
 ```

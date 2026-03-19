@@ -2,10 +2,10 @@
 
 This section provides documentation for the interactive menu features and helpers.
 
-## menu.py
+## menu
 
-::: menu
+::: image_converter.menu
 
-## rich_menu.py
+## rich_menu
 
-::: rich_menu
+::: image_converter.rich_menu

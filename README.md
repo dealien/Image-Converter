@@ -29,10 +29,10 @@ This is a versatile Python project designed to streamline everyday workflows for
    cd Image-Converter
    ```
 
-2. Install the required dependencies using pip:
+2. Install the package and its requirements using pip:
 
    ```bash
-   pip install -r requirements.txt
+   pip install .
    ```
 
 ## 🛠️ Usage
