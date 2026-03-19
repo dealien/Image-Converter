@@ -269,9 +269,12 @@ def test_remove_manipulation_flow(mock_questionary):
 
 def test_interactive_menu_flow(mock_questionary):
     with (
-        patch("image_converter.menu.select_images", return_value=["p/img.png"]) as mock_sel_imgs,
         patch(
-            "image_converter.menu.select_manipulations", return_value=([{"dest": "flip"}], {})
+            "image_converter.menu.select_images", return_value=["p/img.png"]
+        ) as mock_sel_imgs,
+        patch(
+            "image_converter.menu.select_manipulations",
+            return_value=([{"dest": "flip"}], {}),
         ) as mock_sel_manips,
         patch("image_converter.menu.process_images_and_save") as mock_process,
     ):

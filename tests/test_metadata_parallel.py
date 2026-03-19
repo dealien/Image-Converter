@@ -47,7 +47,9 @@ class TestMetadataParallel(unittest.TestCase):
         mock_sel_manips.return_value = ([], {})
 
         # We need to mock os.path.basename since it's used in the parallel loop
-        with patch("image_converter.menu.os.path.basename", side_effect=os.path.basename):
+        with patch(
+            "image_converter.menu.os.path.basename", side_effect=os.path.basename
+        ):
             menu.interactive_menu()
 
         # Ensure metadata was fetched for each selected path

@@ -1,7 +1,5 @@
 import unittest
 from PIL import Image
-import sys
-import os
 
 # Add the parent directory to the path so we can import the flip_image module
 
