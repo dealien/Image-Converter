@@ -15,6 +15,8 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.application.current import get_app
 from .processing import process_images_and_save
 from .rich_menu import run_image_selector, render_combined_menu, _get_image_metadata
+from typing import Any, Callable, Optional
+
 from .main import console
 
 
@@ -30,18 +32,22 @@ _CUSTOM_STYLE = Style.from_dict(
 )
 
 
-def _ask_text(message, default_val=None, validate=None):
+def _ask_text(
+    message: str,
+    default_val: Optional[Any] = None,
+    validate: Optional[Callable[[str], bool | str]] = None,
+) -> str:
     """Custom text prompt helper using prompt_toolkit to support colored defaults.
 
     Replaces `questionary.text(...).ask()`.
 
     Args:
-        message (str): The prompt message to display.
-        default_val (any, optional): The default value to show and return if input is empty. Defaults to None.
-        validate (callable, optional): A validation function for the input. Defaults to None.
+        message: The prompt message to display.
+        default_val: The default value to show and return if input is empty.
+        validate: A validation function for the input that returns True/False or an error message string.
 
     Returns:
-        str: The user's input, or the default value if no input was provided.
+        The user's input, or the default value if no input was provided.
     """
 
     def get_prompt_text():
