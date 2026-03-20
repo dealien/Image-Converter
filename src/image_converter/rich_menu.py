@@ -187,7 +187,7 @@ def render_combined_menu(images_data, operations, extra_args):
 
     cli_str = " ".join(cli_args_list) if cli_args_list else "None"
     pipeline_content.append(
-        rf"  > python main.py \[images] {cli_str}", style="italic bright_cyan"
+        rf"  > image-converter \[images] {cli_str}", style="italic bright_cyan"
     )
 
     pipeline_panel = Panel(

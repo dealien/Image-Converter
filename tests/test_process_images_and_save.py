@@ -72,7 +72,7 @@ class TestProcessImagesAndSave(unittest.TestCase):
             output = str(call_args)
             if "Equivalent CLI Command" in output:
                 pass  # The label is printed
-            if "> python main.py" in output:
+            if "> image-converter" in output:
                 # The actual command should include the file path
                 if (
                     " ".join(

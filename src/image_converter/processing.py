@@ -648,7 +648,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
     if cli_str:
         console.print()
         console.print("💻  [bold bright_cyan]Equivalent CLI Command[/]")
-        console.print(f"[bright_yellow]> python main.py {cli_str}[/]")
+        console.print(f"[bright_yellow]> image-converter {cli_str}[/]")
 
     # ── Results Table ──────────────────────────────────
     console.print()

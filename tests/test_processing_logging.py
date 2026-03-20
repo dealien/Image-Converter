@@ -38,5 +38,28 @@ class TestProcessingLogging(unittest.TestCase):
         self.assertTrue(found, "Logger should log dimensions")
 
 
+class TestStyledTimeElapsedColumn(unittest.TestCase):
+    def test_render_styled_time(self):
+        # Setup
+        column = processing.StyledTimeElapsedColumn(style="bold blue")
+        task = MagicMock()
+        # Mocking task.elapsed to a fixed value
+        task.elapsed = 1.0
+
+        # We need to mock the parent render or check the output
+        # TimeElapsedColumn.render returns a Text object
+        text = column.render(task)
+
+        from rich.text import Text
+
+        self.assertIsInstance(text, Text)
+        self.assertEqual(str(text), "0:00:01")
+        self.assertEqual(text.style, "bold blue")
+
+    def test_init_default_style(self):
+        column = processing.StyledTimeElapsedColumn()
+        self.assertEqual(column.style, "none")
+
+
 if __name__ == "__main__":
     unittest.main()
