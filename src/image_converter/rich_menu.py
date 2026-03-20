@@ -159,7 +159,10 @@ def render_combined_menu(images_data, operations, extra_args):
     cli_args_list = []
 
     if not operations:
-        pipeline_content.append("  (Empty)\n", style="dim italic")
+        pipeline_content.append(
+            "  (Empty - Select operations below to build your pipeline)\n",
+            style="dim italic",
+        )
     else:
         for i, op in enumerate(operations):
             # Formats beautifully with numbers
