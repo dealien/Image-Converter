@@ -49,7 +49,7 @@ image-converter
 image-converter --menu
 ```
 
-Follow the prompts to select images, add operations to your pipeline, tweak their settings, and run the processing batch.
+By default, the program searches for images in the `Base Images/` directory. Follow the prompts to select images, add operations to your pipeline, tweak their settings, and run the processing batch.
 
 ### 💻 Command Line (CLI) Basic Usage
 
