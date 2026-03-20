@@ -51,7 +51,8 @@ def main():
 
     Parses command-line arguments and executes the specified image processing
     pipeline. If no arguments are provided or the `--menu` flag is used, it
-    launches the interactive menu interface.
+    launches the interactive menu interface. By default, the program searches
+    for images in the `Base Images/` directory if no specific file path is given.
     """
 
     # If --menu is used or no arguments are provided, start the menu.
@@ -71,7 +72,8 @@ def main():
         type=str,
         nargs="?",
         default=None,
-        help='The image file or pattern to process (e.g., "input.jpg", "images/*.png").',
+        help='The image file or pattern to process (e.g., "input.jpg", "images/*.png"). '
+        'If omitted or set to "*", searches in the "Base Images/" directory by default.',
     )
     parser.add_argument(
         "--menu",

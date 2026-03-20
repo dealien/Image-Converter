@@ -18,6 +18,9 @@ import shutil
 def move_images_to_subdirectory(subdirectory_name: str):
     """Moves all image files from the current directory to a specified subdirectory.
 
+    Typically used to move images into the 'Base Images' directory, which is the
+    default search path for image processing operations.
+
     Args:
         subdirectory_name (str): The name of the subdirectory to create and move
             the images into.
