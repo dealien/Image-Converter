@@ -118,6 +118,28 @@ class TestEdgeDetection(unittest.TestCase):
         # Check that the edge is roughly in the middle
         self.assertGreater(np.mean(edge_array[:, 49:51]), 200)
 
+    def test_invalid_method(self):
+        """Verifies that ValueError is raised for an invalid edge detection method."""
+        img = Image.open(self.test_image_path)
+        with self.assertRaisesRegex(
+            ValueError, r"^Method must be 'sobel', 'canny', or 'kovalevsky'$"
+        ):
+            edge_detection(img, "invalid_method")
+
+    def test_kovalevsky_small_image_edge_case(self):
+        """Verifies Kovalevsky edge detection handles images smaller than the 6-pixel window safely."""
+        # Kovalevsky requires at least 6x6. Test smaller images.
+        img_5x5 = Image.new("RGB", (5, 5))
+        edge_img_5x5 = edge_detection(img_5x5, "kovalevsky")
+        self.assertEqual(edge_img_5x5.size, (5, 5))
+        self.assertEqual(edge_img_5x5.mode, "L")
+        self.assertEqual(np.sum(np.array(edge_img_5x5)), 0)  # Should be all black
+
+        img_6x5 = Image.new("RGB", (6, 5))
+        edge_img_6x5 = edge_detection(img_6x5, "kovalevsky")
+        self.assertEqual(edge_img_6x5.size, (6, 5))
+        self.assertEqual(np.sum(np.array(edge_img_6x5)), 0)
+
     def test_kovalevsky_edge_detection(self):
         # Create a very simple image for predictable results
         width, height = 10, 10
@@ -183,6 +205,29 @@ class TestImageAdjustments(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
             adjust_brightness(self.test_image, None)
 
+    def test_adjust_brightness_rgba(self):
+        """Verifies adjust_brightness preserves alpha channel using the RGBA fast path."""
+        # Create an RGBA image for testing
+        rgba_image = self.test_image.copy().convert("RGBA")
+        # Set a semi-transparent alpha channel
+        alpha = Image.new("L", rgba_image.size, 128)
+        rgba_image.putalpha(alpha)
+
+        # Adjust brightness
+        brightened_image = adjust_brightness(rgba_image, 50)
+
+        # Check that the image is still RGBA
+        self.assertEqual(brightened_image.mode, "RGBA")
+
+        # Check that the alpha channel is preserved
+        _, _, _, new_alpha = brightened_image.split()
+        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+
+        # Check brightness increased on RGB channels
+        original_pixel = rgba_image.getpixel((50, 50))
+        brightened_pixel = brightened_image.getpixel((50, 50))
+        self.assertGreater(brightened_pixel[0], original_pixel[0])
+
     def test_adjust_contrast(self):
         # Test increasing contrast
         contrasted_image = adjust_contrast(self.test_image, 50)
@@ -221,6 +266,29 @@ class TestImageAdjustments(unittest.TestCase):
             adjust_contrast(self.test_image, {"value": 50})
         with self.assertRaises(TypeError):
             adjust_contrast(self.test_image, None)
+
+    def test_adjust_contrast_rgba(self):
+        """Verifies adjust_contrast preserves alpha channel using the RGBA fast path."""
+        # Create an RGBA image for testing
+        rgba_image = self.test_image.copy().convert("RGBA")
+        # Set a semi-transparent alpha channel
+        alpha = Image.new("L", rgba_image.size, 128)
+        rgba_image.putalpha(alpha)
+
+        # Adjust contrast
+        contrasted_image = adjust_contrast(rgba_image, 50)
+
+        # Check that the image is still RGBA
+        self.assertEqual(contrasted_image.mode, "RGBA")
+
+        # Check that the alpha channel is preserved
+        _, _, _, new_alpha = contrasted_image.split()
+        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+
+        # Check contrast changes on RGB
+        original_pixel = rgba_image.getpixel((25, 25))
+        contrasted_pixel = contrasted_image.getpixel((25, 25))
+        self.assertLess(contrasted_pixel[0], original_pixel[0])
 
     def test_adjust_saturation(self):
         # Test increasing saturation
@@ -351,6 +419,42 @@ class TestImageBlurAndSharpen(unittest.TestCase):
             apply_sharpen(self.test_image, {"value": 50})
         with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
             apply_sharpen(self.test_image, None)
+
+    def test_apply_sharpen_rgba(self):
+        """Verifies apply_sharpen preserves alpha channel using the RGBA fast path."""
+        # Create a blurry image with RGBA to sharpen
+        blurry_image = apply_blur(self.test_image, radius=1).convert("RGBA")
+        # Set a semi-transparent alpha channel
+        alpha = Image.new("L", blurry_image.size, 128)
+        blurry_image.putalpha(alpha)
+
+        # Apply sharpen
+        sharpened_image = apply_sharpen(blurry_image, sharpness=100)
+
+        # Check that the image is still RGBA
+        self.assertEqual(sharpened_image.mode, "RGBA")
+
+        # Check that the alpha channel is preserved
+        _, _, _, new_alpha = sharpened_image.split()
+        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+
+        # Verify sharpening occurred on RGB (compare difference)
+        def calculate_horizontal_gradient(img):
+            data = list(img.convert("RGB").getdata())
+            width, height = img.size
+            total_gradient = 0
+            for y in range(height):
+                row_start = y * width
+                for x in range(width - 1):
+                    p1 = data[row_start + x][0]
+                    p2 = data[row_start + x + 1][0]
+                    total_gradient += abs(p1 - p2)
+            return total_gradient
+
+        blur_gradient = calculate_horizontal_gradient(blurry_image)
+        sharp_gradient = calculate_horizontal_gradient(sharpened_image)
+
+        self.assertGreater(sharp_gradient, blur_gradient)
 
 
 class TestImageColorOps(unittest.TestCase):
@@ -572,10 +676,22 @@ class TestImageBorder(unittest.TestCase):
             "Right border inner edge failed",
         )
 
+    def test_border_custom_color_string_and_zero_thickness(self):
+        """Verifies apply_border handles 255,0,0 format strings and zero thickness gracefully."""
+        # Zero thickness
+        img_zero = apply_border(self.test_image, 0, "red")
+        self.assertEqual(img_zero, self.test_image)
+
+        # "255,0,0" format
+        img_custom = apply_border(self.test_image, 10, "255,0,0", "expand")
+        self.assertEqual(img_custom.getpixel((0, 0)), (255, 0, 0))
+
     def test_border_invalid_args(self):
         with self.assertRaises(ValueError):
             apply_border(self.test_image, -5, "red")
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(
+            ValueError, r"^Invalid color format: invalid_color$"
+        ):
             apply_border(self.test_image, 10, "invalid_color")
         with self.assertRaises(ValueError):
             apply_border(self.test_image, 10, "red", "invalid_pos")
