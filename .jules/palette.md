@@ -1,0 +1,3 @@
+## 2024-05-24 - Consistent UI Text Styling in Rich Consoles
+**Learning:** Even when a project adopts a comprehensive terminal UI library like `rich`, straggling raw `print()` statements can easily break immersion and create an inconsistent user experience. In interactive CLI flows, unstyled text stands out poorly against styled elements (like panels or colored prompts).
+**Action:** When auditing CLI applications for UX, explicitly search for raw `print()` statements and replace them with the adopted styling library's output methods (e.g., `console.print()` in Rich) with appropriate semantic markup (e.g., `[dim cyan]`, `[yellow]`) to ensure a unified visual design language.

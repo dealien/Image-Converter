@@ -198,7 +198,7 @@ def prompt_for_scale_options(extra_args=None):
     Returns:
         dict: The operation dictionary for 'scale', or None if canceled.
     """
-    print("\n--- Scale Options ---")
+    console.print("\n[dim cyan]--- Scale Options ---[/]")
 
     def scale_validator(val_str):
         if not val_str:
@@ -373,8 +373,8 @@ def prompt_for_color_balance_options(extra_args=None):
     Returns:
         dict: The operation dictionary for 'color_balance'.
     """
-    print(
-        "Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change)."
+    console.print(
+        "[dim white]Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change).[/]"
     )
 
     r_str = _ask_text(
@@ -553,7 +553,7 @@ def remove_manipulation(operations, extra_args):
         list: The updated list of operations.
     """
     if not operations:
-        print("\nThere are no operations to remove.")
+        console.print("\n[yellow]There are no operations to remove.[/]")
         return operations
 
     choices = [
@@ -572,7 +572,7 @@ def remove_manipulation(operations, extra_args):
         return operations
 
     removed_op = operations.pop(choice_idx)
-    print(f"\nRemoved '{removed_op['dest']}'.")
+    console.print(f"\n[yellow]Removed '{removed_op['dest']}'.[/]")
 
     # Cleanup extra args logic
     if removed_op["dest"] == "scale" and not any(
