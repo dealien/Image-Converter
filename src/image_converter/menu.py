@@ -473,6 +473,23 @@ def prompt_for_border_options(extra_args=None):
     }
 
 
+def prompt_for_vignette_options(extra_args=None):
+    """Prompts the user for a vignette intensity.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'vignette'.
+    """
+    val_str = _ask_text(
+        "Enter vignette intensity (0-100)",
+        default_val=50,
+        validate=_validate_number(0, 100, allow_empty=True),
+    )
+    return {"dest": "vignette", "values": [int(val_str) if val_str else 50]}
+
+
 def prompt_for_rotation_options(extra_args=None):
     """Prompts the user for an image rotation angle.
 
@@ -536,6 +553,11 @@ AVAILABLE_MANIPULATIONS = [
         "handler": prompt_for_posterize_options,
     },
     {"dest": "border", "name": "Add Border", "handler": prompt_for_border_options},
+    {
+        "dest": "vignette",
+        "name": "Apply Vignette",
+        "handler": prompt_for_vignette_options,
+    },
     {"dest": "rotate", "name": "Rotate Image", "handler": prompt_for_rotation_options},
 ]
 
@@ -673,6 +695,7 @@ def select_manipulations(images_data):
                 "Apply Edge Detection",
                 "Apply Posterize",
                 "Add Border",
+                "Apply Vignette",
             ],
         ),
     }

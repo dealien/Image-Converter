@@ -5,7 +5,7 @@ conversion, contrast/brightness/saturation adjustments, blurring, sharpening,
 edge detection, color balance, hue rotation, posterization, borders, and rotation.
 """
 
-from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor, ImageChops
 
 
 def invert_colors(image: Image.Image) -> Image.Image:
@@ -590,3 +590,73 @@ def rotate_image(image: Image.Image, angle: int) -> Image.Image:
     # expand=True ensures the image is resized to fit the rotated content
     # For 90 degree rotations, this swaps width/height appropriately.
     return image.rotate(clamped_angle, expand=True)
+
+
+def apply_vignette(image: Image.Image, intensity: int = 50) -> Image.Image:
+    """Applies a vignette effect to the image.
+
+    Args:
+        image (Image.Image): The input image.
+        intensity (int, optional): The intensity of the vignette effect (0-100). Defaults to 50.
+
+    Returns:
+        Image.Image: The image with the vignette effect applied.
+
+    Raises:
+        TypeError: If intensity is not an integer.
+        ValueError: If intensity is not between 0 and 100.
+    """
+    if not isinstance(intensity, int):
+        raise TypeError("Intensity must be an integer.")
+    if not 0 <= intensity <= 100:
+        raise ValueError("Intensity must be between 0 and 100.")
+    if intensity == 0:
+        return image
+
+    width, height = image.size
+
+    alpha_channel = image.getchannel("A") if "A" in image.getbands() else None
+
+    # Needs to be RGB for multiply with a black and white mask (if mask is RGB)
+    if image.mode == "L":
+        working_image = image.convert("RGB")
+    elif image.mode != "RGB":
+        working_image = image.convert("RGB")
+    else:
+        working_image = image
+
+    # Small mask for speed
+    mask_size = 200
+    mask = Image.new("L", (mask_size, mask_size))
+    pixels = mask.load()
+
+    center_x, center_y = mask_size / 2, mask_size / 2
+    max_dist = (center_x**2 + center_y**2) ** 0.5
+
+    darkness_factor = intensity / 100.0
+
+    for x in range(mask_size):
+        for y in range(mask_size):
+            dist = ((x - center_x) ** 2 + (y - center_y) ** 2) ** 0.5
+            norm_dist = dist / max_dist
+
+            # 1.0 at center, decreasing to 1.0 - darkness_factor at edges
+            # square the normalized distance for a softer fade
+            val = 1.0 - (norm_dist**2 * darkness_factor)
+            val = max(0.0, val)
+            pixels[x, y] = int(255 * val)
+
+    # Resize the small mask to target image dimensions smoothly
+    full_mask = mask.resize((width, height), Image.Resampling.BICUBIC)
+
+    # apply mask
+    vignetted_rgb = ImageChops.multiply(working_image, full_mask.convert("RGB"))
+
+    if alpha_channel:
+        vignetted_rgb.putalpha(alpha_channel)
+        return vignetted_rgb
+
+    if image.mode == "L":
+        return vignetted_rgb.convert("L")
+
+    return vignetted_rgb

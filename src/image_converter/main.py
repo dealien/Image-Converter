@@ -206,6 +206,13 @@ def main():
         help="Add border: thickness (int) color (str) position (expand/inside).",
     )
     parser.add_argument(
+        "--vignette",
+        dest="vignette",
+        action=StoreInOrder,
+        type=int,
+        help="Apply vignette effect with intensity (0-100).",
+    )
+    parser.add_argument(
         "--rotate",
         dest="rotate",
         action=StoreInOrder,
