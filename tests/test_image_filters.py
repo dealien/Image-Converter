@@ -16,6 +16,7 @@ from image_converter.image_filters import (
     apply_posterize,
     apply_border,
     rotate_image,
+    apply_vignette,
 )
 
 
@@ -770,3 +771,43 @@ class TestImageRotation(unittest.TestCase):
         # -90 -> 270
         rotated = rotate_image(self.test_image, -90)
         self.assertEqual(rotated.size, (self.height, self.width))
+
+
+class TestImageVignette(unittest.TestCase):
+    def setUp(self):
+        self.width, self.height = 100, 100
+        self.test_image = Image.new("RGB", (self.width, self.height), (255, 255, 255))
+
+    def test_vignette_basic(self):
+        vignetted = apply_vignette(self.test_image, 100)
+        center_pixel = vignetted.getpixel((50, 50))
+        corner_pixel = vignetted.getpixel((0, 0))
+
+        # Center should remain white (or very close)
+        self.assertGreater(center_pixel[0], 240)
+
+        # Corners should be darkened significantly
+        self.assertLess(corner_pixel[0], 100)
+
+    def test_vignette_zero_intensity(self):
+        vignetted = apply_vignette(self.test_image, 0)
+        self.assertEqual(list(vignetted.getdata()), list(self.test_image.getdata()))
+
+    def test_vignette_rgba(self):
+        rgba_image = self.test_image.copy().convert("RGBA")
+        alpha = Image.new("L", rgba_image.size, 128)
+        rgba_image.putalpha(alpha)
+
+        vignetted = apply_vignette(rgba_image, 50)
+
+        self.assertEqual(vignetted.mode, "RGBA")
+        _, _, _, new_alpha = vignetted.split()
+        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+
+    def test_vignette_invalid_args(self):
+        with self.assertRaises(ValueError):
+            apply_vignette(self.test_image, -10)
+        with self.assertRaises(ValueError):
+            apply_vignette(self.test_image, 110)
+        with self.assertRaises(TypeError):
+            apply_vignette(self.test_image, "invalid")

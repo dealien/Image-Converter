@@ -40,6 +40,7 @@ from .image_filters import (
     invert_colors,
     rotate_hue,
     rotate_image,
+    apply_vignette,
 )
 from .remove_background import remove_background
 from .scale_image import scale_image
@@ -422,6 +423,24 @@ def handle_rotate(image, image_name, values, args):
     return rotate_image(image, values[0])
 
 
+def handle_vignette(image, image_name, values, args):
+    """Handles the 'vignette' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing [intensity]. Expects intensity to be int.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with the vignette effect applied.
+    """
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Applying vignette with intensity {values[0]}...[/]"
+    )
+    return apply_vignette(image, values[0])
+
+
 # --- Core Processing Function ---
 
 
@@ -451,6 +470,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         "posterize": handle_posterize,
         "border": handle_border,
         "rotate": handle_rotate,
+        "vignette": handle_vignette,
     }
 
     if not images_data:
