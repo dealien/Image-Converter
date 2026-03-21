@@ -5,3 +5,7 @@
 ## 2024-03-20 - RGBA Color Inversion with LUTs
 **Learning:** Calling `ImageOps.invert(image.convert("RGB"))` on an RGBA image destroys the alpha channel entirely, and trying to preserve it via `image.split()` / `Image.merge()` is slow. Alternatively, creating a flat Look-Up Table (LUT) of 256 mapped values per channel (e.g., `lut = [255 - i for i in range(256)] * 3 + list(range(256))`) and applying it via `image.point(lut)` executes ~45% faster while cleanly preserving the alpha channel natively.
 **Action:** When performing pixel-level math operations (like inversion or bitwise logic) on multi-band PIL images, pre-compute a flat LUT instead of using lambdas with `Image.eval()`, `np.array()`, or `split()`/`merge()`.
+
+## 2026-03-21 - Cached Vignette Mask Generation
+**Learning:** Generating dynamic pixel masks using nested Python `for` loops mathematically (like calculating distance from the center for Vignette effects) is extremely slow and causes significant bottlenecks on repeated calls.
+**Action:** To optimize programmatic mask-based image filters (like Vignettes) without importing Heavy math libraries, extract the mathematical pixel-distance calculations into a helper function and cache the resulting base mask using `@functools.lru_cache`. The cached base mask can then be safely resized to the target image dimensions.
