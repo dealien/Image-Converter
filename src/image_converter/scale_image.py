@@ -4,7 +4,7 @@ Handles scaling by a factor or to a specific dimensions, supporting various
 resampling filters such as nearest, bilinear, bicubic, and lanczos.
 """
 
-from PIL import Image, ImageFile
+from PIL import Image
 
 RESAMPLE_FILTERS = {
     "nearest": Image.Resampling.NEAREST,
@@ -17,7 +17,7 @@ MAX_TOTAL_PIXELS = 100000000  # 100MP
 
 
 def scale_image(
-    image_input: ImageFile,
+    image_input: Image.Image,
     scale_factor: float = None,
     new_size: tuple = None,
     resample_filter: str = "bilinear",
@@ -25,7 +25,7 @@ def scale_image(
     """Scale an image up or down, preserving aspect ratio.
 
     Args:
-        image_input (ImageFile): The image to modify.
+        image_input (Image.Image): The image to modify.
         scale_factor (float, optional): The factor to scale the image by. Defaults to None.
         new_size (tuple, optional): The new size of the image as a tuple (width, height) to fit within. Defaults to None.
         resample_filter (str, optional): The resampling filter to use. Defaults to "bilinear".
