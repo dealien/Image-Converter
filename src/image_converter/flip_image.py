@@ -3,14 +3,14 @@
 Provides a function to flip an image horizontally, vertically, or both.
 """
 
-from PIL import Image, ImageFile
+from PIL import Image
 
 
-def flip_image(image_input: ImageFile, direction: str):
+def flip_image(image_input: Image.Image, direction: str):
     """Flip an image horizontally, vertically, or both.
 
     Args:
-        image_input (ImageFile): The image to modify.
+        image_input (Image.Image): The image to modify.
         direction (str): The direction to flip the image. Can be 'horizontal', 'vertical', or 'both'.
 
     Returns:
