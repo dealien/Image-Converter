@@ -7,6 +7,9 @@ current directory to a designated subdirectory.
 import os
 import shutil
 
+from rich.console import Console
+
+console = Console()
 
 # Example usages:
 # move_images_to_subdirectory()  # Uses the default "images" subdirectory
@@ -53,11 +56,11 @@ def move_images_to_subdirectory(subdirectory_name: str):
                         subdirectory_name, filename
                     )  # Join for correct path
                     shutil.move(source_path, destination_path)  # Move the file
-                    print(
-                        f"Moved: {filename} to {subdirectory_name}"
+                    console.print(
+                        f"[bright_green]Moved:[/] {filename} to {subdirectory_name}"
                     )  # Informative message
                 # else: # Optional: if you want to see which files were SKIPPED
-                #    print(f"Skipped (not an image): {filename}")
+                #    console.print(f"[dim yellow]Skipped (not an image): {filename}[/]")
 
     except Exception as e:  # Handle potential errors
-        print(f"An error occurred: {e}")
+        console.print(f"[red]An error occurred: {e}[/]")
