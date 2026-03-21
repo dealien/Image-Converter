@@ -1,3 +1,7 @@
 ## 2026-03-20 - Edge Cases and Fast Paths in PIL Image Processing
 **Learning:** Certain Pillow `ImageEnhance` operations and edge detection methods have specific mathematical and boundary constraints (e.g., Kovalevsky requiring >= 6x6 pixel images to perform 5-pixel comparison window diffs, or alpha channels being preserved via manual fast paths in RGBA modes).
 **Action:** When adding test coverage to image processing functions, always include edge cases for extreme input dimensions (small images, zero values) and test multi-channel preservation (RGBA) specifically on optimization fast-paths.
+
+## $(date +%Y-%m-%d) - Edge Cases in Image Processing Pipeline
+**Learning:** Testing side effects in complex file processing pipelines (like `process_images_and_save` in `processing.py`) often requires precise mocking of `os` and `shutil` components, especially for error handling paths (e.g. `OSError` during temp file removal). The Rich `Console.print` outputs Table objects, which must be captured or stringified to verify formatted output strings rather than inspecting raw call arguments.
+**Action:** When testing Rich console output containing tables, instantiate a test `Console`, use `console.capture()` to render the argument into a string, and assert on the string to verify formatting logic (like byte size conversions). When testing temp file cleanups in `finally` blocks, selectively patch `os.path.exists` and `os.replace` to simulate error states without causing infinite recursions or breaking the test runner.
