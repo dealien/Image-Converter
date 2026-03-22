@@ -82,7 +82,7 @@ console = Console()
 # --- Operation Handlers ---
 
 
-def handle_flip(image, image_name, values, args):
+def handle_flip(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'flip' operation.
 
     Args:
@@ -98,7 +98,7 @@ def handle_flip(image, image_name, values, args):
     return flip_image(image, values[0])
 
 
-def handle_scale(image, image_name, values, args):
+def handle_scale(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'scale' operation.
 
     Args:
@@ -159,7 +159,9 @@ def handle_scale(image, image_name, values, args):
     )
 
 
-def handle_remove_background(image, image_name, values, args):
+def handle_remove_background(
+    image: Image.Image, image_name, values, args
+) -> Image.Image:
     """Handles the 'remove_background' operation.
 
     Args:
@@ -175,7 +177,7 @@ def handle_remove_background(image, image_name, values, args):
     return remove_background(image)
 
 
-def handle_invert(image, image_name, values, args):
+def handle_invert(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'invert' operation.
 
     Args:
@@ -191,7 +193,7 @@ def handle_invert(image, image_name, values, args):
     return invert_colors(image)
 
 
-def handle_grayscale(image, image_name, values, args):
+def handle_grayscale(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'grayscale' operation.
 
     Args:
@@ -207,7 +209,7 @@ def handle_grayscale(image, image_name, values, args):
     return grayscale(image)
 
 
-def handle_edge_detection(image, image_name, values, args):
+def handle_edge_detection(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'edge_detection' operation.
 
     Args:
@@ -232,7 +234,7 @@ def handle_edge_detection(image, image_name, values, args):
         return edge_detection(image, method)
 
 
-def handle_brightness(image, image_name, values, args):
+def handle_brightness(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'brightness' adjustment operation.
 
     Args:
@@ -250,7 +252,7 @@ def handle_brightness(image, image_name, values, args):
     return adjust_brightness(image, values[0])
 
 
-def handle_contrast(image, image_name, values, args):
+def handle_contrast(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'contrast' adjustment operation.
 
     Args:
@@ -268,7 +270,7 @@ def handle_contrast(image, image_name, values, args):
     return adjust_contrast(image, values[0])
 
 
-def handle_saturation(image, image_name, values, args):
+def handle_saturation(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'saturation' adjustment operation.
 
     Args:
@@ -286,7 +288,7 @@ def handle_saturation(image, image_name, values, args):
     return adjust_saturation(image, values[0])
 
 
-def handle_blur(image, image_name, values, args):
+def handle_blur(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'blur' operation.
 
     Args:
@@ -304,7 +306,7 @@ def handle_blur(image, image_name, values, args):
     return apply_blur(image, values[0])
 
 
-def handle_sharpen(image, image_name, values, args):
+def handle_sharpen(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'sharpen' operation.
 
     Args:
@@ -322,7 +324,7 @@ def handle_sharpen(image, image_name, values, args):
     return apply_sharpen(image, values[0])
 
 
-def handle_color_balance(image, image_name, values, args):
+def handle_color_balance(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'color_balance' operation.
 
     Args:
@@ -340,7 +342,7 @@ def handle_color_balance(image, image_name, values, args):
     return apply_color_balance(image, values[0], values[1], values[2])
 
 
-def handle_hue_rotation(image, image_name, values, args):
+def handle_hue_rotation(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'hue_rotation' operation.
 
     Args:
@@ -358,7 +360,7 @@ def handle_hue_rotation(image, image_name, values, args):
     return rotate_hue(image, values[0])
 
 
-def handle_posterize(image, image_name, values, args):
+def handle_posterize(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'posterize' operation.
 
     Args:
@@ -376,7 +378,7 @@ def handle_posterize(image, image_name, values, args):
     return apply_posterize(image, values[0])
 
 
-def handle_border(image, image_name, values, args):
+def handle_border(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'border' operation.
 
     Args:
@@ -404,7 +406,7 @@ def handle_border(image, image_name, values, args):
         return image
 
 
-def handle_rotate(image, image_name, values, args):
+def handle_rotate(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'rotate' operation.
 
     Args:
@@ -423,7 +425,7 @@ def handle_rotate(image, image_name, values, args):
     return rotate_image(image, values[0])
 
 
-def handle_vignette(image, image_name, values, args):
+def handle_vignette(image: Image.Image, image_name, values, args) -> Image.Image:
     """Handles the 'vignette' operation.
 
     Args:
