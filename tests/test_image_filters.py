@@ -811,3 +811,66 @@ class TestImageVignette(unittest.TestCase):
             apply_vignette(self.test_image, 110)
         with self.assertRaises(TypeError):
             apply_vignette(self.test_image, "invalid")
+
+
+class TestImageFiltersEdgeCases(unittest.TestCase):
+    def test_invert_colors_rgba(self):
+        """Verifies the fast path for RGBA images when inverting colors."""
+        img = Image.new("RGBA", (10, 10), (100, 50, 20, 10))
+        inverted = invert_colors(img)
+        self.assertEqual(inverted.mode, "RGBA")
+        self.assertEqual(inverted.getpixel((0, 0)), (155, 205, 235, 10))
+
+    def test_invert_colors_not_rgba_rgb_l(self):
+        """Verifies color inversion for images not in RGBA, RGB, or L mode (e.g. CMYK)."""
+        img = Image.new("CMYK", (10, 10), (100, 50, 20, 10))
+        inverted = invert_colors(img)
+        self.assertEqual(inverted.mode, "RGB")
+
+    def test_edge_detection_missing_deps(self):
+        """Verifies that an ImportError is raised if scikit-image is missing."""
+        import sys
+
+        img = Image.new("RGB", (10, 10))
+        original_skimage = sys.modules.get("skimage")
+        sys.modules["skimage"] = None
+        try:
+            with self.assertRaisesRegex(
+                ImportError, r"scikit-image and numpy are required for edge detection\."
+            ):
+                edge_detection(img, "sobel")
+        finally:
+            if original_skimage is not None:
+                sys.modules["skimage"] = original_skimage
+            else:
+                del sys.modules["skimage"]
+
+    def test_apply_blur_zero_radius(self):
+        """Verifies that applying a blur with zero radius returns the original image."""
+        img = Image.new("RGB", (10, 10))
+        blurred = apply_blur(img, 0)
+        self.assertIs(blurred, img)
+
+    def test_apply_sharpen_zero_sharpness(self):
+        """Verifies that applying sharpening with zero sharpness returns the original image."""
+        img = Image.new("RGB", (10, 10))
+        sharpened = apply_sharpen(img, 0)
+        self.assertIs(sharpened, img)
+
+    def test_apply_color_balance_not_rgb_rgba(self):
+        """Verifies that color balancing a grayscale (L) image converts it to RGB."""
+        img = Image.new("L", (10, 10), 128)
+        balanced = apply_color_balance(img, 1.5, 1.0, 1.0)
+        self.assertEqual(balanced.mode, "RGB")
+
+    def test_apply_posterize_l_mode(self):
+        """Verifies that posterizing an L mode image returns an L mode image."""
+        img = Image.new("L", (10, 10), 128)
+        posterized = apply_posterize(img, 4)
+        self.assertEqual(posterized.mode, "L")
+
+    def test_apply_vignette_l_mode(self):
+        """Verifies that applying a vignette to an L mode image returns an L mode image."""
+        img = Image.new("L", (10, 10), 128)
+        vignetted = apply_vignette(img, 50)
+        self.assertEqual(vignetted.mode, "L")
