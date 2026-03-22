@@ -88,7 +88,12 @@ def run_image_selector(image_files, image_dir):
     for i, img in enumerate(images_data, 1):
         # Format string to look like table columns
         # name 30, dims 14, size 10, fmt 8
-        name_col = f"{img['name']:<30}"
+
+        display_name = img["name"]
+        if len(display_name) > 30:
+            display_name = display_name[:29] + "…"
+
+        name_col = f"{display_name:<30}"
         dims_col = f"{img['dims']:>12}"
         size_col = f"{img['size']:>9}"
         fmt_col = f"{img['fmt']:>6}"

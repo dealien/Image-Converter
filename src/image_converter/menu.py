@@ -640,7 +640,10 @@ def select_images():
         return []
 
     if not image_files:
-        console.print(f"[yellow]No images found in '{image_dir}'.[/]")
+        console.print(f"\n[yellow]No images found in '{image_dir}'.[/]")
+        console.print(
+            "[dim white]Please place some images (e.g., .jpg, .png) in this directory and try again.[/]\n"
+        )
         return []
 
     while True:
