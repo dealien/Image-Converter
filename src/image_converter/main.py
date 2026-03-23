@@ -224,7 +224,8 @@ def main():
 
     if not hasattr(args, "ordered_operations"):
         console.print(
-            "[yellow]No actions specified. To see available options, run with --help.[/]"
+            "[yellow]No actions specified. Please provide at least one operation flag (e.g., --invert, --scale 2x).[/]\n"
+            "[dim white]To see all available options, run with --help or use the interactive --menu.[/]"
         )
         return
 
@@ -238,7 +239,8 @@ def main():
         filepaths = glob.glob(image_path_pattern)
         if not filepaths:
             console.print(
-                f"[yellow]No files found matching pattern: {image_path_pattern}[/]"
+                f"[yellow]No files found matching pattern: '{image_path_pattern}'[/]\n"
+                f"[dim white]Please verify the file path or ensure images exist in the target directory.[/]"
             )
             return
         for filepath in filepaths:
