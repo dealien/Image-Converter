@@ -18,6 +18,9 @@ from rich.console import Console
 
 console = Console()
 
+# Set a safe limit for image size to prevent decompression bomb attacks (100MP)
+Image.MAX_IMAGE_PIXELS = 100_000_000
+
 
 def _get_image_metadata(path: str) -> tuple[str, str, str]:
     """Retrieves basic metadata for an image file.

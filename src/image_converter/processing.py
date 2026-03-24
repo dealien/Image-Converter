@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 from PIL import Image
+
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
@@ -81,6 +82,9 @@ class StyledTimeElapsedColumn(TimeElapsedColumn):
 
 
 console = Console()
+
+# Set a safe limit for image size to prevent decompression bomb attacks (100MP)
+Image.MAX_IMAGE_PIXELS = 100_000_000
 
 # --- Operation Handlers ---
 
