@@ -43,6 +43,57 @@ def _generate_vignette_mask(mask_size: int, intensity: int) -> Image.Image:
     return mask
 
 
+@functools.lru_cache(maxsize=1024)
+def _get_scale_lut(factor: float) -> list[int]:
+    """Creates a cached Look-Up Table (LUT) for scaling a channel, clamping to [0, 255].
+
+    Args:
+        factor (float): The scaling factor.
+
+    Returns:
+        list[int]: A list of 256 mapped values.
+
+    """
+    return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
+
+
+@functools.lru_cache(maxsize=8)
+def _get_posterize_channel_lut(bits: int) -> list[int]:
+    """Creates a cached Look-Up Table (LUT) for posterizing a single channel.
+
+    Args:
+        bits (int): The number of bits to keep (1-8).
+
+    Returns:
+        list[int]: A list of 256 mapped values.
+
+    """
+    mask = ~(2 ** (8 - bits) - 1)
+    return [p & mask for p in range(256)]
+
+
+# ⚡ Bolt: Pre-compute a static Look-Up Table (LUT) for RGBA color inversion.
+# Reusing this constant avoids allocating four new lists of 256 integers
+# on every call to `invert_colors` for RGBA images.
+RGBA_INVERT_LUT = [255 - i for i in range(256)] * 3 + list(range(256))
+
+
+@functools.lru_cache(maxsize=256)
+def _get_hue_rotation_lut(shift: int) -> list[int]:
+    """Generates a cached Look-Up Table (LUT) for hue rotation.
+
+    Args:
+        shift (int): The amount to shift the hue channel (0-255).
+
+    Returns:
+        list[int]: A flat LUT for H, S, and V channels.
+
+    """
+    lut_h = [(p + shift) % 256 for p in range(256)]
+    # S and V channels retain their original identity mappings.
+    return lut_h + list(range(256)) * 2
+
+
 def invert_colors(image: Image.Image) -> Image.Image:
     """Inverts the colors of an image.
 
@@ -55,11 +106,11 @@ def invert_colors(image: Image.Image) -> Image.Image:
     """
     if image.mode == "RGBA":
         # ⚡ Bolt: Fast path for RGBA using a Look-Up Table (LUT)
-        # Bypasses the overhead of `image.split()` and `Image.merge()`
-        # while preserving the original alpha channel.
+        # Using a pre-computed static LUT (RGBA_INVERT_LUT) eliminates
+        # redundant list allocations. Bypasses the overhead of `image.split()`
+        # and `Image.merge()` while preserving the original alpha channel.
         # ~45% faster execution time.
-        lut = [255 - i for i in range(256)] * 3 + list(range(256))
-        return image.point(lut)
+        return image.point(RGBA_INVERT_LUT)
 
     if image.mode in ("RGB", "L"):
         return ImageOps.invert(image)
@@ -416,20 +467,8 @@ def apply_color_balance(
     if image.mode != "RGB" and image.mode != "RGBA":
         image = image.convert("RGB")
 
-    def _scale_lut(factor: float):
-        """Creates a Look-Up Table (LUT) for scaling a channel, clamping to [0, 255].
-
-        Args:
-            factor (float): The scaling factor.
-
-        Returns:
-            list: A list of 256 mapped values.
-
-        """
-        return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
-
-    # Precompute the LUT for R, G, and B channels
-    lut = _scale_lut(r_f) + _scale_lut(g_f) + _scale_lut(b_f)
+    # Precompute the LUT for R, G, and B channels using cached scaling logic.
+    lut = _get_scale_lut(r_f) + _get_scale_lut(g_f) + _get_scale_lut(b_f)
 
     # For images with more than 3 bands (e.g., RGBA), preserve the extra bands
     # by adding an identity mapping to the LUT
@@ -474,15 +513,13 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     # Hue is 0-255 in PIL HSV. Full circle is 256 steps.
     shift = int((degrees / 360.0) * 256) % 256
 
-    # ⚡ Bolt: Pre-compute a flat Look-Up Table (LUT) for H, S, and V channels.
+    # ⚡ Bolt: Use a cached Look-Up Table (LUT) for H, S, and V channels.
     # The H channel gets shifted, while S and V retain their original identity mappings.
+    # Caching the LUT avoids recreating three lists of 256 items on each call.
     # Applying the LUT to the 3-band HSV image directly avoids `img.split()`, the slow
     # per-pixel lambda execution in `h.point()`, and `Image.merge()`, improving performance
     # by roughly 5-10% depending on image size.
-    lut_h = [(p + shift) % 256 for p in range(256)]
-    lut_s = list(range(256))
-    lut_v = list(range(256))
-    lut = lut_h + lut_s + lut_v
+    lut = _get_hue_rotation_lut(shift)
 
     new_img = img_hsv.point(lut)
     new_rgb = new_img.convert("RGB")
@@ -525,8 +562,9 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     if image.mode not in ("L", "RGB", "RGBA", "LA"):
         image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
 
-    mask = ~(2 ** (8 - bits) - 1)
-    lut_channel = [p & mask for p in range(256)]
+    # ⚡ Bolt: Use a cached Look-Up Table (LUT) for the posterize channel mapping.
+    # Avoiding recalculating the bitwise mask and list on every call.
+    lut_channel = _get_posterize_channel_lut(bits)
 
     if image.mode == "L":
         lut = lut_channel
