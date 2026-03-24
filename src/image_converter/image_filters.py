@@ -80,6 +80,39 @@ def grayscale(image: Image.Image) -> Image.Image:
     return ImageOps.grayscale(image)
 
 
+def _kovalevsky_scan(array_to_scan, output_map, threshold: int) -> None:
+    """Helper function to perform a 1D Kovalevsky edge detection scan.
+
+    Args:
+        array_to_scan: The image array to scan (n, m, 3).
+        output_map: The output map to write to (n, m).
+        threshold: The threshold for edge detection.
+    """
+    import numpy as np
+
+    n, m, _ = array_to_scan.shape
+    if m >= 6:
+        # Chunk rows to cap peak memory while maintaining vectorized speed
+        chunk_size = 512
+        for i in range(0, n, chunk_size):
+            chunk = array_to_scan[i : i + chunk_size]
+            # Calculate absolute differences between adjacent pixels in the same row
+            # np.diff computes img[:, 1:] - img[:, :-1] along the specified axis
+            diffs = np.abs(np.diff(chunk, axis=1)).sum(axis=2, dtype=np.int32)
+
+            # Create slices for the 5-pixel comparison window
+            d0 = diffs[:, :-4]
+            d1 = diffs[:, 1:-3]
+            d2 = diffs[:, 2:-2]  # The center difference
+            d3 = diffs[:, 3:-1]
+            d4 = diffs[:, 4:]
+
+            # Apply Kovalevsky condition: center is a local maximum and above threshold
+            condition = (d2 > threshold) & (d2 > d0) & (d2 > d1) & (d2 > d3) & (d2 > d4)
+            # Mark detected edges in the edge map
+            output_map[i : i + chunk_size, 3:-2][condition] = 255
+
+
 def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Image.Image:
     """Applies edge detection to an image using one of three methods.
 
@@ -144,51 +177,10 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
         edge_map = np.zeros((height, width), dtype=np.uint8)
 
         # --- Horizontal Scan ---
-        if width >= 6:
-            # Chunk rows to cap peak memory while maintaining vectorized speed
-            chunk_size = 512
-            for i in range(0, height, chunk_size):
-                chunk = img_array[i : i + chunk_size]
-                # Calculate absolute differences between adjacent pixels in the same row
-                # np.diff computes img[:, 1:] - img[:, :-1] along the specified axis
-                h_diffs = np.abs(np.diff(chunk, axis=1)).sum(axis=2, dtype=np.int32)
-
-                # Create slices for the 5-pixel comparison window
-                d0 = h_diffs[:, :-4]
-                d1 = h_diffs[:, 1:-3]
-                d2 = h_diffs[:, 2:-2]  # The center difference
-                d3 = h_diffs[:, 3:-1]
-                d4 = h_diffs[:, 4:]
-
-                # Apply Kovalevsky condition: center is a local maximum and above threshold
-                h_condition = (
-                    (d2 > threshold) & (d2 > d0) & (d2 > d1) & (d2 > d3) & (d2 > d4)
-                )
-                # Mark detected edges in the edge map
-                edge_map[i : i + chunk_size, 3:-2][h_condition] = 255
+        _kovalevsky_scan(img_array, edge_map, threshold)
 
         # --- Vertical Scan ---
-        if height >= 6:
-            # Chunk columns to cap peak memory
-            chunk_size = 512
-            for i in range(0, width, chunk_size):
-                chunk = img_array[:, i : i + chunk_size]
-                # Calculate absolute differences between adjacent pixels in the same column
-                v_diffs = np.abs(np.diff(chunk, axis=0)).sum(axis=2, dtype=np.int32)
-
-                # Create slices for the 5-pixel comparison window
-                d0 = v_diffs[:-4, :]
-                d1 = v_diffs[1:-3, :]
-                d2 = v_diffs[2:-2, :]  # The center difference
-                d3 = v_diffs[3:-1, :]
-                d4 = v_diffs[4:, :]
-
-                # Apply Kovalevsky condition
-                v_condition = (
-                    (d2 > threshold) & (d2 > d0) & (d2 > d1) & (d2 > d3) & (d2 > d4)
-                )
-                # Mark detected edges in the edge map
-                edge_map[3:-2, i : i + chunk_size][v_condition] = 255
+        _kovalevsky_scan(np.swapaxes(img_array, 0, 1), edge_map.T, threshold)
 
         # Convert the NumPy array back to an image
         edge_image = Image.fromarray(edge_map, mode="L")
