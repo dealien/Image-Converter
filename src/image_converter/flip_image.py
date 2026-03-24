@@ -18,6 +18,7 @@ def flip_image(image_input: Image.Image, direction: str):
 
     Raises:
         ValueError: If an invalid direction is provided.
+
     """
     if direction == "horizontal":
         return image_input.transpose(Image.FLIP_LEFT_RIGHT)
