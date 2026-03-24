@@ -37,6 +37,20 @@ class TestOperationHandlers(unittest.TestCase):
         self.assertEqual(result, "no_bg_image")
 
     @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.invert_colors")
+    def test_handle_invert(self, mock_invert, mock_print):
+        """Verifies that handle_invert logs correctly and calls invert_colors."""
+        mock_invert.return_value = "inverted_image"
+        values = []
+        result = processing.handle_invert(
+            self.image, self.image_name, values, self.args
+        )
+
+        mock_print.assert_called_once()
+        mock_invert.assert_called_once_with(self.image)
+        self.assertEqual(result, "inverted_image")
+
+    @patch("image_converter.processing.console.print")
     @patch("image_converter.processing.grayscale")
     def test_handle_grayscale(self, mock_grayscale, mock_print):
         mock_grayscale.return_value = "grayscale_image"
