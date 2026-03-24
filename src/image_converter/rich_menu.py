@@ -7,6 +7,7 @@ selection menus, and pipeline summaries for the interactive CLI.
 import os
 import questionary
 import concurrent.futures
+from typing import Any
 from PIL import Image
 
 from rich.table import Table
@@ -18,7 +19,7 @@ from rich.console import Console
 console = Console()
 
 
-def _get_image_metadata(path):
+def _get_image_metadata(path: str) -> tuple[str, str, str]:
     """Retrieves basic metadata for an image file.
 
     Args:
@@ -27,6 +28,7 @@ def _get_image_metadata(path):
     Returns:
         tuple: A tuple containing the formatted dimensions string (e.g., '1920 x 1080'),
             the formatted file size string (e.g., '1.5 MB'), and the image format (e.g., 'JPEG').
+
     """
     try:
         size_bytes = os.path.getsize(path)
@@ -50,7 +52,7 @@ def _get_image_metadata(path):
     return dims, size_str, fmt
 
 
-def run_image_selector(image_files, image_dir):
+def run_image_selector(image_files: list[str], image_dir: str) -> list[str]:
     """Renders a tabular-style selection menu using questionary.
 
     Args:
@@ -59,6 +61,7 @@ def run_image_selector(image_files, image_dir):
 
     Returns:
         list: A list of selected image file paths.
+
     """
     if not image_files:
         return []
@@ -111,7 +114,11 @@ def run_image_selector(image_files, image_dir):
     return selected or []
 
 
-def render_combined_menu(images_data, operations, extra_args):
+def render_combined_menu(
+    images_data: list[dict[str, Any]],
+    operations: list[dict[str, Any]],
+    extra_args: dict[str, Any],
+) -> None:
     """Renders the combined menu mockup layout to the console.
 
     Displays a summary of selected images and the current sequence of operations
@@ -121,6 +128,7 @@ def render_combined_menu(images_data, operations, extra_args):
         images_data (list): A list of dictionaries containing image metadata.
         operations (list): A list of dictionaries detailing the ordered operations.
         extra_args (dict): A dictionary of extra global arguments (like resample filter).
+
     """
     console.clear()
     console.print()

@@ -30,8 +30,8 @@ def move_images_to_subdirectory(subdirectory_name: str):
 
     Raises:
         Exception: If an error occurs during directory creation or file moving.
-    """
 
+    """
     try:
         # 1. Create the subdirectory if it doesn't exist
         if not os.path.exists(subdirectory_name):

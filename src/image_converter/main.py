@@ -30,6 +30,7 @@ class StoreInOrder(argparse.Action):
             namespace (argparse.Namespace): The Namespace object that will hold the parsed attributes.
             values (str | list): The parsed argument values.
             option_string (str, optional): The option string that was used to invoke this action. Defaults to None.
+
         """
         if not hasattr(namespace, "ordered_operations"):
             setattr(namespace, "ordered_operations", [])
@@ -54,7 +55,6 @@ def main():
     launches the interactive menu interface. By default, the program searches
     for images in the `Base Images/` directory if no specific file path is given.
     """
-
     # If --menu is used or no arguments are provided, start the menu.
 
     if "--menu" in sys.argv or len(sys.argv) == 1:
@@ -224,7 +224,8 @@ def main():
 
     if not hasattr(args, "ordered_operations"):
         console.print(
-            "[yellow]No actions specified. To see available options, run with --help.[/]"
+            "[yellow]No actions specified. Please provide at least one operation flag (e.g., --invert, --scale 2x).[/]\n"
+            "[dim white]To see all available options, run with --help or use the interactive --menu.[/]"
         )
         return
 
@@ -238,7 +239,11 @@ def main():
         filepaths = glob.glob(image_path_pattern)
         if not filepaths:
             console.print(
-                f"[yellow]No files found matching pattern: {image_path_pattern}[/]"
+                f"[yellow]No files found matching pattern: '{image_path_pattern}'[/]\n"
+                f"[dim white]Please verify the file path or ensure images exist in the target directory.[/]"
+            )
+            console.print(
+                "[dim white]Please check the path or place some images in the specified directory and try again.[/]"
             )
             return
         for filepath in filepaths:

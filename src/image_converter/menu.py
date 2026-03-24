@@ -48,6 +48,7 @@ def _ask_text(
 
     Returns:
         The user's input, or the default value if no input was provided.
+
     """
 
     def get_prompt_text():
@@ -120,6 +121,7 @@ def _format_operation_display(index, op, extra_args):
 
     Returns:
         str: A formatted string representing the operation (e.g., "1. --scale 2.0x --resample bicubic").
+
     """
     op_name = op["dest"].replace("_", "-")
     op_vals = " ".join(map(str, op.get("values", [])))
@@ -145,6 +147,7 @@ def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=Fal
 
     Returns:
         callable: A validation function that takes a string and returns True if valid, or an error message string otherwise.
+
     """
 
     def validator(val_str):
@@ -178,6 +181,7 @@ def prompt_for_flip_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'flip', or None if canceled.
+
     """
     choice = questionary.select(
         "Select flip direction:",
@@ -197,6 +201,7 @@ def prompt_for_scale_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'scale', or None if canceled.
+
     """
     console.print("\n[dim cyan]--- Scale Options ---[/]")
 
@@ -256,6 +261,7 @@ def prompt_for_edge_detection_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'edge_detection', or None if canceled.
+
     """
     method = questionary.select(
         "Select Edge Detection Method:",
@@ -287,6 +293,7 @@ def prompt_for_brightness_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'brightness'.
+
     """
     val_str = _ask_text(
         "Enter brightness value (-100 to 100)",
@@ -304,6 +311,7 @@ def prompt_for_contrast_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'contrast'.
+
     """
     val_str = _ask_text(
         "Enter contrast value (-100 to 100)",
@@ -321,6 +329,7 @@ def prompt_for_saturation_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'saturation'.
+
     """
     val_str = _ask_text(
         "Enter saturation value (-100 to 100)",
@@ -338,6 +347,7 @@ def prompt_for_blur_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'blur'.
+
     """
     val_str = _ask_text(
         "Enter blur radius (min 0.0)",
@@ -355,6 +365,7 @@ def prompt_for_sharpen_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'sharpen'.
+
     """
     val_str = _ask_text(
         "Enter sharpness intensity (0-100)",
@@ -372,6 +383,7 @@ def prompt_for_color_balance_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'color_balance'.
+
     """
     console.print(
         "[dim white]Enter multipliers for Red, Green, and Blue channels (e.g., 1.0 for no change).[/]"
@@ -411,6 +423,7 @@ def prompt_for_hue_rotation_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'hue_rotation'.
+
     """
     val_str = _ask_text(
         "Enter hue rotation degrees (0-360)",
@@ -428,6 +441,7 @@ def prompt_for_posterize_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'posterize'.
+
     """
     val_str = _ask_text(
         "Enter number of bits (1-8)",
@@ -445,6 +459,7 @@ def prompt_for_border_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'border', or None if canceled.
+
     """
     thickness_str = _ask_text(
         "Enter border thickness (0-500)",
@@ -481,6 +496,7 @@ def prompt_for_vignette_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'vignette'.
+
     """
     val_str = _ask_text(
         "Enter vignette intensity (0-100)",
@@ -498,6 +514,7 @@ def prompt_for_rotation_options(extra_args=None):
 
     Returns:
         dict: The operation dictionary for 'rotate'.
+
     """
     angle_str = _ask_text(
         "Enter rotation angle (will clamp to nearest 90)",
@@ -573,6 +590,7 @@ def remove_manipulation(operations, extra_args):
 
     Returns:
         list: The updated list of operations.
+
     """
     if not operations:
         console.print("\n[yellow]There are no operations to remove.[/]")
@@ -617,10 +635,14 @@ def select_images():
 
     Returns:
         list: A list of selected image file paths.
+
     """
     image_dir = "Base Images"
     if not os.path.isdir(image_dir):
         console.print(f"[red]Error: Directory '{image_dir}' not found.[/]")
+        console.print(
+            "[dim white]Please create the directory, place some images in it, and try again, or specify a path via CLI.[/]\n"
+        )
         return []
 
     try:
@@ -642,7 +664,7 @@ def select_images():
     if not image_files:
         console.print(f"\n[yellow]No images found in '{image_dir}'.[/]")
         console.print(
-            "[dim white]Please place some images (e.g., .jpg, .png) in this directory and try again.[/]\n"
+            "[dim white]Please place some images (e.g., .jpg, .png) in this directory and try again, or specify a path via CLI.[/]\n"
         )
         return []
 
@@ -670,6 +692,7 @@ def select_manipulations(images_data):
 
     Returns:
         tuple: A tuple containing the list of selected operations and the extra arguments dictionary.
+
     """
     selected_operations = []
     extra_args = {}
