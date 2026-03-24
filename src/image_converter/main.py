@@ -30,6 +30,7 @@ class StoreInOrder(argparse.Action):
             namespace (argparse.Namespace): The Namespace object that will hold the parsed attributes.
             values (str | list): The parsed argument values.
             option_string (str, optional): The option string that was used to invoke this action. Defaults to None.
+
         """
         if not hasattr(namespace, "ordered_operations"):
             setattr(namespace, "ordered_operations", [])
@@ -54,7 +55,6 @@ def main():
     launches the interactive menu interface. By default, the program searches
     for images in the `Base Images/` directory if no specific file path is given.
     """
-
     # If --menu is used or no arguments are provided, start the menu.
 
     if "--menu" in sys.argv or len(sys.argv) == 1:
