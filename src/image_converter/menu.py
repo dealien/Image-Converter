@@ -54,9 +54,6 @@ def _ask_text(
     def get_prompt_text():
         # Dynamic prompt generation based on current input buffer
         try:
-            # text = get_app().current_buffer.text  # This works in full app
-            # For prompt() shortcut, we might need a safer access if app not ready
-            # But prompt() initializes app before rendering.
             text = get_app().current_buffer.text
         except Exception:
             text = ""
