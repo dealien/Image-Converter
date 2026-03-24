@@ -240,6 +240,9 @@ def main():
             console.print(
                 f"[yellow]No files found matching pattern: {image_path_pattern}[/]"
             )
+            console.print(
+                "[dim white]Please check the path or place some images in the specified directory and try again.[/]"
+            )
             return
         for filepath in filepaths:
             if os.path.isfile(filepath):
