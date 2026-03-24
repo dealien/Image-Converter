@@ -181,6 +181,7 @@ class TestOperationHandlers(unittest.TestCase):
     @patch("image_converter.processing.console.print")
     @patch("image_converter.processing.apply_vignette")
     def test_handle_vignette(self, mock_apply, mock_print):
+        """Verifies that handle_vignette logs correctly and calls apply_vignette."""
         mock_apply.return_value = "vignette_image"
         values = [50]
         result = processing.handle_vignette(
