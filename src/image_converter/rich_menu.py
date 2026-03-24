@@ -32,8 +32,8 @@ def _get_image_metadata(path: str) -> tuple[str, str, str]:
     """
     try:
         size_bytes = os.path.getsize(path)
-        if size_bytes >= 1024 * 1024:
-            size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
+        if size_bytes >= 1048576:
+            size_str = f"{size_bytes / 1048576:.1f} MB"
         elif size_bytes >= 1024:
             size_str = f"{size_bytes / 1024:.1f} KB"
         else:
