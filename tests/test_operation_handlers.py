@@ -50,6 +50,21 @@ class TestOperationHandlers(unittest.TestCase):
         self.assertEqual(result, "grayscale_image")
 
     @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.grayscale")
+    def test_handle_grayscale_delegation(self, mock_grayscale, mock_print):
+        """Verifies that handle_grayscale correctly delegates the image and returns the result."""
+        mock_grayscale.return_value = "grayscale_image_delegated"
+        values = []
+        result = processing.handle_grayscale(
+            self.image, self.image_name, values, self.args
+        )
+        mock_print.assert_called_with(
+            "  [bright_yellow]›[/] [yellow]Converting to grayscale...[/]"
+        )
+        mock_grayscale.assert_called_once_with(self.image)
+        self.assertEqual(result, "grayscale_image_delegated")
+
+    @patch("image_converter.processing.console.print")
     @patch("image_converter.processing.adjust_brightness")
     def test_handle_brightness(self, mock_adjust, mock_print):
         mock_adjust.return_value = "bright_image"
