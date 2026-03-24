@@ -35,6 +35,7 @@ def scale_image(
 
     Raises:
         ValueError: If an invalid resample filter is provided.
+
     """
     original_width, original_height = image_input.size
     new_width, new_height = original_width, original_height

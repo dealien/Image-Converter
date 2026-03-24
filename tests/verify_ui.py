@@ -1,5 +1,4 @@
-"""
-Verify UI Functionality
+"""Verify UI Functionality
 
 This script is used to quickly verify that the UI is working
 correctly using a small set of test images and simple operations.

@@ -27,6 +27,7 @@ def _get_image_metadata(path):
     Returns:
         tuple: A tuple containing the formatted dimensions string (e.g., '1920 x 1080'),
             the formatted file size string (e.g., '1.5 MB'), and the image format (e.g., 'JPEG').
+
     """
     try:
         size_bytes = os.path.getsize(path)
@@ -59,6 +60,7 @@ def run_image_selector(image_files, image_dir):
 
     Returns:
         list: A list of selected image file paths.
+
     """
     if not image_files:
         return []
@@ -121,6 +123,7 @@ def render_combined_menu(images_data, operations, extra_args):
         images_data (list): A list of dictionaries containing image metadata.
         operations (list): A list of dictionaries detailing the ordered operations.
         extra_args (dict): A dictionary of extra global arguments (like resample filter).
+
     """
     console.clear()
     console.print()

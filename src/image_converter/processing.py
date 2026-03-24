@@ -51,6 +51,7 @@ class StyledTimeElapsedColumn(TimeElapsedColumn):
 
     Attributes:
         style (str): The Rich style string to apply to the time elapsed text.
+
     """
 
     def __init__(self, style="none"):
@@ -58,6 +59,7 @@ class StyledTimeElapsedColumn(TimeElapsedColumn):
 
         Args:
             style (str, optional): The Rich style string to apply. Defaults to "none".
+
         """
         super().__init__()
         self.style = style
@@ -70,6 +72,7 @@ class StyledTimeElapsedColumn(TimeElapsedColumn):
 
         Returns:
             Text: A Rich Text object representing the styled time elapsed.
+
         """
         from rich.text import Text
 
@@ -93,6 +96,7 @@ def handle_flip(image: Image.Image, image_name, values, args) -> Image.Image:
 
     Returns:
         Image.Image: The flipped image.
+
     """
     console.print(f"  [bright_yellow]›[/] [yellow]Flipping {values[0]}...[/]")
     return flip_image(image, values[0])
@@ -109,6 +113,7 @@ def handle_scale(image: Image.Image, image_name, values, args) -> Image.Image:
 
     Returns:
         Image.Image: The scaled image, or the original image if scaling fails.
+
     """
     scale_params = values
     scale_factor = None
@@ -172,6 +177,7 @@ def handle_remove_background(
 
     Returns:
         Image.Image: The image with the background removed.
+
     """
     console.print("  [bright_yellow]›[/] [yellow]Removing background...[/]")
     return remove_background(image)
@@ -188,6 +194,7 @@ def handle_invert(image: Image.Image, image_name, values, args) -> Image.Image:
 
     Returns:
         Image.Image: The image with inverted colors.
+
     """
     console.print("  [bright_yellow]›[/] [yellow]Inverting colors...[/]")
     return invert_colors(image)
@@ -204,6 +211,7 @@ def handle_grayscale(image: Image.Image, image_name, values, args) -> Image.Imag
 
     Returns:
         Image.Image: The grayscale image.
+
     """
     console.print("  [bright_yellow]›[/] [yellow]Converting to grayscale...[/]")
     return grayscale(image)
@@ -220,6 +228,7 @@ def handle_edge_detection(image: Image.Image, image_name, values, args) -> Image
 
     Returns:
         Image.Image: The image with edge detection applied.
+
     """
     method = values[0]
     if method == "kovalevsky":
@@ -245,6 +254,7 @@ def handle_brightness(image: Image.Image, image_name, values, args) -> Image.Ima
 
     Returns:
         Image.Image: The image with adjusted brightness.
+
     """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Adjusting brightness by {values[0]}...[/]"
@@ -263,6 +273,7 @@ def handle_contrast(image: Image.Image, image_name, values, args) -> Image.Image
 
     Returns:
         Image.Image: The image with adjusted contrast.
+
     """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Adjusting contrast by {values[0]}...[/]"
@@ -281,6 +292,7 @@ def handle_saturation(image: Image.Image, image_name, values, args) -> Image.Ima
 
     Returns:
         Image.Image: The image with adjusted saturation.
+
     """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Adjusting saturation by {values[0]}...[/]"
@@ -299,6 +311,7 @@ def handle_blur(image: Image.Image, image_name, values, args) -> Image.Image:
 
     Returns:
         Image.Image: The blurred image.
+
     """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Applying Gaussian Blur (radius: {values[0]})...[/]"
@@ -317,6 +330,7 @@ def handle_sharpen(image: Image.Image, image_name, values, args) -> Image.Image:
 
     Returns:
         Image.Image: The sharpened image.
+
     """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Applying Sharpen (intensity: {values[0]})...[/]"
@@ -335,6 +349,7 @@ def handle_color_balance(image: Image.Image, image_name, values, args) -> Image.
 
     Returns:
         Image.Image: The color-balanced image.
+
     """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Applying Color Balance (R:{values[0]}, G:{values[1]}, B:{values[2]})...[/]"
@@ -353,6 +368,7 @@ def handle_hue_rotation(image: Image.Image, image_name, values, args) -> Image.I
 
     Returns:
         Image.Image: The image with rotated hue.
+
     """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Rotating Hue by {values[0]} degrees...[/]"
@@ -371,6 +387,7 @@ def handle_posterize(image: Image.Image, image_name, values, args) -> Image.Imag
 
     Returns:
         Image.Image: The posterized image.
+
     """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Posterizing to {values[0]} bits...[/]"
@@ -390,6 +407,7 @@ def handle_border(image: Image.Image, image_name, values, args) -> Image.Image:
 
     Returns:
         Image.Image: The image with the border added, or the original image if arguments are invalid.
+
     """
     try:
         thickness = int(values[0])
@@ -417,6 +435,7 @@ def handle_rotate(image: Image.Image, image_name, values, args) -> Image.Image:
 
     Returns:
         Image.Image: The rotated image.
+
     """
     logger_str = (
         f"  [bright_yellow]›[/] [yellow]Rotating image by {values[0]} degrees...[/]"
@@ -436,6 +455,7 @@ def handle_vignette(image: Image.Image, image_name, values, args) -> Image.Image
 
     Returns:
         Image.Image: The image with the vignette effect applied.
+
     """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Applying vignette with intensity {values[0]}...[/]"
@@ -454,6 +474,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         ordered_operations (list): A list of dictionaries detailing the operations to apply.
             Each dict should have 'dest' (operation name) and 'values' (operation arguments).
         cli_args (argparse.Namespace): The parsed command-line arguments.
+
     """
     operation_handlers = {
         "flip": handle_flip,
