@@ -51,7 +51,9 @@ def test_validate_number():
 
 def test_validate_number_float():
     """Test number validation for floats including bounds and empty strings."""
-    validator = menu._validate_number(min_val=0.0, max_val=10.0, value_type=float, allow_empty=True)
+    validator = menu._validate_number(
+        min_val=0.0, max_val=10.0, value_type=float, allow_empty=True
+    )
     assert validator("0.5") is True
     assert validator("") is True
     assert "at least 0.0" in validator("-0.1")
