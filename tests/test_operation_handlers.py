@@ -178,6 +178,20 @@ class TestOperationHandlers(unittest.TestCase):
         mock_edge.assert_called_once_with(self.image, "kovalevsky", 42)
         self.assertEqual(result, "kovalevsky_image")
 
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.apply_vignette")
+    def test_handle_vignette(self, mock_apply, mock_print):
+        """Verifies that handle_vignette logs correctly and calls apply_vignette."""
+        mock_apply.return_value = "vignette_image"
+        values = [50]
+        result = processing.handle_vignette(
+            self.image, self.image_name, values, self.args
+        )
+
+        mock_print.assert_called_once()
+        mock_apply.assert_called_once_with(self.image, 50)
+        self.assertEqual(result, "vignette_image")
+
 
 if __name__ == "__main__":
     unittest.main()
