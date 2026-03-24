@@ -9,3 +9,7 @@
 ## 2024-05-20 - Testing missing operation handlers in processing.py
 **Learning:** Testing simple mapping handlers (e.g., `handle_vignette` in `processing.py`) is surprisingly effective and simple to implement by mocking `rich.console.Console.print` and the core image filter function (`apply_vignette`). Returning a mock value from the core function and asserting it's returned by the handler ensures the entire workflow logic is verified.
 **Action:** When adding or verifying tests for CLI mapping handlers that delegate to core domain logic, structure the test to patch the output console and the target function, execute with sample CLI argument values, and strictly assert the target function was called precisely and the response directly propagated.
+
+## 2026-03-24 - Testing interactive menu prompts with restricted environments
+**Learning:** Testing interactive menu functions (e.g., `prompt_for_vignette_options`) that use `_ask_text` can be effectively done by mocking the input helper to return either empty strings (to trigger defaults) or specific values. In environments where `pytest` is missing, `unittest.TestCase` wrappers can be used alongside custom mocked runners (like `run_mocked_tests.py`) to verify logic.
+**Action:** When adding test coverage for CLI prompt functions, mock the primary input mechanism (`_ask_text` or `questionary.select`) and verify the resulting operation dictionary. Ensure compatibility with the existing test suite and any available mocked test runners for verification.

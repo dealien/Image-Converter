@@ -296,3 +296,17 @@ def test_interactive_menu_flow(mock_questionary):
         mock_sel_imgs.assert_called_once()
         mock_sel_manips.assert_called_once()
         mock_process.assert_called_once()
+
+
+def test_prompt_for_vignette(mock_ask_text):
+    """Verifies that the vignette prompt returns default intensity for empty input."""
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_vignette_options()
+    assert res == {"dest": "vignette", "values": [50]}
+
+
+def test_prompt_for_vignette_custom(mock_ask_text):
+    """Verifies that the vignette prompt returns correct integer for valid custom input."""
+    mock_ask_text.return_value = "75"
+    res = menu.prompt_for_vignette_options()
+    assert res == {"dest": "vignette", "values": [75]}
