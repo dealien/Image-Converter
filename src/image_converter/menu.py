@@ -621,6 +621,9 @@ def select_images():
     image_dir = "Base Images"
     if not os.path.isdir(image_dir):
         console.print(f"[red]Error: Directory '{image_dir}' not found.[/]")
+        console.print(
+            "[dim white]Please create the directory, place some images in it, and try again, or specify a path via CLI.[/]\n"
+        )
         return []
 
     try:
@@ -642,7 +645,7 @@ def select_images():
     if not image_files:
         console.print(f"\n[yellow]No images found in '{image_dir}'.[/]")
         console.print(
-            "[dim white]Please place some images (e.g., .jpg, .png) in this directory and try again.[/]\n"
+            "[dim white]Please place some images (e.g., .jpg, .png) in this directory and try again, or specify a path via CLI.[/]\n"
         )
         return []
 
