@@ -41,6 +41,7 @@ class TestOperationHandlers(unittest.TestCase):
     @patch("image_converter.processing.console.print")
     @patch("image_converter.processing.invert_colors")
     def test_handle_invert(self, mock_invert, mock_print):
+        """Verifies that handle_invert logs correctly and calls invert_colors."""
         mock_invert.return_value = "inverted_image"
         values = []
         result = processing.handle_invert(
