@@ -19,7 +19,9 @@ class TestOperationHandlers(unittest.TestCase):
         values = ["horizontal"]
         result = processing.handle_flip(self.image, self.image_name, values, self.args)
 
-        mock_print.assert_called_once()
+        mock_print.assert_called_once_with(
+            "  [bright_yellow]›[/] [yellow]Flipping horizontal...[/]"
+        )
         mock_flip.assert_called_once_with(self.image, "horizontal")
         self.assertEqual(result, "flipped_image")
 
