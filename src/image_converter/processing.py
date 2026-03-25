@@ -696,7 +696,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                         )
 
                         # Log individual implicit/explicit conversion status
-                        action_str = "Exported as" if has_explicit_format else "Saved as"
+                        action_str = (
+                            "Exported as" if has_explicit_format else "Saved as"
+                        )
                         qual_str = (
                             f" [dim](Quality: [/][cyan]{quality}%[/][dim])[/]"
                             if pil_format in ("JPEG", "WEBP", "AVIF", "HEIF", "HEIC")

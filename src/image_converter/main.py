@@ -243,9 +243,11 @@ def main():
 
     args = parser.parse_args()
 
-    if not hasattr(args, "ordered_operations"):
+    # Check if any action was specified (operations or explicit formats)
+    if not args.ordered_operations and not args.format:
         console.print(
-            "[yellow]No actions specified. Please provide at least one operation flag (e.g., --invert, --scale 2x).[/]\n"
+            "[yellow]No actions specified. Please provide at least one operation flag (e.g., --invert, --scale 2x) "
+            "or an output format (e.g., --format webp).[/]\n"
             "[dim white]To see all available options, run with --help or use the interactive --menu.[/]"
         )
         return
