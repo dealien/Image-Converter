@@ -21,7 +21,6 @@ image-converter [file_path] [options]
 - `-g`, `--grayscale`: Convert the image to grayscale.
 - `--flip [direction]`: Flip the image. Choices: `horizontal`, `vertical`, `both`.
 - `--rotate [degrees]`: Rotate image by 90-degree increments (0, 90, 180, 270).
-- `--rotate [degrees]`: Rotate image by 90-degree increments (0, 90, 180, 270).
 - `--border [thickness] [color] [position]`: Add a border (e.g., `10 black expand`).
 
 ## Output Options
