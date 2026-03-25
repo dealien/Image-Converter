@@ -801,7 +801,6 @@ def select_manipulations(images_data):
 
             if op_details:
                 selected_operations.append(op_details)
-                # print(f"Added '{manip['name']}'.") # Status is now implied by UI update
 
     return selected_operations, extra_args
 

@@ -59,8 +59,6 @@ def move_images_to_subdirectory(subdirectory_name: str):
                     console.print(
                         f"[bright_green]Moved:[/] {filename} to {subdirectory_name}"
                     )  # Informative message
-                # else: # Optional: if you want to see which files were SKIPPED
-                #    console.print(f"[dim yellow]Skipped (not an image): {filename}[/]")
 
     except Exception as e:  # Handle potential errors
         console.print(f"[red]An error occurred: {e}[/]")
