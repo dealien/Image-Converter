@@ -521,6 +521,12 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
     results = []  # Store tuple of (filename, success, output_dims, output_size_bytes, error_msg)
     start_time = time.time()
 
+    # Pre-compute operations and their handlers
+    prepared_operations = [
+        (op["dest"], op.get("values", []), operation_handlers.get(op["dest"]))
+        for op in ordered_operations
+    ]
+
     # Steps per image: Open(1) + Ops(N) + Save(1)
     image_total = 1 + len(ordered_operations) + 1
 
@@ -589,10 +595,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                     progress.advance(image_task)
 
                     # Step 2: Operations
-                    for operation in ordered_operations:
-                        op_dest = operation["dest"]
-                        op_values = operation.get("values", [])
-                        handler = operation_handlers.get(op_dest)
+                    for op_dest, op_values, handler in prepared_operations:
                         if handler:
                             progress.update(
                                 image_task,
