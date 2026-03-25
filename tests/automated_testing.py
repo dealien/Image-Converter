@@ -87,8 +87,18 @@ def main():
         [".\\tests\\test_images\\*", "--vignette", "60"],
         [".\\tests\\test_images\\*", "--rotate", "90"],
         # Format and Quality tests
-        [".\\tests\\test_images\\*"], # Default original format
-        [".\\tests\\test_images\\*", "--format", "jpg", "--quality", "50", "--format", "webp", "--quality", "85"],
+        [".\\tests\\test_images\\*"],  # Default original format
+        [
+            ".\\tests\\test_images\\*",
+            "--format",
+            "jpg",
+            "--quality",
+            "50",
+            "--format",
+            "webp",
+            "--quality",
+            "85",
+        ],
         [".\\tests\\test_images\\*", "--format", "png", "--format", "avif"],
     ]
 

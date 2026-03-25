@@ -12,13 +12,13 @@ from pathlib import Path
 
 import pillow_avif  # noqa: F401
 from pi_heif import register_heif_opener
-
-register_heif_opener()
-
 from rich.console import Console
 
 from .file_management import move_images_to_subdirectory
 from .processing import process_images_and_save
+
+# Register HEIF opener to support HEIC/HEIF files
+register_heif_opener()
 
 # Create a global console instance to be shared across modules
 console = Console()

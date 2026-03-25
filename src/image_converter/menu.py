@@ -786,13 +786,21 @@ def select_manipulations(images_data):
                 ).ask()
                 if not confirm:
                     continue
-            
+
             # --- Output Format Prompts ---
             console.print("\n[dim cyan]--- Output Format ---[/]")
             available_formats = [
-                "PNG", "JPG", "JPEG", "WEBP", "BMP", "TIFF", "GIF", "HEIC", "AVIF"
+                "PNG",
+                "JPG",
+                "JPEG",
+                "WEBP",
+                "BMP",
+                "TIFF",
+                "GIF",
+                "HEIC",
+                "AVIF",
             ]
-            
+
             selected_formats = questionary.checkbox(
                 "Select Output Formats (Leave empty for original format):",
                 choices=available_formats,
@@ -806,11 +814,11 @@ def select_manipulations(images_data):
                     if fmt in ["png", "bmp", "gif", "tiff"]:
                         output_qualities.append(100)
                         continue
-                        
+
                     q_str = _ask_text(
                         f"Enter quality for {fmt.upper()} (1-100)",
                         default_val=90,
-                        validate=_validate_number(1, 100, allow_empty=True)
+                        validate=_validate_number(1, 100, allow_empty=True),
                     )
                     output_qualities.append(int(q_str) if q_str else 90)
 
