@@ -13,3 +13,7 @@
 ## 2026-03-24 - Testing interactive menu prompts with restricted environments
 **Learning:** Testing interactive menu functions (e.g., `prompt_for_vignette_options`) that use `_ask_text` can be effectively done by mocking the input helper to return either empty strings (to trigger defaults) or specific values. In environments where `pytest` is missing, `unittest.TestCase` wrappers can be used alongside custom mocked runners (like `run_mocked_tests.py`) to verify logic.
 **Action:** When adding test coverage for CLI prompt functions, mock the primary input mechanism (`_ask_text` or `questionary.select`) and verify the resulting operation dictionary. Ensure compatibility with the existing test suite and any available mocked test runners for verification.
+
+## 2024-05-25 - Mocking nested functions and imports in Pytest
+**Learning:** Pytest will silently fail or get confused if testing variables/classes like `patch`, `MagicMock` or `pytest` itself are repeatedly imported inside local test functions rather than correctly managed as module-level imports.
+**Action:** Place `from unittest.mock import patch, MagicMock` and `import pytest` at the top of test files when using them across multiple test functions.
