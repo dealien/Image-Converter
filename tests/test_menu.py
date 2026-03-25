@@ -1,5 +1,7 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from prompt_toolkit.validation import ValidationError
+from unittest.mock import MagicMock, patch
+from image_converter.menu import prompt_for_scale_options, _ask_text, select_images
 from image_converter import menu
 
 # --- Fixtures ---
@@ -310,3 +312,144 @@ def test_prompt_for_vignette_options_custom(mock_ask_text):
     mock_ask_text.return_value = "75"
     res = menu.prompt_for_vignette_options()
     assert res == {"dest": "vignette", "values": [75]}
+
+def test_scale_validator(mock_questionary):
+
+    validator = None
+    def mock_ask_text(*args, **kwargs):
+        nonlocal validator
+        validator = kwargs.get('validate')
+        return None
+
+    with patch('image_converter.menu._ask_text', side_effect=mock_ask_text):
+        prompt_for_scale_options({})
+
+    assert validator is not None
+    assert validator("") == "Scale value cannot be empty."
+    assert validator("1.5") is True
+    assert validator("1.5x") is True
+    assert validator("400px 300px") is True
+
+    assert "Invalid format" in validator("abc")
+    assert "Invalid format" in validator("400 300")
+    assert "Invalid format" in validator("400px")
+    assert "Invalid format" in validator("400px 300")
+
+def test_ask_text_helper():
+    """Tests the _ask_text helper directly to verify formatted prompt behavior."""
+
+    # Mock PromptSession and prompt
+    mock_session_instance = MagicMock()
+    mock_session_instance.prompt.return_value = "user_input"
+
+    with patch('image_converter.menu.PromptSession', return_value=mock_session_instance) as mock_session_class, \
+         patch('image_converter.menu.print_formatted_text') as mock_print, \
+         patch('image_converter.menu.get_app') as mock_get_app:
+
+        # Test basic prompt without default or validation
+        res = _ask_text("Test question")
+        assert res == "user_input"
+        mock_session_class.assert_called_once()
+        mock_print.assert_called_once()
+
+        # Test get_prompt_text callback behavior
+        prompt_args = mock_session_instance.prompt.call_args
+        get_prompt_text = prompt_args.args[0]
+
+        # Mock buffer text
+        mock_buffer = MagicMock()
+        mock_buffer.text = "typing"
+        mock_get_app.return_value.current_buffer = mock_buffer
+
+        formatted_prompt = get_prompt_text()
+        assert any(msg == "Test question" for style, msg in formatted_prompt)
+
+        # Reset and test with default value and validation
+        mock_session_instance.reset_mock()
+        mock_print.reset_mock()
+
+        # Validation that fails then succeeds
+        def validate(text):
+            return True if text == "valid" else "Invalid text"
+
+        _ask_text("Test validation", default_val="default_ans", validate=validate)
+
+        # Test validator behavior
+        prompt_kwargs = mock_session_instance.prompt.call_args.kwargs
+        validator = prompt_kwargs.get("validator")
+
+        assert validator is not None
+
+        doc_valid = MagicMock()
+        doc_valid.text = "valid"
+        validator.validate(doc_valid)  # Should not raise
+
+        doc_invalid = MagicMock()
+        doc_invalid.text = "invalid"
+        doc_invalid.cursor_position = 7
+        with pytest.raises(ValidationError, match="Invalid text"):
+            validator.validate(doc_invalid)
+
+        # Test empty result uses default
+        mock_session_instance.prompt.return_value = ""
+        res3 = _ask_text("Test default", default_val="default_ans")
+        assert res3 == ""  # Result is empty string, but final display uses default
+
+
+def test_ask_text_helper_get_prompt_text_exception():
+    """Tests the _ask_text helper exception handling in get_prompt_text."""
+
+    with patch('image_converter.menu.PromptSession') as mock_session_class, \
+         patch('image_converter.menu.print_formatted_text'), \
+         patch('image_converter.menu.get_app', side_effect=Exception("mocked error")):
+
+        mock_session_instance = MagicMock()
+        mock_session_instance.prompt.return_value = "ans"
+        mock_session_class.return_value = mock_session_instance
+
+        _ask_text("Test", default_val="def")
+
+        # Test get_prompt_text execution
+        prompt_args = mock_session_instance.prompt.call_args
+        get_prompt_text = prompt_args.args[0]
+
+        formatted = get_prompt_text()
+        assert len(formatted) > 0
+
+def test_select_images_error_handling(mock_questionary):
+
+    with patch('os.path.isdir', return_value=False), \
+         patch('image_converter.menu.console.print') as mock_print:
+        res = select_images()
+        assert res == []
+        mock_print.assert_any_call("[red]Error: Directory 'Base Images' not found.[/]")
+
+    with patch('os.path.isdir', return_value=True), patch('os.listdir', side_effect=Exception("mocked error")), \
+         patch('image_converter.menu.console.print') as mock_print:
+        res = select_images()
+        assert res == []
+        mock_print.assert_called_with("[red]Read error: mocked error[/]")
+
+def test_select_images_no_images(mock_questionary):
+
+    with patch('os.path.isdir', return_value=True), patch('os.listdir', return_value=[]), \
+         patch('image_converter.menu.console.print') as mock_print:
+        res = select_images()
+        assert res == []
+        mock_print.assert_any_call("\n[yellow]No images found in 'Base Images'.[/]")
+
+def test_remove_manipulation_empty_ops():
+    from image_converter.menu import remove_manipulation
+
+    with patch('image_converter.menu.console.print') as mock_print:
+        res = remove_manipulation([], {})
+        assert res == []
+        mock_print.assert_called_with("\n[yellow]There are no operations to remove.[/]")
+
+def test_remove_manipulation_cancel(mock_questionary):
+    from image_converter.menu import remove_manipulation
+
+    mock_questionary.select.return_value.ask.return_value = -1
+    ops = [{"dest": "flip"}]
+    res = remove_manipulation(ops, {})
+    assert res == ops
