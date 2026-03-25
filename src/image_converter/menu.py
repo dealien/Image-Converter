@@ -693,6 +693,8 @@ def select_manipulations(images_data):
     """
     selected_operations = []
     extra_args = {}
+    output_formats = []
+    output_qualities = []
 
     # Define Categories mapping to format the interactive tree
     CATEGORIES = {
@@ -784,6 +786,34 @@ def select_manipulations(images_data):
                 ).ask()
                 if not confirm:
                     continue
+            
+            # --- Output Format Prompts ---
+            console.print("\n[dim cyan]--- Output Format ---[/]")
+            available_formats = [
+                "PNG", "JPG", "JPEG", "WEBP", "BMP", "TIFF", "GIF", "HEIC", "AVIF"
+            ]
+            
+            selected_formats = questionary.checkbox(
+                "Select Output Formats (Leave empty for original format):",
+                choices=available_formats,
+                instruction="(Use Space to select/deselect, Enter to confirm)",
+            ).ask()
+
+            if selected_formats:
+                output_formats = [f.lower() for f in selected_formats]
+                for fmt in output_formats:
+                    # Formats that don't support quality setting natively or usually
+                    if fmt in ["png", "bmp", "gif", "tiff"]:
+                        output_qualities.append(100)
+                        continue
+                        
+                    q_str = _ask_text(
+                        f"Enter quality for {fmt.upper()} (1-100)",
+                        default_val=90,
+                        validate=_validate_number(1, 100, allow_empty=True)
+                    )
+                    output_qualities.append(int(q_str) if q_str else 90)
+
             break
         elif selection == "REMOVE":
             remove_manipulation(selected_operations, extra_args)
@@ -803,7 +833,7 @@ def select_manipulations(images_data):
                 selected_operations.append(op_details)
                 # print(f"Added '{manip['name']}'.") # Status is now implied by UI update
 
-    return selected_operations, extra_args
+    return selected_operations, extra_args, output_formats, output_qualities
 
 
 def interactive_menu():
@@ -831,12 +861,14 @@ def interactive_menu():
         with concurrent.futures.ThreadPoolExecutor() as executor:
             images_data = list(executor.map(_fetch_selected_image_data, paths))
 
-        ops, extra_args = select_manipulations(images_data)
+        ops, extra_args, out_formats, out_qualities = select_manipulations(images_data)
 
         # Prepare args
         mock_args = SimpleNamespace(
             resample=extra_args.get("resample", "bilinear"),
             threshold=extra_args.get("threshold", 50),
+            format=out_formats if out_formats else None,
+            quality=out_qualities if out_qualities else None,
         )
 
         # Process expects a list of [name, path] lists as per existing logic

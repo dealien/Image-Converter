@@ -10,6 +10,11 @@ import os
 import sys
 from pathlib import Path
 
+import pillow_avif  # noqa: F401
+from pi_heif import register_heif_opener
+
+register_heif_opener()
+
 from rich.console import Console
 
 from .file_management import move_images_to_subdirectory
@@ -218,6 +223,19 @@ def main():
         action=StoreInOrder,
         type=int,
         help="Rotate image by 90-degree increments (0, 90, 180, 270).",
+    )
+    # Global output options (not piped)
+    parser.add_argument(
+        "--format",
+        action="append",
+        type=str,
+        help="Output format (e.g. png, jpg, webp, heic, avif). Can be used multiple times.",
+    )
+    parser.add_argument(
+        "--quality",
+        action="append",
+        type=int,
+        help="Output quality (1-100) per format. Evaluated in order of --format arguments.",
     )
 
     args = parser.parse_args()

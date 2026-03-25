@@ -21,7 +21,13 @@ image-converter [file_path] [options]
 - `-g`, `--grayscale`: Convert the image to grayscale.
 - `--flip [direction]`: Flip the image. Choices: `horizontal`, `vertical`, `both`.
 - `--rotate [degrees]`: Rotate image by 90-degree increments (0, 90, 180, 270).
+- `--rotate [degrees]`: Rotate image by 90-degree increments (0, 90, 180, 270).
 - `--border [thickness] [color] [position]`: Add a border (e.g., `10 black expand`).
+
+## Output Options
+
+- `--format [type]`: Output format (e.g. `png`, `jpg`, `webp`, `heic`, `avif`). Can be used multiple times.
+- `--quality [value]`: Output quality (1-100) per format. Evaluated in order of `--format` arguments.
 
 ## Filters & Adjustments
 
@@ -49,6 +55,12 @@ image-converter "path/to/your/image.jpg" --remove-background
 
 ```bash
 image-converter "path/to/your/images/*.png" --scale 0.5x
+```
+
+### Convert all images to WebP and JPEG at half quality
+
+```bash
+image-converter "path/to/your/images/*" --format webp --quality 50 --format jpg --quality 50
 ```
 
 ### Chaining Multiple Operations
