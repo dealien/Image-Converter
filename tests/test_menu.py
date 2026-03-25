@@ -313,15 +313,17 @@ def test_prompt_for_vignette_options_custom(mock_ask_text):
     res = menu.prompt_for_vignette_options()
     assert res == {"dest": "vignette", "values": [75]}
 
+
 def test_scale_validator(mock_questionary):
 
     validator = None
+
     def mock_ask_text(*args, **kwargs):
         nonlocal validator
-        validator = kwargs.get('validate')
+        validator = kwargs.get("validate")
         return None
 
-    with patch('image_converter.menu._ask_text', side_effect=mock_ask_text):
+    with patch("image_converter.menu._ask_text", side_effect=mock_ask_text):
         prompt_for_scale_options({})
 
     assert validator is not None
@@ -335,6 +337,7 @@ def test_scale_validator(mock_questionary):
     assert "Invalid format" in validator("400px")
     assert "Invalid format" in validator("400px 300")
 
+
 def test_ask_text_helper():
     """Tests the _ask_text helper directly to verify formatted prompt behavior."""
 
@@ -342,10 +345,13 @@ def test_ask_text_helper():
     mock_session_instance = MagicMock()
     mock_session_instance.prompt.return_value = "user_input"
 
-    with patch('image_converter.menu.PromptSession', return_value=mock_session_instance) as mock_session_class, \
-         patch('image_converter.menu.print_formatted_text') as mock_print, \
-         patch('image_converter.menu.get_app') as mock_get_app:
-
+    with (
+        patch(
+            "image_converter.menu.PromptSession", return_value=mock_session_instance
+        ) as mock_session_class,
+        patch("image_converter.menu.print_formatted_text") as mock_print,
+        patch("image_converter.menu.get_app") as mock_get_app,
+    ):
         # Test basic prompt without default or validation
         res = _ask_text("Test question")
         assert res == "user_input"
@@ -399,10 +405,11 @@ def test_ask_text_helper():
 def test_ask_text_helper_get_prompt_text_exception():
     """Tests the _ask_text helper exception handling in get_prompt_text."""
 
-    with patch('image_converter.menu.PromptSession') as mock_session_class, \
-         patch('image_converter.menu.print_formatted_text'), \
-         patch('image_converter.menu.get_app', side_effect=Exception("mocked error")):
-
+    with (
+        patch("image_converter.menu.PromptSession") as mock_session_class,
+        patch("image_converter.menu.print_formatted_text"),
+        patch("image_converter.menu.get_app", side_effect=Exception("mocked error")),
+    ):
         mock_session_instance = MagicMock()
         mock_session_instance.prompt.return_value = "ans"
         mock_session_class.return_value = mock_session_instance
@@ -416,35 +423,47 @@ def test_ask_text_helper_get_prompt_text_exception():
         formatted = get_prompt_text()
         assert len(formatted) > 0
 
+
 def test_select_images_error_handling(mock_questionary):
 
-    with patch('os.path.isdir', return_value=False), \
-         patch('image_converter.menu.console.print') as mock_print:
+    with (
+        patch("os.path.isdir", return_value=False),
+        patch("image_converter.menu.console.print") as mock_print,
+    ):
         res = select_images()
         assert res == []
         mock_print.assert_any_call("[red]Error: Directory 'Base Images' not found.[/]")
 
-    with patch('os.path.isdir', return_value=True), patch('os.listdir', side_effect=Exception("mocked error")), \
-         patch('image_converter.menu.console.print') as mock_print:
+    with (
+        patch("os.path.isdir", return_value=True),
+        patch("os.listdir", side_effect=Exception("mocked error")),
+        patch("image_converter.menu.console.print") as mock_print,
+    ):
         res = select_images()
         assert res == []
         mock_print.assert_called_with("[red]Read error: mocked error[/]")
 
+
 def test_select_images_no_images(mock_questionary):
 
-    with patch('os.path.isdir', return_value=True), patch('os.listdir', return_value=[]), \
-         patch('image_converter.menu.console.print') as mock_print:
+    with (
+        patch("os.path.isdir", return_value=True),
+        patch("os.listdir", return_value=[]),
+        patch("image_converter.menu.console.print") as mock_print,
+    ):
         res = select_images()
         assert res == []
         mock_print.assert_any_call("\n[yellow]No images found in 'Base Images'.[/]")
 
+
 def test_remove_manipulation_empty_ops():
     from image_converter.menu import remove_manipulation
 
-    with patch('image_converter.menu.console.print') as mock_print:
+    with patch("image_converter.menu.console.print") as mock_print:
         res = remove_manipulation([], {})
         assert res == []
         mock_print.assert_called_with("\n[yellow]There are no operations to remove.[/]")
+
 
 def test_remove_manipulation_cancel(mock_questionary):
     from image_converter.menu import remove_manipulation
