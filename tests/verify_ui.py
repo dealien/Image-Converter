@@ -1,4 +1,4 @@
-"""Verify UI Functionality
+"""Verify UI Functionality.
 
 This script is used to quickly verify that the UI is working
 correctly using a small set of test images and simple operations.
@@ -16,7 +16,16 @@ from image_converter.processing import process_images_and_save
 
 
 class MockArgs:
-    def __init__(self):
+    """Mock command-line arguments for UI verification.
+
+    Attributes:
+        resample (str): The resampling filter to use.
+        threshold (int): The threshold value for edge detection.
+
+    """
+
+    def __init__(self) -> None:
+        """Initialize MockArgs with default values for testing."""
         self.resample = "bicubic"
         self.threshold = 50
 
