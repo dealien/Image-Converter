@@ -153,7 +153,14 @@ def render_combined_menu(
         padding=(0, 1),
     )
     img_table.add_column("#", style="dim white", width=3, justify="right")
-    img_table.add_column("Filename", style="bright_white", min_width=25, no_wrap=True, overflow="ellipsis", max_width=30)
+    img_table.add_column(
+        "Filename",
+        style="bright_white",
+        min_width=25,
+        no_wrap=True,
+        overflow="ellipsis",
+        max_width=30,
+    )
     img_table.add_column("Dimensions", style="bright_green", justify="center")
     img_table.add_column("Size", style="bright_yellow", justify="right")
     img_table.add_column("Format", style="bright_magenta")
