@@ -85,6 +85,9 @@ def main():
         action="store_true",
         help="Start the application in interactive menu mode.",
     )
+    # Initialize ordered_operations to an empty list by default
+    parser.set_defaults(ordered_operations=[])
+
     parser.add_argument(
         "-bg",
         "--remove-background",
