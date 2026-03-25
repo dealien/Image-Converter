@@ -675,9 +675,11 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                             elif pil_format == "TIF":
                                 pil_format = "TIFF"
 
-                            save_image.save(
-                                f, format=pil_format, quality=quality, **save_kwargs
-                            )
+                            # Only these formats support the 'quality' parameter in Pillow/Plugins
+                            if pil_format in ("JPEG", "WEBP", "AVIF", "HEIF", "HEIC"):
+                                save_kwargs["quality"] = quality
+
+                            save_image.save(f, format=pil_format, **save_kwargs)
                             f.flush()
                             os.fsync(f.fileno())
 
@@ -694,11 +696,14 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                         )
 
                         # Log individual implicit/explicit conversion status
-                        action_str = (
-                            "Converted to" if has_explicit_format else "Saved as"
+                        action_str = "Exported as" if has_explicit_format else "Saved as"
+                        qual_str = (
+                            f" [dim](Quality: [/][cyan]{quality}%[/][dim])[/]"
+                            if pil_format in ("JPEG", "WEBP", "AVIF", "HEIF", "HEIC")
+                            else ""
                         )
                         progress.console.print(
-                            f"      [dim white]↳[/] [dim italic]{action_str} {fmt.upper()} (q: {quality})[/]"
+                            f"      [dim white]↳[/] [bold green]{action_str}[/] [cyan]{fmt.upper()}{qual_str}[/]"
                         )
                     except Exception as loop_err:
                         # Close and remove specific failed format files
