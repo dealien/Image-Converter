@@ -571,8 +571,21 @@ def _process_single_image(
             )
 
             try:
-                # Convert to RGB if saving to JPEG/BMP to prevent OSError
                 save_image = output_image
+
+                # Flatten transparency if flag is set, and format might drop alpha
+                if getattr(cli_args, "flatten", None) is not None:
+                    if fmt in ("jpg", "jpeg", "bmp", "webp") and (
+                        save_image.mode in ("RGBA", "LA", "PA")
+                        or save_image.info.get("transparency", None) is not None
+                    ):
+                        # Ensure we have an RGBA image to extract the alpha channel
+                        temp_rgba = save_image.convert("RGBA")
+                        background = Image.new("RGB", temp_rgba.size, cli_args.flatten)
+                        background.paste(temp_rgba, mask=temp_rgba.split()[3])
+                        save_image = background
+
+                # Convert to RGB if saving to JPEG/BMP to prevent OSError
                 if fmt in ("jpg", "jpeg", "bmp") and save_image.mode in (
                     "RGBA",
                     "LA",
@@ -815,9 +828,6 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
     if hasattr(cli_args, "quality") and cli_args.quality:
         for q in cli_args.quality:
             cli_args_list.append(f"--quality {q}")
-
-    if hasattr(cli_args, "flatten") and cli_args.flatten:
-        cli_args_list.append(f"--flatten {cli_args.flatten}")
 
     cli_str = " ".join(cli_args_list)
 

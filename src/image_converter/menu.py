@@ -822,15 +822,6 @@ def select_manipulations(images_data):
                     )
                     output_qualities.append(int(q_str) if q_str else 90)
 
-            flatten_confirm = questionary.confirm(
-                "Flatten transparent backgrounds?", default=False
-            ).ask()
-            if flatten_confirm:
-                flatten_color = _ask_text(
-                    "Background color for flattening (Name or Hex)", default_val="white"
-                )
-                extra_args["flatten"] = flatten_color if flatten_color else "white"
-
             break
         elif selection == "REMOVE":
             remove_manipulation(selected_operations, extra_args)
@@ -885,7 +876,6 @@ def interactive_menu():
             threshold=extra_args.get("threshold", 50),
             format=out_formats if out_formats else None,
             quality=out_qualities if out_qualities else None,
-            flatten=extra_args.get("flatten", None),
         )
 
         # Process expects a list of [name, path] lists as per existing logic

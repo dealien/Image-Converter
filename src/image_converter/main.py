@@ -227,13 +227,6 @@ def main():
         type=int,
         help="Rotate image by 90-degree increments (0, 90, 180, 270).",
     )
-    parser.add_argument(
-        "--flatten",
-        nargs="?",
-        const="white",
-        default=None,
-        help="Composite image against a solid color background (default: white) for output formats that may not consistently support alpha channels (e.g., JPEG, WEBP).",
-    )
     # Global output options (not piped)
     parser.add_argument(
         "--format",
