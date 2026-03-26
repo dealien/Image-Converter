@@ -1,6 +1,7 @@
 import unittest
 import os
 import random
+from unittest.mock import MagicMock
 from PIL import Image
 from image_converter.image_filters import (
     invert_colors,
@@ -584,6 +585,36 @@ class TestImageColorOps(unittest.TestCase):
         # Check if alpha is preserved
         self.assertEqual(posterized_img.mode, "RGBA")
         self.assertEqual(posterized_img.getpixel((0, 0))[3], 128)
+
+    def test_posterize_la_mode(self):
+        """Verifies that LA mode preserves alpha when posterized."""
+        la_img = Image.new("LA", (10, 10), (100, 128))
+        posterized_img = apply_posterize(la_img, bits=4)
+        self.assertEqual(posterized_img.mode, "LA")
+        self.assertEqual(posterized_img.getpixel((0, 0))[1], 128)
+
+    def test_posterize_non_standard_mode(self):
+        """Verifies that non-standard modes are safely converted before posterization."""
+        cmyk_img = Image.new("CMYK", (10, 10), (100, 150, 200, 50))
+        posterized_img = apply_posterize(cmyk_img, bits=4)
+        self.assertEqual(posterized_img.mode, "RGB")
+
+    def test_posterize_fallback_mode(self):
+        """Verifies the fallback LUT application for unexpected but valid modes."""
+
+        # Pillow's Image.mode is a property that can't be easily patched directly on the instance using patch.object.
+        # Instead, we can create a mock image that acts like a Pillow image.
+        mock_img = MagicMock(spec=Image.Image)
+        mock_img.mode = "UNKNOWN"
+        mock_img.getbands.return_value = ("R", "G", "B")
+
+        # When image.convert is called, return the mock image itself to stay in UNKNOWN mode
+        mock_img.convert.return_value = mock_img
+
+        apply_posterize(mock_img, bits=4)
+
+        # Verify that point was called, indicating the fallback branch ran
+        mock_img.point.assert_called_once()
 
 
 class TestImageBorder(unittest.TestCase):

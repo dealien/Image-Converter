@@ -17,3 +17,7 @@
 ## 2024-05-25 - Mocking nested functions and imports in Pytest
 **Learning:** Pytest will silently fail or get confused if testing variables/classes like `patch`, `MagicMock` or `pytest` itself are repeatedly imported inside local test functions rather than correctly managed as module-level imports.
 **Action:** Place `from unittest.mock import patch, MagicMock` and `import pytest` at the top of test files when using them across multiple test functions.
+
+## 2024-05-25 - Mocking Pillow Image Mode Properties
+**Learning:** Pillow's `Image.mode` is a property and cannot be directly patched on a real image instance using `unittest.mock.patch.object()`. Attempting to do so results in an `AttributeError: property 'mode' of 'Image' object has no setter` or `deleter`.
+**Action:** To test fallback branches or unexpected image modes, instantiate a mock image (`MagicMock(spec=Image.Image)`), assign the necessary properties (`mock_img.mode = "UNKNOWN"`), and configure the relevant methods (`mock_img.getbands.return_value = ("R", "G", "B")`, `mock_img.convert.return_value = mock_img`) to simulate the required behavior without triggering Pillow's internal type checks.
