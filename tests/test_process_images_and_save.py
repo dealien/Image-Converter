@@ -28,7 +28,11 @@ class TestProcessImagesAndSave(unittest.TestCase):
     def test_empty_images_data(self, mock_print):
         # Empty images_data -> early return with "No images to process."
         processing.process_images_and_save([], [], argparse.Namespace())
-        mock_print.assert_called_once_with("[yellow]No images to process.[/]")
+        mock_print.assert_any_call("[yellow]No images to process.[/]")
+        mock_print.assert_any_call(
+            "[dim white]Please specify valid image files or ensure images exist in your input directory.[/]"
+        )
+        self.assertEqual(mock_print.call_count, 2)
 
     @patch("image_converter.processing.console.print")
     @patch("image_converter.processing.Image.open")

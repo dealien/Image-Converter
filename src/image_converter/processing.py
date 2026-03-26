@@ -502,6 +502,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
 
     if not images_data:
         console.print("[yellow]No images to process.[/]")
+        console.print(
+            "[dim white]Please specify valid image files or ensure images exist in your input directory.[/]"
+        )
         return
 
     # Processing Header
