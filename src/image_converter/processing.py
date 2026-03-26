@@ -581,7 +581,32 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             out_size_bytes = 0
 
             # Using original_name but .png extension for output
-            output_filename = Path(original_name).stem + ".png"
+            # Extract specified formats and qualities from args
+            target_formats = []
+            target_qualities = []
+            has_explicit_format = False
+
+            if hasattr(cli_args, "format") and cli_args.format:
+                target_formats = [f.lower().strip(".") for f in cli_args.format]
+                has_explicit_format = True
+
+                # Align qualities with formats if possible
+                if hasattr(cli_args, "quality") and cli_args.quality:
+                    for i in range(len(target_formats)):
+                        if i < len(cli_args.quality):
+                            target_qualities.append(cli_args.quality[i])
+                        else:
+                            # Use the last specified quality or default 90
+                            target_qualities.append(
+                                cli_args.quality[-1] if cli_args.quality else 90
+                            )
+                else:
+                    target_qualities = [90] * len(target_formats)
+            else:
+                # Default to original extension
+                ext = Path(original_name).suffix.lower().strip(".")
+                target_formats = [ext if ext else "png"]
+                target_qualities = [90]
 
             try:
                 # Step 1: Open
@@ -611,34 +636,98 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 finally:
                     img.close()
 
-                # Step 3: Save
+                # Step 3: Save loop for each format
                 progress.update(
                     image_task, description=f"{original_name} [dim](Saving...)[/]"
                 )
                 if not os.path.exists("Output/"):
                     os.makedirs("Output/")
 
-                output_path = os.path.join("Output", output_filename)
+                for fmt, quality in zip(target_formats, target_qualities):
+                    output_filename = f"{Path(original_name).stem}.{fmt}"
+                    output_path = os.path.join("Output", output_filename)
 
-                fd, temp_path = tempfile.mkstemp(
-                    dir="Output", prefix=".tmp.", suffix=".png"
-                )
-                with os.fdopen(fd, "wb") as f:
-                    output_image.save(f, format="PNG")
-                    f.flush()
-                    os.fsync(f.fileno())
+                    fd, temp_path = tempfile.mkstemp(
+                        dir="Output", prefix=".tmp.", suffix=f".{fmt}"
+                    )
 
-                os.replace(temp_path, output_path)
+                    try:
+                        # Convert to RGB if saving to JPEG/BMP to prevent OSError
+                        save_image = output_image
+                        if fmt in ("jpg", "jpeg", "bmp") and save_image.mode in (
+                            "RGBA",
+                            "LA",
+                            "P",
+                        ):
+                            save_image = save_image.convert("RGB")
+
+                        with os.fdopen(fd, "wb") as f:
+                            save_kwargs = {}
+                            if "exif" in save_image.info:
+                                save_kwargs["exif"] = save_image.info["exif"]
+                            if "dpi" in save_image.info:
+                                save_kwargs["dpi"] = save_image.info["dpi"]
+
+                            # Standardize format string for Pillow
+                            pil_format = fmt.upper()
+                            if pil_format == "JPG":
+                                pil_format = "JPEG"
+                            elif pil_format == "TIF":
+                                pil_format = "TIFF"
+
+                            # Only these formats support the 'quality' parameter in Pillow/Plugins
+                            if pil_format in ("JPEG", "WEBP", "AVIF", "HEIF", "HEIC"):
+                                save_kwargs["quality"] = quality
+
+                            save_image.save(f, format=pil_format, **save_kwargs)
+                            f.flush()
+                            os.fsync(f.fileno())
+
+                        os.replace(temp_path, output_path)
+                        temp_path = (
+                            None  # Clear assigned temp_path after a successful move
+                        )
+
+                        # Accumulate results for each output format
+                        out_size_bytes = os.path.getsize(output_path)
+                        out_dims = f"{save_image.width} × {save_image.height}"
+                        results.append(
+                            (output_filename, True, out_dims, out_size_bytes, None)
+                        )
+
+                        # Log individual implicit/explicit conversion status
+                        action_str = (
+                            "Exported as" if has_explicit_format else "Saved as"
+                        )
+                        qual_str = (
+                            f" [dim](Quality: [/][cyan]{quality}%[/][dim])[/]"
+                            if pil_format in ("JPEG", "WEBP", "AVIF", "HEIF", "HEIC")
+                            else ""
+                        )
+                        progress.console.print(
+                            f"      [dim white]↳[/] [bold green]{action_str}[/] [cyan]{fmt.upper()}{qual_str}[/]"
+                        )
+                    except Exception as loop_err:
+                        # Close and remove specific failed format files
+                        if temp_path and os.path.exists(temp_path):
+                            try:
+                                os.close(fd)
+                            except Exception:
+                                pass
+                            try:
+                                os.remove(temp_path)
+                            except Exception:
+                                pass
+                        results.append((output_filename, False, "—", 0, str(loop_err)))
+                        progress.console.print(
+                            f"      [bright_red]✗ Failed to save {fmt.upper()}: {loop_err}[/]"
+                        )
+
                 progress.advance(image_task)
-
-                # Fetch output info
-                out_size_bytes = os.path.getsize(output_path)
-                out_dims = f"{output_image.width} × {output_image.height}"
 
                 progress.update(
                     image_task, description=f"{original_name} [bright_green]✓ Done[/]"
                 )
-                success = True
 
             except Exception as e:
                 error_msg = str(e)
@@ -652,13 +741,17 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             finally:
                 if temp_path and os.path.exists(temp_path):
                     try:
+                        os.close(fd)
+                    except Exception:
+                        pass
+                    try:
                         os.remove(temp_path)
                     except OSError:
                         pass
 
-                results.append(
-                    (output_filename, success, out_dims, out_size_bytes, error_msg)
-                )
+                # If the overall failure occurred before format loop loop finished
+                if error_msg:
+                    results.append((original_name, False, "—", 0, error_msg))
                 progress.advance(overall)
 
     elapsed = time.time() - start_time
@@ -692,6 +785,14 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 cli_args_list.append(
                     f"--threshold {getattr(cli_args, 'threshold', 50)}"
                 )
+
+    # 3. Add formatting options
+    if hasattr(cli_args, "format") and cli_args.format:
+        for fmt in cli_args.format:
+            cli_args_list.append(f"--format {fmt}")
+    if hasattr(cli_args, "quality") and cli_args.quality:
+        for q in cli_args.quality:
+            cli_args_list.append(f"--quality {q}")
 
     cli_str = " ".join(cli_args_list)
 

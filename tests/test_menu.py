@@ -255,7 +255,7 @@ def test_select_manipulations_basic_flow(mock_questionary):
     menu.AVAILABLE_MANIPULATIONS[flip_idx]["handler"] = mock_handler
 
     try:
-        ops, extra = menu.select_manipulations([])
+        ops, extra, out_formats, out_qualities = menu.select_manipulations([])
         assert len(ops) == 1
         assert ops[0]["dest"] == "flip"
     finally:
@@ -289,7 +289,7 @@ def test_interactive_menu_flow(mock_questionary):
         ) as mock_sel_imgs,
         patch(
             "image_converter.menu.select_manipulations",
-            return_value=([{"dest": "flip"}], {}),
+            return_value=([{"dest": "flip"}], {}, [], []),
         ) as mock_sel_manips,
         patch("image_converter.menu.process_images_and_save") as mock_process,
     ):

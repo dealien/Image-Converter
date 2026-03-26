@@ -44,7 +44,7 @@ class TestMetadataParallel(unittest.TestCase):
             ("200 × 200", "2.0 KB", "JPEG"),
         ]
         # Mock manipulations to just return and exit
-        mock_sel_manips.return_value = ([], {})
+        mock_sel_manips.return_value = ([], {}, [], [])
 
         # We need to mock os.path.basename since it's used in the parallel loop
         with patch(

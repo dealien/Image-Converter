@@ -10,10 +10,15 @@ import os
 import sys
 from pathlib import Path
 
+import pillow_avif  # noqa: F401
+from pi_heif import register_heif_opener
 from rich.console import Console
 
 from .file_management import move_images_to_subdirectory
 from .processing import process_images_and_save
+
+# Register HEIF opener to support HEIC/HEIF files
+register_heif_opener()
 
 # Create a global console instance to be shared across modules
 console = Console()
@@ -80,6 +85,9 @@ def main():
         action="store_true",
         help="Start the application in interactive menu mode.",
     )
+    # Initialize ordered_operations to an empty list by default
+    parser.set_defaults(ordered_operations=[])
+
     parser.add_argument(
         "-bg",
         "--remove-background",
@@ -219,12 +227,27 @@ def main():
         type=int,
         help="Rotate image by 90-degree increments (0, 90, 180, 270).",
     )
+    # Global output options (not piped)
+    parser.add_argument(
+        "--format",
+        action="append",
+        type=str,
+        help="Output format (e.g. png, jpg, webp, heic, avif). Can be used multiple times.",
+    )
+    parser.add_argument(
+        "--quality",
+        action="append",
+        type=int,
+        help="Output quality (1-100) per format. Evaluated in order of --format arguments.",
+    )
 
     args = parser.parse_args()
 
-    if not hasattr(args, "ordered_operations"):
+    # Check if any action was specified (operations or explicit formats)
+    if not args.ordered_operations and not args.format:
         console.print(
-            "[yellow]No actions specified. Please provide at least one operation flag (e.g., --invert, --scale 2x).[/]\n"
+            "[yellow]No actions specified. Please provide at least one operation flag (e.g., --invert, --scale 2x) "
+            "or an output format (e.g., --format webp).[/]\n"
             "[dim white]To see all available options, run with --help or use the interactive --menu.[/]"
         )
         return

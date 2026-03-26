@@ -17,6 +17,8 @@ dependencies = [
     "prompt_toolkit==3.0.52",
     "onnxruntime==1.22.1",
     "rich==13.9.4",
+    "pi-heif==0.21.0",
+    "pillow-avif-plugin==1.4.6",
 ]
 
 [project.optional-dependencies]
