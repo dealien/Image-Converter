@@ -470,3 +470,25 @@ def test_remove_manipulation_cancel(mock_questionary):
     ops = [{"dest": "flip"}]
     res = remove_manipulation(ops, {})
     assert res == ops
+
+
+@patch("image_converter.menu.select_images")
+@patch("image_converter.menu.console.print")
+def test_interactive_menu_keyboard_interrupt(mock_print, mock_select_images):
+    """Verifies that interactive_menu handles KeyboardInterrupt gracefully."""
+    mock_select_images.side_effect = KeyboardInterrupt()
+
+    menu.interactive_menu()
+
+    mock_print.assert_called_with("\n[yellow]Cancelled.[/]")
+
+
+@patch("image_converter.menu.select_images")
+@patch("image_converter.menu.console.print")
+def test_interactive_menu_general_exception(mock_print, mock_select_images):
+    """Verifies that interactive_menu handles a general Exception gracefully."""
+    mock_select_images.side_effect = Exception("mocked error")
+
+    menu.interactive_menu()
+
+    mock_print.assert_called_with("[red]Error: mocked error[/]")
