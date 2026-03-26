@@ -613,6 +613,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
                 progress.update(
                     image_task, description=f"{original_name} [dim](Opening...)[/]"
                 )
+                Image.MAX_IMAGE_PIXELS = 100_000_000
                 img = Image.open(image_path)
                 try:
                     img.load()
