@@ -1,1 +1,1 @@
-"""Image Converter Package"""
+"""Image Converter Package."""

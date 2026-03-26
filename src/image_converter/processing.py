@@ -56,7 +56,7 @@ class StyledTimeElapsedColumn(TimeElapsedColumn):
     """
 
     def __init__(self, style="none"):
-        """Initializes the StyledTimeElapsedColumn.
+        """Initialize the StyledTimeElapsedColumn.
 
         Args:
             style (str, optional): The Rich style string to apply. Defaults to "none".
@@ -66,7 +66,7 @@ class StyledTimeElapsedColumn(TimeElapsedColumn):
         self.style = style
 
     def render(self, task):
-        """Renders the time elapsed for a given task with the configured style.
+        """Render the time elapsed for a given task with the configured style.
 
         Args:
             task (Task): The progress task.
@@ -90,7 +90,7 @@ Image.MAX_IMAGE_PIXELS = 100_000_000
 
 
 def handle_flip(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'flip' operation.
+    """Handle the 'flip' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -107,7 +107,7 @@ def handle_flip(image: Image.Image, image_name, values, args) -> Image.Image:
 
 
 def handle_scale(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'scale' operation.
+    """Handle the 'scale' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -171,7 +171,7 @@ def handle_scale(image: Image.Image, image_name, values, args) -> Image.Image:
 def handle_remove_background(
     image: Image.Image, image_name, values, args
 ) -> Image.Image:
-    """Handles the 'remove_background' operation.
+    """Handle the 'remove_background' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -188,7 +188,7 @@ def handle_remove_background(
 
 
 def handle_invert(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'invert' operation.
+    """Handle the 'invert' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -205,7 +205,7 @@ def handle_invert(image: Image.Image, image_name, values, args) -> Image.Image:
 
 
 def handle_grayscale(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'grayscale' operation.
+    """Handle the 'grayscale' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -222,7 +222,7 @@ def handle_grayscale(image: Image.Image, image_name, values, args) -> Image.Imag
 
 
 def handle_edge_detection(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'edge_detection' operation.
+    """Handle the 'edge_detection' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -248,7 +248,7 @@ def handle_edge_detection(image: Image.Image, image_name, values, args) -> Image
 
 
 def handle_brightness(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'brightness' adjustment operation.
+    """Handle the 'brightness' adjustment operation.
 
     Args:
         image (Image.Image): The input image.
@@ -267,7 +267,7 @@ def handle_brightness(image: Image.Image, image_name, values, args) -> Image.Ima
 
 
 def handle_contrast(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'contrast' adjustment operation.
+    """Handle the 'contrast' adjustment operation.
 
     Args:
         image (Image.Image): The input image.
@@ -286,7 +286,7 @@ def handle_contrast(image: Image.Image, image_name, values, args) -> Image.Image
 
 
 def handle_saturation(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'saturation' adjustment operation.
+    """Handle the 'saturation' adjustment operation.
 
     Args:
         image (Image.Image): The input image.
@@ -305,7 +305,7 @@ def handle_saturation(image: Image.Image, image_name, values, args) -> Image.Ima
 
 
 def handle_blur(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'blur' operation.
+    """Handle the 'blur' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -324,7 +324,7 @@ def handle_blur(image: Image.Image, image_name, values, args) -> Image.Image:
 
 
 def handle_sharpen(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'sharpen' operation.
+    """Handle the 'sharpen' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -343,7 +343,7 @@ def handle_sharpen(image: Image.Image, image_name, values, args) -> Image.Image:
 
 
 def handle_color_balance(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'color_balance' operation.
+    """Handle the 'color_balance' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -362,7 +362,7 @@ def handle_color_balance(image: Image.Image, image_name, values, args) -> Image.
 
 
 def handle_hue_rotation(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'hue_rotation' operation.
+    """Handle the 'hue_rotation' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -381,7 +381,7 @@ def handle_hue_rotation(image: Image.Image, image_name, values, args) -> Image.I
 
 
 def handle_posterize(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'posterize' operation.
+    """Handle the 'posterize' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -400,7 +400,7 @@ def handle_posterize(image: Image.Image, image_name, values, args) -> Image.Imag
 
 
 def handle_border(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'border' operation.
+    """Handle the 'border' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -429,7 +429,7 @@ def handle_border(image: Image.Image, image_name, values, args) -> Image.Image:
 
 
 def handle_rotate(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'rotate' operation.
+    """Handle the 'rotate' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -449,7 +449,7 @@ def handle_rotate(image: Image.Image, image_name, values, args) -> Image.Image:
 
 
 def handle_vignette(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handles the 'vignette' operation.
+    """Handle the 'vignette' operation.
 
     Args:
         image (Image.Image): The input image.
@@ -471,7 +471,7 @@ def handle_vignette(image: Image.Image, image_name, values, args) -> Image.Image
 
 
 def process_images_and_save(images_data, ordered_operations, cli_args):
-    """Processes a list of images by applying a sequence of operations and saves the results.
+    """Process a list of images by applying a sequence of operations and saves the results.
 
     Args:
         images_data (list): A list of tuples, where each tuple contains (filename, filepath).
