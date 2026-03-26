@@ -555,9 +555,7 @@ def _process_single_image(
 
     try:
         # Step 1: Open
-        progress.update(
-            image_task, description=f"{original_name} [dim](Opening...)[/]"
-        )
+        progress.update(image_task, description=f"{original_name} [dim](Opening...)[/]")
         Image.MAX_IMAGE_PIXELS = 100_000_000
         img = Image.open(image_path)
         try:
@@ -583,9 +581,7 @@ def _process_single_image(
             img.close()
 
         # Step 3: Save loop for each format
-        progress.update(
-            image_task, description=f"{original_name} [dim](Saving...)[/]"
-        )
+        progress.update(image_task, description=f"{original_name} [dim](Saving...)[/]")
         if not os.path.exists("Output/"):
             os.makedirs("Output/")
 
@@ -608,9 +604,7 @@ def _process_single_image(
                     ):
                         # Ensure we have an RGBA image to extract the alpha channel
                         temp_rgba = save_image.convert("RGBA")
-                        background = Image.new(
-                            "RGB", temp_rgba.size, cli_args.flatten
-                        )
+                        background = Image.new("RGB", temp_rgba.size, cli_args.flatten)
                         background.paste(temp_rgba, mask=temp_rgba.split()[3])
                         save_image = background
 
@@ -650,9 +644,7 @@ def _process_single_image(
                 # Accumulate results for each output format
                 out_size_bytes = os.path.getsize(output_path)
                 out_dims = f"{save_image.width} × {save_image.height}"
-                results.append(
-                    (output_filename, True, out_dims, out_size_bytes, None)
-                )
+                results.append((output_filename, True, out_dims, out_size_bytes, None))
 
                 # Log individual implicit/explicit conversion status
                 action_str = "Exported as" if has_explicit_format else "Saved as"
