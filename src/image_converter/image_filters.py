@@ -11,7 +11,7 @@ from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
 
 @functools.lru_cache(maxsize=16)
 def _generate_vignette_mask(mask_size: int, intensity: int) -> Image.Image:
-    """Generates a small cached base mask for the vignette effect.
+    """Generate a small cached base mask for the vignette effect.
 
     Args:
         mask_size (int): The size of the mask to generate.
@@ -45,7 +45,7 @@ def _generate_vignette_mask(mask_size: int, intensity: int) -> Image.Image:
 
 @functools.lru_cache(maxsize=1024)
 def _get_scale_lut(factor: float) -> list[int]:
-    """Creates a cached Look-Up Table (LUT) for scaling a channel, clamping to [0, 255].
+    """Create a cached Look-Up Table (LUT) for scaling a channel, clamping to [0, 255].
 
     Args:
         factor (float): The scaling factor.
@@ -59,7 +59,7 @@ def _get_scale_lut(factor: float) -> list[int]:
 
 @functools.lru_cache(maxsize=8)
 def _get_posterize_channel_lut(bits: int) -> list[int]:
-    """Creates a cached Look-Up Table (LUT) for posterizing a single channel.
+    """Create a cached Look-Up Table (LUT) for posterizing a single channel.
 
     Args:
         bits (int): The number of bits to keep (1-8).
@@ -80,7 +80,7 @@ RGBA_INVERT_LUT = [255 - i for i in range(256)] * 3 + list(range(256))
 
 @functools.lru_cache(maxsize=256)
 def _get_hue_rotation_lut(shift: int) -> list[int]:
-    """Generates a cached Look-Up Table (LUT) for hue rotation.
+    """Generate a cached Look-Up Table (LUT) for hue rotation.
 
     Args:
         shift (int): The amount to shift the hue channel (0-255).
@@ -119,7 +119,7 @@ def invert_colors(image: Image.Image) -> Image.Image:
 
 
 def grayscale(image: Image.Image) -> Image.Image:
-    """Converts an image to grayscale.
+    """Convert an image to grayscale.
 
     Args:
         image (Image.Image): The input image.
@@ -132,12 +132,13 @@ def grayscale(image: Image.Image) -> Image.Image:
 
 
 def _kovalevsky_scan(array_to_scan, output_map, threshold: int) -> None:
-    """Helper function to perform a 1D Kovalevsky edge detection scan.
+    """Perform a 1D Kovalevsky edge detection scan.
 
     Args:
         array_to_scan: The image array to scan (n, m, 3).
         output_map: The output map to write to (n, m).
         threshold: The threshold for edge detection.
+
     """
     import numpy as np
 
@@ -165,7 +166,7 @@ def _kovalevsky_scan(array_to_scan, output_map, threshold: int) -> None:
 
 
 def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Image.Image:
-    """Applies edge detection to an image using one of three methods.
+    """Apply edge detection to an image using one of three methods.
 
     Args:
         image (Image.Image): The input image.
@@ -239,7 +240,7 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
 
 
 def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
-    """Adjusts the brightness of an image.
+    """Adjust the brightness of an image.
 
     Args:
         image (Image.Image): The input image.
@@ -275,7 +276,7 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
 
 
 def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
-    """Adjusts the contrast of an image.
+    """Adjust the contrast of an image.
 
     Args:
         image (Image.Image): The input image.
@@ -311,7 +312,7 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
 
 
 def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
-    """Adjusts the saturation of an image.
+    """Adjust the saturation of an image.
 
     Args:
         image (Image.Image): The input image.
@@ -351,7 +352,7 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
 
 
 def apply_blur(image: Image.Image, radius: int) -> Image.Image:
-    """Applies Gaussian Blur to the image.
+    """Apply Gaussian Blur to the image.
 
     Args:
         image (Image.Image): The input image.
@@ -375,7 +376,7 @@ def apply_blur(image: Image.Image, radius: int) -> Image.Image:
 
 
 def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
-    """Applies sharpening to the image.
+    """Apply sharpening to the image.
 
     Args:
         image (Image.Image): The input image.
@@ -416,7 +417,7 @@ def apply_color_balance(
     image: Image.Image, red_factor: float, green_factor: float, blue_factor: float
 ) -> Image.Image:
     # pylint: disable=too-many-branches, complex-logic
-    """Adjusts the color balance of an image by scaling RGB channels.
+    """Adjust the color balance of an image by scaling RGB channels.
 
     Args:
         image (Image.Image): The input image.
@@ -580,7 +581,7 @@ MAX_TOTAL_PIXELS = 100000000  # 100MP
 def apply_border(
     image: Image.Image, thickness: int, color_str: str, position: str = "expand"
 ) -> Image.Image:
-    """Adds a solid color border to the image.
+    """Add a solid color border to the image.
 
     Args:
         image (Image.Image): The input image.
@@ -681,7 +682,7 @@ def rotate_image(image: Image.Image, angle: int) -> Image.Image:
 
 
 def apply_vignette(image: Image.Image, intensity: int = 50) -> Image.Image:
-    """Applies a vignette effect to the image.
+    """Apply a vignette effect to the image.
 
     Args:
         image (Image.Image): The input image.

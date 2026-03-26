@@ -37,7 +37,7 @@ def _ask_text(
     default_val: Optional[Any] = None,
     validate: Optional[Callable[[str], bool | str]] = None,
 ) -> str:
-    """Custom text prompt helper using prompt_toolkit to support colored defaults.
+    """Prompt user using prompt_toolkit with colored defaults.
 
     Replaces `questionary.text(...).ask()`.
 
@@ -109,7 +109,7 @@ def _ask_text(
 
 
 def _format_operation_display(index, op, extra_args):
-    """Formats an operation dictionary into a readable CLI-like string for display.
+    """Format an operation dictionary into a readable CLI-like string for display.
 
     Args:
         index (int): The 0-based index of the operation in the pipeline.
@@ -134,7 +134,7 @@ def _format_operation_display(index, op, extra_args):
 
 
 def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=False):
-    """Creates a validation function for numeric input within a specified range.
+    """Create a validation function for numeric input within a specified range.
 
     Args:
         min_val (number, optional): The minimum allowed value. Defaults to None.
@@ -628,7 +628,7 @@ def remove_manipulation(operations, extra_args):
 
 
 def select_images():
-    """Finds images in the 'Base Images' directory and prompts the user to select them.
+    """Find images in the 'Base Images' directory and prompts the user to select them.
 
     Returns:
         list: A list of selected image file paths.
@@ -853,7 +853,7 @@ def select_manipulations(images_data):
 
 
 def interactive_menu():
-    """Main entry point for the interactive terminal UI.
+    """Run the main entry point for the interactive terminal UI.
 
     Handles image selection, pipeline construction, and executes the processing.
     """

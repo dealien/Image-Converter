@@ -28,7 +28,7 @@ class StoreInOrder(argparse.Action):
     """Custom argparse Action to store arguments in the order they are provided."""
 
     def __call__(self, parser, namespace, values, option_string=None):
-        """Stores the argument destination and values in the 'ordered_operations' list.
+        """Store the argument destination and values in the 'ordered_operations' list.
 
         Args:
             parser (argparse.ArgumentParser): The ArgumentParser object.
@@ -53,9 +53,9 @@ class StoreInOrder(argparse.Action):
 
 
 def main():
-    """Main entry point for the image conversion CLI application.
+    """Run the main entry point for the image conversion CLI application.
 
-    Parses command-line arguments and executes the specified image processing
+    Parse command-line arguments and execute the specified image processing
     pipeline. If no arguments are provided or the `--menu` flag is used, it
     launches the interactive menu interface. By default, the program searches
     for images in the `Base Images/` directory if no specific file path is given.

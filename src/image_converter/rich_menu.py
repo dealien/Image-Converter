@@ -23,7 +23,7 @@ Image.MAX_IMAGE_PIXELS = 100_000_000
 
 
 def _get_image_metadata(path: str) -> tuple[str, str, str]:
-    """Retrieves basic metadata for an image file.
+    """Retrieve basic metadata for an image file.
 
     Args:
         path (str): The file path to the image.
@@ -57,7 +57,7 @@ def _get_image_metadata(path: str) -> tuple[str, str, str]:
 
 
 def run_image_selector(image_files: list[str], image_dir: str) -> list[str]:
-    """Renders a tabular-style selection menu using questionary.
+    """Render a tabular-style selection menu using questionary.
 
     Args:
         image_files (list): A list of image filenames.
@@ -123,7 +123,7 @@ def render_combined_menu(
     operations: list[dict[str, Any]],
     extra_args: dict[str, Any],
 ) -> None:
-    """Renders the combined menu mockup layout to the console.
+    """Render the combined menu mockup layout to the console.
 
     Displays a summary of selected images and the current sequence of operations
     (the pipeline), along with the equivalent CLI command.

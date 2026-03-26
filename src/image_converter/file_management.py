@@ -19,7 +19,7 @@ console = Console()
 
 
 def move_images_to_subdirectory(subdirectory_name: str):
-    """Moves all image files from the current directory to a specified subdirectory.
+    """Move all image files from the current directory to a specified subdirectory.
 
     Typically used to move images into the 'Base Images' directory, which is the
     default search path for image processing operations.
