@@ -816,6 +816,9 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         for q in cli_args.quality:
             cli_args_list.append(f"--quality {q}")
 
+    if hasattr(cli_args, "flatten") and cli_args.flatten:
+        cli_args_list.append(f"--flatten {cli_args.flatten}")
+
     cli_str = " ".join(cli_args_list)
 
     if cli_str:
