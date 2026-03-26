@@ -6,7 +6,7 @@ edge detection, color balance, hue rotation, posterization, borders, and rotatio
 """
 
 import functools
-from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor, ImageChops
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
 
 
 @functools.lru_cache(maxsize=16)
@@ -706,10 +706,8 @@ def apply_vignette(image: Image.Image, intensity: int = 50) -> Image.Image:
 
     alpha_channel = image.getchannel("A") if "A" in image.getbands() else None
 
-    # Needs to be RGB for multiply with a black and white mask (if mask is RGB)
-    if image.mode == "L":
-        working_image = image.convert("RGB")
-    elif image.mode != "RGB":
+    # Needs to be RGB/L for composite
+    if image.mode not in ("RGB", "L"):
         working_image = image.convert("RGB")
     else:
         working_image = image
@@ -725,14 +723,16 @@ def apply_vignette(image: Image.Image, intensity: int = 50) -> Image.Image:
     # Resize the small mask to target image dimensions smoothly
     full_mask = mask.resize((width, height), Image.Resampling.BICUBIC)
 
-    # apply mask
-    vignetted_rgb = ImageChops.multiply(working_image, full_mask.convert("RGB"))
+    # ⚡ Bolt: Fast path for Vignette mask application.
+    # Instead of converting the 1-channel grayscale mask to a 3-channel RGB mask
+    # and performing per-pixel math with `ImageChops.multiply()`, we use `Image.composite()`.
+    # `Image.composite()` natively uses the 'L' mode mask as an alpha blending layer
+    # to composite the original image over a solid black background, completely
+    # bypassing the slow mask conversion and math overhead.
+    black_bg = Image.new(working_image.mode, (width, height), 0)
+    vignetted = Image.composite(working_image, black_bg, full_mask)
 
     if alpha_channel:
-        vignetted_rgb.putalpha(alpha_channel)
-        return vignetted_rgb
+        vignetted.putalpha(alpha_channel)
 
-    if image.mode == "L":
-        return vignetted_rgb.convert("L")
-
-    return vignetted_rgb
+    return vignetted
