@@ -340,7 +340,6 @@ def test_scale_validator(mock_questionary):
 
 def test_ask_text_helper():
     """Tests the _ask_text helper directly to verify formatted prompt behavior."""
-
     # Mock PromptSession and prompt
     mock_session_instance = MagicMock()
     mock_session_instance.prompt.return_value = "user_input"
@@ -404,7 +403,6 @@ def test_ask_text_helper():
 
 def test_ask_text_helper_get_prompt_text_exception():
     """Tests the _ask_text helper exception handling in get_prompt_text."""
-
     with (
         patch("image_converter.menu.PromptSession") as mock_session_class,
         patch("image_converter.menu.print_formatted_text"),
