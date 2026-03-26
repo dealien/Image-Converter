@@ -521,7 +521,6 @@ def _process_single_image(
     )
 
     temp_path = None
-    success = False
     error_msg = None
     out_dims = "—"
     out_size_bytes = 0
