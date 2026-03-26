@@ -138,6 +138,7 @@ def _kovalevsky_scan(array_to_scan, output_map, threshold: int) -> None:
         array_to_scan: The image array to scan (n, m, 3).
         output_map: The output map to write to (n, m).
         threshold: The threshold for edge detection.
+
     """
     import numpy as np
 

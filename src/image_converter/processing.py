@@ -470,6 +470,251 @@ def handle_vignette(image: Image.Image, image_name, values, args) -> Image.Image
 # --- Core Processing Function ---
 
 
+def _process_single_image(
+    original_name: str,
+    image_path: str,
+    prepared_operations: list,
+    cli_args,
+    progress: Progress,
+    image_task,
+    start_time: float,
+    i: int,
+    total_images: int,
+    image_total: int,
+    overall,
+) -> list:
+    """Processes a single image, applies operations, and saves the results in specified formats.
+
+    Args:
+        original_name (str): The original filename.
+        image_path (str): The path to the image file.
+        prepared_operations (list): The sequence of operations and their handlers.
+        cli_args (argparse.Namespace): The parsed command-line arguments.
+        progress (Progress): The Rich progress bar instance.
+        image_task (TaskID): The progress bar task ID for this specific image.
+        start_time (float): The overall processing start time.
+        i (int): The index of the current image being processed (1-based).
+        total_images (int): The total number of images being processed.
+        image_total (int): The total steps required for this image's task.
+        overall (TaskID): The progress bar task ID for the overall progress.
+
+    Returns:
+        list: A list of result tuples (filename, success, dimensions, size_bytes, error_msg).
+
+    """
+    results = []
+    progress.start_task(image_task)
+    progress.update(image_task, visible=True)
+
+    # Calculate elapsed time for log marker
+    elapsed_now = time.time() - start_time
+
+    # Print a separator above each image's log
+    progress.console.print()
+    progress.console.print(
+        f"  [bold bright_yellow]▸ [{i}/{total_images}][/]  "
+        f"[bold bright_white]{original_name}[/]  "
+        f"[bright_cyan][{elapsed_now:>5.1f}s ][/]"
+    )
+    progress.console.print(
+        Rule(style="dim white"),
+    )
+
+    temp_path = None
+    success = False
+    error_msg = None
+    out_dims = "—"
+    out_size_bytes = 0
+
+    # Using original_name but .png extension for output
+    # Extract specified formats and qualities from args
+    target_formats = []
+    target_qualities = []
+    has_explicit_format = False
+
+    if hasattr(cli_args, "format") and cli_args.format:
+        target_formats = [f.lower().strip(".") for f in cli_args.format]
+        has_explicit_format = True
+
+        # Align qualities with formats if possible
+        if hasattr(cli_args, "quality") and cli_args.quality:
+            for j in range(len(target_formats)):
+                if j < len(cli_args.quality):
+                    target_qualities.append(cli_args.quality[j])
+                else:
+                    # Use the last specified quality or default 90
+                    target_qualities.append(
+                        cli_args.quality[-1] if cli_args.quality else 90
+                    )
+        else:
+            target_qualities = [90] * len(target_formats)
+    else:
+        # Default to original extension
+        ext = Path(original_name).suffix.lower().strip(".")
+        target_formats = [ext if ext else "png"]
+        target_qualities = [90]
+
+    try:
+        # Step 1: Open
+        progress.update(
+            image_task, description=f"{original_name} [dim](Opening...)[/]"
+        )
+        Image.MAX_IMAGE_PIXELS = 100_000_000
+        img = Image.open(image_path)
+        try:
+            img.load()
+            output_image = img
+            progress.advance(image_task)
+
+            # Step 2: Operations
+            for op_dest, op_values, handler in prepared_operations:
+                if handler:
+                    progress.update(
+                        image_task,
+                        description=f"{original_name} [dim]({op_dest.replace('_', ' ')}...)[/]",
+                    )
+                    output_image = handler(
+                        output_image, original_name, op_values, cli_args
+                    )
+                progress.advance(image_task)
+
+            if output_image is img:
+                output_image = img.copy()
+        finally:
+            img.close()
+
+        # Step 3: Save loop for each format
+        progress.update(
+            image_task, description=f"{original_name} [dim](Saving...)[/]"
+        )
+        if not os.path.exists("Output/"):
+            os.makedirs("Output/")
+
+        for fmt, quality in zip(target_formats, target_qualities):
+            output_filename = f"{Path(original_name).stem}.{fmt}"
+            output_path = os.path.join("Output", output_filename)
+
+            fd, temp_path = tempfile.mkstemp(
+                dir="Output", prefix=".tmp.", suffix=f".{fmt}"
+            )
+
+            try:
+                save_image = output_image
+
+                # Flatten transparency if flag is set, and format might drop alpha
+                if getattr(cli_args, "flatten", None) is not None:
+                    if fmt in ("jpg", "jpeg", "bmp", "webp") and (
+                        save_image.mode in ("RGBA", "LA", "PA")
+                        or save_image.info.get("transparency", None) is not None
+                    ):
+                        # Ensure we have an RGBA image to extract the alpha channel
+                        temp_rgba = save_image.convert("RGBA")
+                        background = Image.new(
+                            "RGB", temp_rgba.size, cli_args.flatten
+                        )
+                        background.paste(temp_rgba, mask=temp_rgba.split()[3])
+                        save_image = background
+
+                # Convert to RGB if saving to JPEG/BMP to prevent OSError
+                if fmt in ("jpg", "jpeg", "bmp") and save_image.mode in (
+                    "RGBA",
+                    "LA",
+                    "P",
+                ):
+                    save_image = save_image.convert("RGB")
+
+                with os.fdopen(fd, "wb") as f:
+                    save_kwargs = {}
+                    if "exif" in save_image.info:
+                        save_kwargs["exif"] = save_image.info["exif"]
+                    if "dpi" in save_image.info:
+                        save_kwargs["dpi"] = save_image.info["dpi"]
+
+                    # Standardize format string for Pillow
+                    pil_format = fmt.upper()
+                    if pil_format == "JPG":
+                        pil_format = "JPEG"
+                    elif pil_format == "TIF":
+                        pil_format = "TIFF"
+
+                    # Only these formats support the 'quality' parameter in Pillow/Plugins
+                    if pil_format in ("JPEG", "WEBP", "AVIF", "HEIF", "HEIC"):
+                        save_kwargs["quality"] = quality
+
+                    save_image.save(f, format=pil_format, **save_kwargs)
+                    f.flush()
+                    os.fsync(f.fileno())
+
+                os.replace(temp_path, output_path)
+                temp_path = None  # Clear assigned temp_path after a successful move
+
+                # Accumulate results for each output format
+                out_size_bytes = os.path.getsize(output_path)
+                out_dims = f"{save_image.width} × {save_image.height}"
+                results.append(
+                    (output_filename, True, out_dims, out_size_bytes, None)
+                )
+
+                # Log individual implicit/explicit conversion status
+                action_str = "Exported as" if has_explicit_format else "Saved as"
+                qual_str = (
+                    f" [dim](Quality: [/][cyan]{quality}%[/][dim])[/]"
+                    if pil_format in ("JPEG", "WEBP", "AVIF", "HEIF", "HEIC")
+                    else ""
+                )
+                progress.console.print(
+                    f"      [dim white]↳[/] [bold green]{action_str}[/] [cyan]{fmt.upper()}{qual_str}[/]"
+                )
+            except Exception as loop_err:
+                # Close and remove specific failed format files
+                if temp_path and os.path.exists(temp_path):
+                    try:
+                        os.close(fd)
+                    except Exception:
+                        pass
+                    try:
+                        os.remove(temp_path)
+                    except Exception:
+                        pass
+                results.append((output_filename, False, "—", 0, str(loop_err)))
+                progress.console.print(
+                    f"      [bright_red]✗ Failed to save {fmt.upper()}: {loop_err}[/]"
+                )
+
+        progress.advance(image_task)
+
+        progress.update(
+            image_task, description=f"{original_name} [bright_green]✓ Done[/]"
+        )
+
+    except Exception as e:
+        error_msg = str(e)
+        progress.update(
+            image_task,
+            description=f"{original_name} [bright_red]✗ Error: {e}[/]",
+        )
+        # Advance to total to show it finished even with error
+        progress.update(image_task, completed=image_total)
+
+    finally:
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.close(fd)
+            except Exception:
+                pass
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+
+        # If the overall failure occurred before format loop loop finished
+        if error_msg:
+            results.append((original_name, False, "—", 0, error_msg))
+        progress.advance(overall)
+
+    return results
+
+
 def process_images_and_save(images_data, ordered_operations, cli_args):
     """Processes a list of images by applying a sequence of operations and saves the results.
 
@@ -557,218 +802,20 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
 
         for i, (original_name, image_path) in enumerate(images_data, 1):
             image_task = image_tasks[i - 1]
-            progress.start_task(image_task)
-            progress.update(image_task, visible=True)
-
-            # Calculate elapsed time for log marker
-            elapsed_now = time.time() - start_time
-
-            # Print a separator above each image's log
-            progress.console.print()
-            progress.console.print(
-                f"  [bold bright_yellow]▸ [{i}/{total_images}][/]  "
-                f"[bold bright_white]{original_name}[/]  "
-                f"[bright_cyan][{elapsed_now:>5.1f}s ][/]"
+            image_results = _process_single_image(
+                original_name,
+                image_path,
+                prepared_operations,
+                cli_args,
+                progress,
+                image_task,
+                start_time,
+                i,
+                total_images,
+                image_total,
+                overall,
             )
-            progress.console.print(
-                Rule(style="dim white"),
-            )
-
-            temp_path = None
-            success = False
-            error_msg = None
-            out_dims = "—"
-            out_size_bytes = 0
-
-            # Using original_name but .png extension for output
-            # Extract specified formats and qualities from args
-            target_formats = []
-            target_qualities = []
-            has_explicit_format = False
-
-            if hasattr(cli_args, "format") and cli_args.format:
-                target_formats = [f.lower().strip(".") for f in cli_args.format]
-                has_explicit_format = True
-
-                # Align qualities with formats if possible
-                if hasattr(cli_args, "quality") and cli_args.quality:
-                    for i in range(len(target_formats)):
-                        if i < len(cli_args.quality):
-                            target_qualities.append(cli_args.quality[i])
-                        else:
-                            # Use the last specified quality or default 90
-                            target_qualities.append(
-                                cli_args.quality[-1] if cli_args.quality else 90
-                            )
-                else:
-                    target_qualities = [90] * len(target_formats)
-            else:
-                # Default to original extension
-                ext = Path(original_name).suffix.lower().strip(".")
-                target_formats = [ext if ext else "png"]
-                target_qualities = [90]
-
-            try:
-                # Step 1: Open
-                progress.update(
-                    image_task, description=f"{original_name} [dim](Opening...)[/]"
-                )
-                Image.MAX_IMAGE_PIXELS = 100_000_000
-                img = Image.open(image_path)
-                try:
-                    img.load()
-                    output_image = img
-                    progress.advance(image_task)
-
-                    # Step 2: Operations
-                    for op_dest, op_values, handler in prepared_operations:
-                        if handler:
-                            progress.update(
-                                image_task,
-                                description=f"{original_name} [dim]({op_dest.replace('_', ' ')}...)[/]",
-                            )
-                            output_image = handler(
-                                output_image, original_name, op_values, cli_args
-                            )
-                        progress.advance(image_task)
-
-                    if output_image is img:
-                        output_image = img.copy()
-                finally:
-                    img.close()
-
-                # Step 3: Save loop for each format
-                progress.update(
-                    image_task, description=f"{original_name} [dim](Saving...)[/]"
-                )
-                if not os.path.exists("Output/"):
-                    os.makedirs("Output/")
-
-                for fmt, quality in zip(target_formats, target_qualities):
-                    output_filename = f"{Path(original_name).stem}.{fmt}"
-                    output_path = os.path.join("Output", output_filename)
-
-                    fd, temp_path = tempfile.mkstemp(
-                        dir="Output", prefix=".tmp.", suffix=f".{fmt}"
-                    )
-
-                    try:
-                        save_image = output_image
-
-                        # Flatten transparency if flag is set, and format might drop alpha
-                        if getattr(cli_args, "flatten", None) is not None:
-                            if fmt in ("jpg", "jpeg", "bmp", "webp") and (
-                                save_image.mode in ("RGBA", "LA", "PA")
-                                or save_image.info.get("transparency", None) is not None
-                            ):
-                                # Ensure we have an RGBA image to extract the alpha channel
-                                temp_rgba = save_image.convert("RGBA")
-                                background = Image.new(
-                                    "RGB", temp_rgba.size, cli_args.flatten
-                                )
-                                background.paste(temp_rgba, mask=temp_rgba.split()[3])
-                                save_image = background
-
-                        # Convert to RGB if saving to JPEG/BMP to prevent OSError
-                        if fmt in ("jpg", "jpeg", "bmp") and save_image.mode in (
-                            "RGBA",
-                            "LA",
-                            "P",
-                        ):
-                            save_image = save_image.convert("RGB")
-
-                        with os.fdopen(fd, "wb") as f:
-                            save_kwargs = {}
-                            if "exif" in save_image.info:
-                                save_kwargs["exif"] = save_image.info["exif"]
-                            if "dpi" in save_image.info:
-                                save_kwargs["dpi"] = save_image.info["dpi"]
-
-                            # Standardize format string for Pillow
-                            pil_format = fmt.upper()
-                            if pil_format == "JPG":
-                                pil_format = "JPEG"
-                            elif pil_format == "TIF":
-                                pil_format = "TIFF"
-
-                            # Only these formats support the 'quality' parameter in Pillow/Plugins
-                            if pil_format in ("JPEG", "WEBP", "AVIF", "HEIF", "HEIC"):
-                                save_kwargs["quality"] = quality
-
-                            save_image.save(f, format=pil_format, **save_kwargs)
-                            f.flush()
-                            os.fsync(f.fileno())
-
-                        os.replace(temp_path, output_path)
-                        temp_path = (
-                            None  # Clear assigned temp_path after a successful move
-                        )
-
-                        # Accumulate results for each output format
-                        out_size_bytes = os.path.getsize(output_path)
-                        out_dims = f"{save_image.width} × {save_image.height}"
-                        results.append(
-                            (output_filename, True, out_dims, out_size_bytes, None)
-                        )
-
-                        # Log individual implicit/explicit conversion status
-                        action_str = (
-                            "Exported as" if has_explicit_format else "Saved as"
-                        )
-                        qual_str = (
-                            f" [dim](Quality: [/][cyan]{quality}%[/][dim])[/]"
-                            if pil_format in ("JPEG", "WEBP", "AVIF", "HEIF", "HEIC")
-                            else ""
-                        )
-                        progress.console.print(
-                            f"      [dim white]↳[/] [bold green]{action_str}[/] [cyan]{fmt.upper()}{qual_str}[/]"
-                        )
-                    except Exception as loop_err:
-                        # Close and remove specific failed format files
-                        if temp_path and os.path.exists(temp_path):
-                            try:
-                                os.close(fd)
-                            except Exception:
-                                pass
-                            try:
-                                os.remove(temp_path)
-                            except Exception:
-                                pass
-                        results.append((output_filename, False, "—", 0, str(loop_err)))
-                        progress.console.print(
-                            f"      [bright_red]✗ Failed to save {fmt.upper()}: {loop_err}[/]"
-                        )
-
-                progress.advance(image_task)
-
-                progress.update(
-                    image_task, description=f"{original_name} [bright_green]✓ Done[/]"
-                )
-
-            except Exception as e:
-                error_msg = str(e)
-                progress.update(
-                    image_task,
-                    description=f"{original_name} [bright_red]✗ Error: {e}[/]",
-                )
-                # Advance to total to show it finished even with error
-                progress.update(image_task, completed=image_total)
-
-            finally:
-                if temp_path and os.path.exists(temp_path):
-                    try:
-                        os.close(fd)
-                    except Exception:
-                        pass
-                    try:
-                        os.remove(temp_path)
-                    except OSError:
-                        pass
-
-                # If the overall failure occurred before format loop loop finished
-                if error_msg:
-                    results.append((original_name, False, "—", 0, error_msg))
-                progress.advance(overall)
+            results.extend(image_results)
 
     elapsed = time.time() - start_time
 
