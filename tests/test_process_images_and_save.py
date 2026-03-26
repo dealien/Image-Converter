@@ -124,7 +124,7 @@ class TestProcessImagesAndSave(unittest.TestCase):
     def test_flatten_alpha_channel(self, mock_print):
         # Create a test RGBA image with transparency
         img = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
-        img.paste((0, 255, 0, 255), (25, 25, 75, 75)) # Green square in middle
+        img.paste((0, 255, 0, 255), (25, 25, 75, 75))  # Green square in middle
 
         test_file = os.path.join(self.test_image_dir, "test_alpha.png")
         img.save(test_file)
@@ -147,14 +147,20 @@ class TestProcessImagesAndSave(unittest.TestCase):
                 actual = actual_image.convert("RGB")
                 # Calculate expected result: red background with green square
                 expected_bg = Image.new("RGB", (100, 100), "red")
-                expected_bg.paste(img.convert("RGBA"), mask=img.convert("RGBA").split()[3])
+                expected_bg.paste(
+                    img.convert("RGBA"), mask=img.convert("RGBA").split()[3]
+                )
 
                 diff = ImageChops.difference(expected_bg, actual)
                 # Since WEBP is lossy by default, check if the maximum difference is within a reasonable threshold
                 extrema = diff.getextrema()
 
                 for min_val, max_val in extrema:
-                    self.assertLessEqual(max_val, 210, "Flattened image differs significantly from the expected solid background composite.")
+                    self.assertLessEqual(
+                        max_val,
+                        210,
+                        "Flattened image differs significantly from the expected solid background composite.",
+                    )
         finally:
             if os.path.exists(test_file):
                 os.remove(test_file)
