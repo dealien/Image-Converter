@@ -21,7 +21,7 @@ This is a versatile Python project designed to streamline everyday workflows for
   - Apply Vignette effect.
   - Posterize (reduce color depth).
 - 🔄 **Transformations:** Flip images (horizontally, vertically, or both), add borders, and rotate by 90-degree increments.
-- 💾 **Advanced Exporting:** Convert images native to modern formats like `AVIF` or `HEIC`, controlling export qualities individually or grouped.
+- 💾 **Advanced Exporting:** Convert images native to modern formats like `AVIF` or `HEIC`, controlling export qualities individually or grouped. Includes options to flatten alpha transparency for formats that don't support it.
 - 📁 **Batch Processing:** Apply any of the above manipulations to a single image or to all images within a directory automatically.
 
 ## 🚀 Installation
@@ -82,6 +82,7 @@ image-converter [file_path] [options]
 
 - `--format [type]`: Output format (e.g. `png`, `jpg`, `webp`, `heic`, `avif`). Can be used multiple times.
 - `--quality [value]`: Output quality (1-100) per format. Evaluated in order of `--format` arguments.
+- `--flatten [color]`: Composite image against a solid color background (default: `white`) for output formats that may not consistently support alpha channels (e.g., `jpeg`, `webp`).
 
 **Filters & Adjustments:**
 
