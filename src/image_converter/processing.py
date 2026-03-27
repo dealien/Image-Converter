@@ -483,7 +483,7 @@ def _process_single_image(
     image_total: int,
     overall,
 ) -> list:
-    """Processes a single image, applies operations, and saves the results in specified formats.
+    """Process a single image, apply operations, and save the results in specified formats.
 
     Args:
         original_name (str): The original filename.
