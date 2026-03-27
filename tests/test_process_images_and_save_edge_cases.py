@@ -104,3 +104,97 @@ class TestProcessImagesAndSaveEdgeCases(unittest.TestCase):
                             found_bytes_format = True
 
         self.assertTrue(found_bytes_format, "Should have formatted size as 500 B")
+
+    @patch("image_converter.processing.Image.Image.save")
+    def test_format_quality_alignment(self, mock_save):
+        """Verifies that missing qualities are padded with the last specified quality or 90."""
+        images_data = [(self.test_image_name, self.test_image_path)]
+        ordered_operations = []
+        args = argparse.Namespace()
+
+        # Test case 1: quality provided but shorter than format list
+        args.format = ["webp", "jpg"]
+        args.quality = [80]
+
+        processing.process_images_and_save(images_data, ordered_operations, args)
+
+        self.assertEqual(mock_save.call_count, 2)
+
+        # Check that both saves happened with quality=80 (the second padded with the last value)
+        call_1_kwargs = mock_save.call_args_list[0][1]
+        call_2_kwargs = mock_save.call_args_list[1][1]
+
+        self.assertEqual(call_1_kwargs.get("format"), "WEBP")
+        self.assertEqual(call_1_kwargs.get("quality"), 80)
+        self.assertEqual(call_2_kwargs.get("format"), "JPEG")
+        self.assertEqual(call_2_kwargs.get("quality"), 80)
+
+        mock_save.reset_mock()
+
+        # Test case 2: format list provided but quality is totally empty
+        args.format = ["webp", "jpg"]
+        args.quality = []
+
+        processing.process_images_and_save(images_data, ordered_operations, args)
+
+        self.assertEqual(mock_save.call_count, 2)
+        call_1_kwargs = mock_save.call_args_list[0][1]
+        call_2_kwargs = mock_save.call_args_list[1][1]
+
+        # Should default to 90
+        self.assertEqual(call_1_kwargs.get("quality"), 90)
+        self.assertEqual(call_2_kwargs.get("quality"), 90)
+
+    @patch("image_converter.processing.Image.Image.save")
+    def test_convert_to_rgb_on_save(self, mock_save):
+        """Verifies that RGBA/LA/P images are converted to RGB when saved as JPG/BMP."""
+        images_data = [("test_rgba.png", self.test_image_path)]
+        ordered_operations = []
+        args = argparse.Namespace()
+        args.format = ["jpg"]
+        args.quality = [90]
+
+        from unittest.mock import MagicMock
+
+        with patch("image_converter.processing.Image.open") as mock_open:
+            # We mock the opened image to simulate an RGBA image using MagicMock
+            mock_img = MagicMock(spec=processing.Image.Image)
+            mock_img.mode = "RGBA"
+            mock_img.info = {}
+
+            # The context manager __enter__ should return our mock
+            mock_open.return_value.__enter__.return_value = mock_img
+            # Also set the direct return value for any non-context usage
+            mock_open.return_value = mock_img
+
+            # Set up the copy so that if the logic checks `if output_image is img: output_image = img.copy()`
+            mock_img_copy = MagicMock(spec=processing.Image.Image)
+            mock_img_copy.mode = "RGBA"
+            mock_img_copy.info = {}
+            mock_img.copy.return_value = mock_img_copy
+
+            # Set up the converted return
+            mock_converted = MagicMock(spec=processing.Image.Image)
+            mock_converted.info = {}
+            mock_img_copy.convert.return_value = mock_converted
+
+            processing.process_images_and_save(images_data, ordered_operations, args)
+
+            # Assert convert("RGB") was called on the copied image
+            mock_img_copy.convert.assert_called_once_with("RGB")
+            # Assert save was called on the CONVERTED image
+            mock_converted.save.assert_called_once()
+
+    @patch("image_converter.processing.Image.Image.save")
+    def test_save_format_tiff(self, mock_save):
+        """Verifies that 'tif' format is mapped to 'TIFF' for Pillow."""
+        images_data = [(self.test_image_name, self.test_image_path)]
+        ordered_operations = []
+        args = argparse.Namespace()
+        args.format = ["tif"]
+        args.quality = [90]
+
+        processing.process_images_and_save(images_data, ordered_operations, args)
+
+        mock_save.assert_called_once()
+        self.assertEqual(mock_save.call_args[1].get("format"), "TIFF")
