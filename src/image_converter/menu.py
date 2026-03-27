@@ -861,7 +861,7 @@ def interactive_menu():
         # We don't need the basic print anymore, the menu handles it.
         paths = select_images()
         if not paths:
-            console.print("[yellow]No images selected. Exiting.[/]")
+            console.print("[yellow]No images selected.[/]")
             console.print(
                 "[dim white]Please run the command again and select at least one image to process.[/]"
             )
