@@ -611,7 +611,9 @@ def _process_single_image(
                         if cached_flattened_image is None:
                             # Ensure we have an RGBA image to extract the alpha channel
                             temp_rgba = save_image.convert("RGBA")
-                            background = Image.new("RGB", temp_rgba.size, cli_args.flatten)
+                            background = Image.new(
+                                "RGB", temp_rgba.size, cli_args.flatten
+                            )
                             background.paste(temp_rgba, mask=temp_rgba.split()[3])
                             cached_flattened_image = background
                         save_image = cached_flattened_image
