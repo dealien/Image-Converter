@@ -104,6 +104,13 @@ def test_prompt_for_scale_cancel(mock_questionary, mock_ask_text):
     assert res is None
 
 
+def test_prompt_for_scale_cancel_resample(mock_questionary, mock_ask_text):
+    mock_ask_text.return_value = "1.5x"
+    mock_questionary.select.return_value.ask.return_value = None
+    res = menu.prompt_for_scale_options({})
+    assert res is None
+
+
 def test_prompt_for_edge_detection_kovalevsky(mock_questionary, mock_ask_text):
     # Select method
     mock_questionary.select.return_value.ask.return_value = "Kovalevsky"
@@ -117,6 +124,12 @@ def test_prompt_for_edge_detection_kovalevsky(mock_questionary, mock_ask_text):
     assert extra["threshold"] == 50
 
 
+def test_prompt_for_edge_detection_cancel_method(mock_questionary):
+    mock_questionary.select.return_value.ask.return_value = None
+    res = menu.prompt_for_edge_detection_options({})
+    assert res is None
+
+
 def test_prompt_for_border(mock_questionary, mock_ask_text):
     select_mock = mock_questionary.select.return_value.ask
 
@@ -126,6 +139,13 @@ def test_prompt_for_border(mock_questionary, mock_ask_text):
 
     res = menu.prompt_for_border_options()
     assert res == {"dest": "border", "values": [10, "black", "inside"]}
+
+
+def test_prompt_for_border_cancel_position(mock_questionary, mock_ask_text):
+    mock_ask_text.side_effect = ["15", "red"]
+    mock_questionary.select.return_value.ask.return_value = None
+    res = menu.prompt_for_border_options()
+    assert res is None
 
 
 # Since we switched to structured messages (list of tuples), strict string matching
@@ -229,6 +249,77 @@ def test_select_images_none_selected_confirm_cancel(
         assert paths == []
 
 
+@patch("image_converter.menu.run_image_selector")
+def test_select_images_ctrl_c(mock_run_image_selector):
+    with (
+        patch("image_converter.menu.os.path.isdir", return_value=True),
+        patch("image_converter.menu.os.listdir", return_value=["i.png"]),
+        patch("image_converter.menu.os.path.isfile", return_value=True),
+    ):
+        mock_run_image_selector.return_value = None  # Ctrl-C
+        paths = menu.select_images()
+        assert paths == []
+
+
+def test_select_manipulations_process_empty_pipeline_cancel(mock_questionary):
+    mock_questionary.select.return_value.ask.side_effect = ["PROCESS", "PROCESS"]
+    mock_questionary.confirm.return_value.ask.side_effect = [False, True, False]
+    ops, extra, out_formats, out_qualities = menu.select_manipulations([])
+    assert ops == []
+
+
+@patch("image_converter.menu._ask_text")
+def test_select_manipulations_output_formats_and_flatten(
+    mock_ask_text, mock_questionary
+):
+    mock_questionary.select.return_value.ask.side_effect = ["PROCESS"]
+    mock_questionary.confirm.return_value.ask.return_value = True  # flattening
+    mock_questionary.checkbox.return_value.ask.return_value = ["PNG", "JPEG"]
+
+    mock_ask_text.side_effect = ["85", "red"]
+
+    images_data = [{"name": "test.png", "dims": "10x10", "size": "1KB", "fmt": "PNG"}]
+    with patch("image_converter.menu.render_combined_menu"):
+        new_ops, extra, out_formats, out_qualities = menu.select_manipulations(
+            images_data
+        )
+
+    assert new_ops == []
+    assert out_formats == ["png", "jpeg"]
+    assert out_qualities == [100, 85]
+    assert extra["flatten"] == "red"
+
+
+@patch("image_converter.menu.remove_manipulation")
+def test_select_manipulations_remove(mock_remove_manipulation, mock_questionary):
+    mock_questionary.select.return_value.ask.side_effect = ["REMOVE", "PROCESS"]
+    mock_questionary.confirm.return_value.ask.side_effect = [
+        True,
+        False,
+    ]  # empty pipeline confirm, then flatten confirm
+    mock_questionary.checkbox.return_value.ask.return_value = None
+
+    ops, extra, out_formats, out_qualities = menu.select_manipulations([])
+    mock_remove_manipulation.assert_called_once()
+
+
+def test_select_manipulations_no_handler(mock_questionary):
+    no_handler_idx = next(
+        i
+        for i, m in enumerate(menu.AVAILABLE_MANIPULATIONS)
+        if m.get("handler") is None
+    )
+
+    mock_questionary.select.return_value.ask.side_effect = [no_handler_idx, "PROCESS"]
+    mock_questionary.confirm.return_value.ask.side_effect = [False]  # flatten confirm
+    mock_questionary.checkbox.return_value.ask.return_value = None
+
+    ops, extra, out_formats, out_qualities = menu.select_manipulations([])
+
+    assert len(ops) == 1
+    assert ops[0]["dest"] == menu.AVAILABLE_MANIPULATIONS[no_handler_idx]["dest"]
+
+
 def test_select_manipulations_basic_flow(mock_questionary):
     # Flow:
     # 1. Select 'Add Flip' (index in AVAILABLE_MANIPULATIONS)
@@ -298,6 +389,20 @@ def test_interactive_menu_flow(mock_questionary):
         mock_sel_imgs.assert_called_once()
         mock_sel_manips.assert_called_once()
         mock_process.assert_called_once()
+
+
+@patch("image_converter.menu.select_images")
+@patch("image_converter.menu.console.print")
+def test_interactive_menu_empty_paths(mock_print, mock_select_images):
+    mock_select_images.return_value = []
+
+    menu.interactive_menu()
+
+    mock_select_images.assert_called_once()
+    mock_print.assert_any_call("[yellow]No images selected.[/]")
+    mock_print.assert_any_call(
+        "[dim white]Please run the command again and select at least one image to process.[/]"
+    )
 
 
 def test_prompt_for_vignette_options(mock_ask_text):
