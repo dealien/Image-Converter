@@ -1,3 +1,5 @@
+"""Unit tests for the main image processing pipeline in processing.py."""
+
 import unittest
 from unittest.mock import patch
 import argparse
@@ -9,7 +11,10 @@ from image_converter import processing
 
 
 class TestProcessImagesAndSave(unittest.TestCase):
+    """Test suite for the `process_images_and_save` core function."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.output_dir = "Output"
         self.test_image_dir = "tests/test_images"
         self.test_image_name = "Tree Clear Sky 1.png"
@@ -20,12 +25,14 @@ class TestProcessImagesAndSave(unittest.TestCase):
             shutil.rmtree(self.output_dir)
 
     def tearDown(self):
+        """Tear down the test environment."""
         # Clean up output directory after each test
         if os.path.exists(self.output_dir):
             shutil.rmtree(self.output_dir)
 
     @patch("image_converter.processing.console.print")
     def test_empty_images_data(self, mock_print):
+        """Test processing with empty images data array."""
         # Empty images_data -> early return with "No images to process."
         processing.process_images_and_save([], [], argparse.Namespace())
         mock_print.assert_any_call("[yellow]No images to process.[/]")
@@ -37,6 +44,7 @@ class TestProcessImagesAndSave(unittest.TestCase):
     @patch("image_converter.processing.console.print")
     @patch("image_converter.processing.Image.open")
     def test_exception_during_image_load(self, mock_open, mock_print):
+        """Test exception handling during image load."""
         # Mock opening to fail
         mock_open.side_effect = Exception("Mocked load error")
         images_data = [("test_image.png", "fake_path.png")]
@@ -50,6 +58,7 @@ class TestProcessImagesAndSave(unittest.TestCase):
         # Check that it did not raise an unhandled exception
 
     def test_successful_path_output_dir_and_cli_string(self):
+        """Test successful image processing output and generated CLI string matching."""
         images_data = [(self.test_image_name, self.test_image_path)]
         ordered_operations = [
             {"dest": "scale", "values": ["0.5x"]},
@@ -97,6 +106,7 @@ class TestProcessImagesAndSave(unittest.TestCase):
         )
 
     def test_chained_operations_integration(self):
+        """Test chaining multiple image operations sequentially."""
         images_data = [(self.test_image_name, self.test_image_path)]
         # Chain: Invert -> Grayscale
         ordered_operations = [
@@ -126,6 +136,7 @@ class TestProcessImagesAndSave(unittest.TestCase):
 
     @patch("image_converter.processing.console.print")
     def test_flatten_alpha_channel(self, mock_print):
+        """Test flattening the alpha channel onto a solid background."""
         # Create a test RGBA image with transparency
         img = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
         img.paste((0, 255, 0, 255), (25, 25, 75, 75))  # Green square in middle
