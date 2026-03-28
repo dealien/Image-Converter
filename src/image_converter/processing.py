@@ -585,6 +585,12 @@ def _process_single_image(
         if not os.path.exists("Output/"):
             os.makedirs("Output/")
 
+        # ⚡ Bolt: Cache expensive format conversions when exporting to multiple formats.
+        # Repeating `.convert("RGB")` or creating a solid flattened background inside the loop
+        # is computationally expensive and allocates redundant memory for each format like JPEG or BMP.
+        cached_flattened_image = None
+        cached_rgb_image = None
+
         for fmt, quality in zip(target_formats, target_qualities):
             output_filename = f"{Path(original_name).stem}.{fmt}"
             output_path = os.path.join("Output", output_filename)
@@ -602,11 +608,13 @@ def _process_single_image(
                         save_image.mode in ("RGBA", "LA", "PA")
                         or save_image.info.get("transparency", None) is not None
                     ):
-                        # Ensure we have an RGBA image to extract the alpha channel
-                        temp_rgba = save_image.convert("RGBA")
-                        background = Image.new("RGB", temp_rgba.size, cli_args.flatten)
-                        background.paste(temp_rgba, mask=temp_rgba.split()[3])
-                        save_image = background
+                        if cached_flattened_image is None:
+                            # Ensure we have an RGBA image to extract the alpha channel
+                            temp_rgba = save_image.convert("RGBA")
+                            background = Image.new("RGB", temp_rgba.size, cli_args.flatten)
+                            background.paste(temp_rgba, mask=temp_rgba.split()[3])
+                            cached_flattened_image = background
+                        save_image = cached_flattened_image
 
                 # Convert to RGB if saving to JPEG/BMP to prevent OSError
                 if fmt in ("jpg", "jpeg", "bmp") and save_image.mode in (
@@ -614,7 +622,9 @@ def _process_single_image(
                     "LA",
                     "P",
                 ):
-                    save_image = save_image.convert("RGB")
+                    if cached_rgb_image is None:
+                        cached_rgb_image = save_image.convert("RGB")
+                    save_image = cached_rgb_image
 
                 with os.fdopen(fd, "wb") as f:
                     save_kwargs = {}
