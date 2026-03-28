@@ -875,7 +875,13 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         padding=(0, 1),
     )
     results_table.add_column("#", style="dim white", justify="right", width=3)
-    results_table.add_column("Filename", min_width=26)
+    results_table.add_column(
+        "Filename",
+        min_width=26,
+        no_wrap=True,
+        overflow="ellipsis",
+        max_width=30,
+    )
     results_table.add_column("Status", justify="center", width=8)
     results_table.add_column("Dimensions", justify="center", width=14)
     results_table.add_column("File Size", justify="right", width=10)
