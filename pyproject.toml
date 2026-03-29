@@ -19,6 +19,7 @@ dependencies = [
     "rich==13.9.4",
     "pi-heif==0.21.0",
     "pillow-avif-plugin==1.4.6",
+    "piexif==1.1.3",
 ]
 
 [project.optional-dependencies]

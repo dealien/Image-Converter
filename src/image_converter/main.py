@@ -227,6 +227,71 @@ def main():
         type=int,
         help="Rotate image by 90-degree increments (0, 90, 180, 270).",
     )
+    # Metadata Flags
+    parser.add_argument(
+        "-vm",
+        "--view-metadata",
+        dest="view_metadata",
+        action=StoreInOrder,
+        nargs=0,
+        help="Prints the existing metadata to the console.",
+    )
+    parser.add_argument(
+        "-em",
+        "--export-metadata",
+        dest="export_metadata",
+        action=StoreInOrder,
+        nargs="?",
+        const="",
+        help="Exports the image's existing metadata and saves it to a specified JSON file.",
+    )
+    parser.add_argument(
+        "-sm",
+        "--strip-metadata",
+        dest="strip_metadata",
+        action=StoreInOrder,
+        nargs=0,
+        help="Removes all privacy metadata from the image.",
+    )
+    parser.add_argument(
+        "-cm",
+        "--copy-metadata",
+        dest="copy_metadata",
+        action=StoreInOrder,
+        nargs=1,
+        help="Extracts metadata from a specified source image and applies it to the current image in the pipeline.",
+    )
+    parser.add_argument(
+        "-setm",
+        "--set-metadata",
+        dest="set_metadata",
+        action=StoreInOrder,
+        nargs="+",
+        help="Overwrites the image's metadata completely with the provided input (JSON file, inline JSON, or Key=Value pairs).",
+    )
+    parser.add_argument(
+        "-um",
+        "--update-metadata",
+        dest="update_metadata",
+        action=StoreInOrder,
+        nargs="+",
+        help="Merges the provided input with the image's existing metadata.",
+    )
+    parser.add_argument(
+        "--author",
+        dest="author",
+        action=StoreInOrder,
+        nargs=1,
+        help="Quick-access flag to set the Author/Artist tag.",
+    )
+    parser.add_argument(
+        "--copyright",
+        dest="copyright",
+        action=StoreInOrder,
+        nargs=1,
+        help="Quick-access flag to set the Copyright tag.",
+    )
+
     parser.add_argument(
         "--flatten",
         nargs="?",
