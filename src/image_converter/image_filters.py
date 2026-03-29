@@ -22,24 +22,22 @@ def _generate_vignette_mask(mask_size: int, intensity: int) -> Image.Image:
 
     """
     mask = Image.new("L", (mask_size, mask_size))
-    pixels = mask.load()
 
-    center_x, center_y = mask_size / 2, mask_size / 2
-    max_dist = (center_x**2 + center_y**2) ** 0.5
+    center = mask_size / 2.0
+    factor = (intensity / 100.0) / (2.0 * center**2)
 
-    darkness_factor = intensity / 100.0
+    # Pre-calculate squared distances multiplied by factor for 1D arrays
+    dist_sq = [(((i - center) ** 2) * factor) for i in range(mask_size)]
 
-    for x in range(mask_size):
-        for y in range(mask_size):
-            dist = ((x - center_x) ** 2 + (y - center_y) ** 2) ** 0.5
-            norm_dist = dist / max_dist
+    data = []
+    append = data.append
+    for y in range(mask_size):
+        dy2 = dist_sq[y]
+        for x in range(mask_size):
+            val = 1.0 - (dist_sq[x] + dy2)
+            append(int(255 * val) if val > 0.0 else 0)
 
-            # 1.0 at center, decreasing to 1.0 - darkness_factor at edges
-            # square the normalized distance for a softer fade
-            val = 1.0 - (norm_dist**2 * darkness_factor)
-            val = max(0.0, val)
-            pixels[x, y] = int(255 * val)
-
+    mask.putdata(data)
     return mask
 
 
