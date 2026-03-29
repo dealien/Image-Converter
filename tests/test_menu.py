@@ -565,7 +565,11 @@ def test_remove_manipulation_empty_ops():
     with patch("image_converter.menu.console.print") as mock_print:
         res = remove_manipulation([], {})
         assert res == []
-        mock_print.assert_called_with("\n[yellow]There are no operations to remove.[/]")
+        mock_print.assert_any_call("\n[yellow]There are no operations to remove.[/]")
+        mock_print.assert_any_call(
+            "[dim white]Please select some operations from the menu to build your pipeline first.[/]"
+        )
+        assert mock_print.call_count == 2
 
 
 def test_remove_manipulation_cancel(mock_questionary):
