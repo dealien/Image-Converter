@@ -591,6 +591,9 @@ def remove_manipulation(operations, extra_args):
     """
     if not operations:
         console.print("\n[yellow]There are no operations to remove.[/]")
+        console.print(
+            "[dim white]Please select some operations from the menu to build your pipeline first.[/]"
+        )
         return operations
 
     choices = [
