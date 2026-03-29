@@ -596,7 +596,10 @@ def _process_single_image(
         is_read_only = all_ops and all_ops.issubset(read_only_ops)
 
         if is_read_only and not has_explicit_format:
-            progress.update(image_task, description=f"{original_name} [dim](Skipping save, read-only)[/]")
+            progress.update(
+                image_task,
+                description=f"{original_name} [dim](Skipping save, read-only)[/]",
+            )
             progress.advance(image_task)
             progress.update(
                 image_task, description=f"{original_name} [bright_green]✓ Done[/]"
@@ -907,6 +910,7 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
     # ── Handle Metadata Exports ────────────────────────
     if hasattr(cli_args, "metadata_manifest") and cli_args.metadata_manifest:
         import json
+
         export_path = getattr(cli_args, "export_metadata_path", None)
         if not export_path:
             # Default fallback logic
@@ -923,9 +927,13 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         try:
             with open(export_path, "w", encoding="utf-8") as f:
                 json.dump(cli_args.metadata_manifest, f, indent=2)
-            console.print(f"\n[bold bright_green]✓[/] [green]Exported metadata manifest to[/] [bright_white]'{export_path}'[/]")
+            console.print(
+                f"\n[bold bright_green]✓[/] [green]Exported metadata manifest to[/] [bright_white]'{export_path}'[/]"
+            )
         except Exception as e:
-            console.print(f"\n[bold bright_red]✗ Error exporting metadata manifest to '{export_path}': {e}[/]")
+            console.print(
+                f"\n[bold bright_red]✗ Error exporting metadata manifest to '{export_path}': {e}[/]"
+            )
 
     # ── Results Table ──────────────────────────────────
     console.print()

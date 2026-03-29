@@ -194,11 +194,14 @@ class TestMetadata(unittest.TestCase):
             # Use a mock that doesn't interfere with hasattr/getattr expectations
             class MockArgs:
                 pass
+
             mock_args = MockArgs()
 
             handle_copy_metadata(mock_image, "target.jpg", [temp_path], mock_args)
 
             new_exif_dict = piexif.load(mock_image.info["exif"])
-            self.assertEqual(new_exif_dict["0th"].get(piexif.ImageIFD.Artist), b"Copied Artist")
+            self.assertEqual(
+                new_exif_dict["0th"].get(piexif.ImageIFD.Artist), b"Copied Artist"
+            )
         finally:
             os.remove(temp_path)

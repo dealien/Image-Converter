@@ -15,6 +15,7 @@ console = Console()
 # Mapping and Type Definitions
 # ---------------------------------------------------------
 
+
 def build_reverse_exif_map() -> dict:
     """Invert piexif.TAGS to a human-readable dictionary with types and IFDs.
 
@@ -30,7 +31,7 @@ def build_reverse_exif_map() -> dict:
         "GPS": "GPS",
         "Interop": "Interop",
         "0th": "0th",
-        "1st": "1st"
+        "1st": "1st",
     }
 
     for piexif_ifd_name, tags in piexif.TAGS.items():
@@ -39,11 +40,19 @@ def build_reverse_exif_map() -> dict:
             tag_name = tag_info["name"]
             tag_type = tag_info.get("type")
             # Prefer 0th for overlaps (like ImageWidth/ImageLength)
-            if tag_name not in reverse_map or (ifd_name == "0th" and reverse_map[tag_name]["ifd"] != "0th"):
-                reverse_map[tag_name] = {"ifd": ifd_name, "id": tag_id, "type": tag_type}
+            if tag_name not in reverse_map or (
+                ifd_name == "0th" and reverse_map[tag_name]["ifd"] != "0th"
+            ):
+                reverse_map[tag_name] = {
+                    "ifd": ifd_name,
+                    "id": tag_id,
+                    "type": tag_type,
+                }
     return reverse_map
 
+
 REVERSE_EXIF_MAP = build_reverse_exif_map()
+
 
 def _get_type_name(type_id: int) -> str:
     """Convert piexif type ID to a readable string."""
@@ -57,6 +66,7 @@ def _get_type_name(type_id: int) -> str:
         piexif.TYPES.SLong: "SLong",
         piexif.TYPES.SRational: "SRational",
     }.get(type_id, "Unknown")
+
 
 def cast_exif_value(tag_name: str, value: str):
     """Securely convert user string inputs into EXIF-compatible types based on REVERSE_EXIF_MAP.
@@ -79,7 +89,12 @@ def cast_exif_value(tag_name: str, value: str):
     try:
         if t == piexif.TYPES.Ascii:
             return value.encode("utf-8")
-        elif t in (piexif.TYPES.Short, piexif.TYPES.Long, piexif.TYPES.SLong, piexif.TYPES.Byte):
+        elif t in (
+            piexif.TYPES.Short,
+            piexif.TYPES.Long,
+            piexif.TYPES.SLong,
+            piexif.TYPES.Byte,
+        ):
             return int(value)
         elif t in (piexif.TYPES.Rational, piexif.TYPES.SRational):
             if "/" in value:
@@ -93,11 +108,15 @@ def cast_exif_value(tag_name: str, value: str):
             return value.encode("utf-8")
     except Exception as e:
         type_str = _get_type_name(t)
-        raise ValueError(f"Failed to cast '{value}' for tag '{tag_name}' (expected type: {type_str}). Error: {e}")
+        raise ValueError(
+            f"Failed to cast '{value}' for tag '{tag_name}' (expected type: {type_str}). Error: {e}"
+        )
+
 
 # ---------------------------------------------------------
 # Data Abstraction & Parsing
 # ---------------------------------------------------------
+
 
 def load_exif_as_flat_dict(exif_bytes: bytes) -> dict:
     """Load raw EXIF bytes and convert to a flat, human-readable dictionary."""
@@ -114,7 +133,11 @@ def load_exif_as_flat_dict(exif_bytes: bytes) -> dict:
         if ifd_name == "thumbnail":
             continue
         for tag_id, value in tags.items():
-            tag_name = piexif.TAGS[ifd_name].get(tag_id, {}).get("name", f"Unknown_{ifd_name}_{tag_id}")
+            tag_name = (
+                piexif.TAGS[ifd_name]
+                .get(tag_id, {})
+                .get("name", f"Unknown_{ifd_name}_{tag_id}")
+            )
             # Try to decode bytes for Ascii types
             if isinstance(value, bytes):
                 try:
@@ -124,7 +147,12 @@ def load_exif_as_flat_dict(exif_bytes: bytes) -> dict:
                 except Exception:
                     # Keep raw bytes repr or ignore if too complex for JSON
                     flat_dict[tag_name] = str(value)
-            elif isinstance(value, tuple) and len(value) == 2 and isinstance(value[0], int) and isinstance(value[1], int):
+            elif (
+                isinstance(value, tuple)
+                and len(value) == 2
+                and isinstance(value[0], int)
+                and isinstance(value[1], int)
+            ):
                 # Format rational
                 flat_dict[tag_name] = f"{value[0]}/{value[1]}"
             else:
@@ -132,23 +160,40 @@ def load_exif_as_flat_dict(exif_bytes: bytes) -> dict:
 
     return flat_dict
 
+
 def dict_to_exif_bytes(flat_dict: dict, base_exif_dict: dict = None) -> bytes:
     """Convert a flat human-readable dictionary to EXIF bytes using piexif."""
-    exif_dict = base_exif_dict if base_exif_dict else {"0th": {}, "Exif": {}, "GPS": {}, "Interop": {}, "1st": {}, "thumbnail": None}
+    exif_dict = (
+        base_exif_dict
+        if base_exif_dict
+        else {
+            "0th": {},
+            "Exif": {},
+            "GPS": {},
+            "Interop": {},
+            "1st": {},
+            "thumbnail": None,
+        }
+    )
 
     for key, value in flat_dict.items():
         if value is None or value == "None":
             # Remove key if it exists
             tag_info = REVERSE_EXIF_MAP.get(key)
             if tag_info:
-                if tag_info["ifd"] in exif_dict and tag_info["id"] in exif_dict[tag_info["ifd"]]:
+                if (
+                    tag_info["ifd"] in exif_dict
+                    and tag_info["id"] in exif_dict[tag_info["ifd"]]
+                ):
                     del exif_dict[tag_info["ifd"]][tag_info["id"]]
             continue
 
         try:
             tag_info = REVERSE_EXIF_MAP.get(key)
             if not tag_info:
-                console.print(f"[yellow]Warning: Unknown EXIF tag '{key}', skipping.[/]")
+                console.print(
+                    f"[yellow]Warning: Unknown EXIF tag '{key}', skipping.[/]"
+                )
                 continue
 
             cast_val = cast_exif_value(key, value)
@@ -167,6 +212,7 @@ def dict_to_exif_bytes(flat_dict: dict, base_exif_dict: dict = None) -> bytes:
     except Exception as e:
         console.print(f"[red]Error building EXIF bytes: {e}[/]")
         return b""
+
 
 def parse_metadata_input(values: list[str]) -> dict:
     """Parse CLI input list into a flat dictionary.
@@ -203,16 +249,24 @@ def parse_metadata_input(values: list[str]) -> dict:
             k, v = val.split("=", 1)
             result[k.strip()] = v.strip()
         else:
-            console.print(f"[red]Invalid metadata input format: '{val}'. Expected Key=Value, JSON string, or .json file.[/]")
+            console.print(
+                f"[red]Invalid metadata input format: '{val}'. Expected Key=Value, JSON string, or .json file.[/]"
+            )
     return result
+
 
 # ---------------------------------------------------------
 # Handlers
 # ---------------------------------------------------------
 
-def handle_view_metadata(image: Image.Image, image_name: str, values: list, args) -> Image.Image:
+
+def handle_view_metadata(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
     """Print the existing metadata to the console."""
-    console.print(f"  [bright_yellow]›[/] [yellow]Viewing metadata for {image_name}...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Viewing metadata for {image_name}...[/]"
+    )
 
     info = image.info
     exif_bytes = info.get("exif", b"")
@@ -227,9 +281,14 @@ def handle_view_metadata(image: Image.Image, image_name: str, values: list, args
 
     return image
 
-def handle_export_metadata(image: Image.Image, image_name: str, values: list, args) -> Image.Image:
+
+def handle_export_metadata(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
     """Export the image's existing metadata to be collected into a JSON file."""
-    console.print(f"  [bright_yellow]›[/] [yellow]Exporting metadata for {image_name}...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Exporting metadata for {image_name}...[/]"
+    )
 
     info = image.info
     exif_bytes = info.get("exif", b"")
@@ -247,9 +306,14 @@ def handle_export_metadata(image: Image.Image, image_name: str, values: list, ar
 
     return image
 
-def handle_strip_metadata(image: Image.Image, image_name: str, values: list, args) -> Image.Image:
+
+def handle_strip_metadata(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
     """Remove privacy metadata but preserve critical structural data (ICC, DPI, Orientation)."""
-    console.print(f"  [bright_yellow]›[/] [yellow]Stripping metadata for {image_name}...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Stripping metadata for {image_name}...[/]"
+    )
 
     # Preserve must-haves
     preserve_keys = ["icc_profile", "dpi", "transparency", "loop", "duration"]
@@ -262,7 +326,14 @@ def handle_strip_metadata(image: Image.Image, image_name: str, values: list, arg
             exif_dict = piexif.load(exif_bytes)
             orientation = exif_dict.get("0th", {}).get(piexif.ImageIFD.Orientation)
             if orientation is not None:
-                new_exif = {"0th": {piexif.ImageIFD.Orientation: orientation}, "Exif": {}, "GPS": {}, "Interop": {}, "1st": {}, "thumbnail": None}
+                new_exif = {
+                    "0th": {piexif.ImageIFD.Orientation: orientation},
+                    "Exif": {},
+                    "GPS": {},
+                    "Interop": {},
+                    "1st": {},
+                    "thumbnail": None,
+                }
                 new_info["exif"] = piexif.dump(new_exif)
         except Exception:
             pass
@@ -271,14 +342,21 @@ def handle_strip_metadata(image: Image.Image, image_name: str, values: list, arg
     image.info = new_info
     return image
 
-def handle_copy_metadata(image: Image.Image, image_name: str, values: list, args) -> Image.Image:
+
+def handle_copy_metadata(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
     """Extract metadata from a specified source image and apply it to the current image."""
     source_path = values[0] if values else None
     if not source_path:
-        console.print("  [bright_red]✗[/] [red]Source file path required for --copy-metadata.[/]")
+        console.print(
+            "  [bright_red]✗[/] [red]Source file path required for --copy-metadata.[/]"
+        )
         return image
 
-    console.print(f"  [bright_yellow]›[/] [yellow]Copying metadata from '{source_path}'...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Copying metadata from '{source_path}'...[/]"
+    )
 
     # Cache the source EXIF in args to prevent reloading it for every image in a batch
     if not hasattr(args, "cached_source_exif"):
@@ -286,7 +364,9 @@ def handle_copy_metadata(image: Image.Image, image_name: str, values: list, args
             with Image.open(source_path) as src_img:
                 args.cached_source_exif = src_img.info.get("exif", b"")
         except Exception as e:
-            console.print(f"  [bright_red]✗[/] [red]Failed to open source image '{source_path}': {e}[/]")
+            console.print(
+                f"  [bright_red]✗[/] [red]Failed to open source image '{source_path}': {e}[/]"
+            )
             args.cached_source_exif = b""
 
     if args.cached_source_exif:
@@ -294,9 +374,14 @@ def handle_copy_metadata(image: Image.Image, image_name: str, values: list, args
 
     return image
 
-def handle_set_metadata(image: Image.Image, image_name: str, values: list, args) -> Image.Image:
+
+def handle_set_metadata(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
     """Overwrite the image's metadata completely with the provided input."""
-    console.print(f"  [bright_yellow]›[/] [yellow]Setting metadata for {image_name}...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Setting metadata for {image_name}...[/]"
+    )
 
     input_dict = parse_metadata_input(values)
     if not input_dict:
@@ -309,9 +394,14 @@ def handle_set_metadata(image: Image.Image, image_name: str, values: list, args)
 
     return image
 
-def handle_update_metadata(image: Image.Image, image_name: str, values: list, args) -> Image.Image:
+
+def handle_update_metadata(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
     """Merge the provided input with the image's existing metadata."""
-    console.print(f"  [bright_yellow]›[/] [yellow]Updating metadata for {image_name}...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Updating metadata for {image_name}...[/]"
+    )
 
     input_dict = parse_metadata_input(values)
     if not input_dict:
@@ -331,19 +421,31 @@ def handle_update_metadata(image: Image.Image, image_name: str, values: list, ar
 
     return image
 
-def handle_author(image: Image.Image, image_name: str, values: list, args) -> Image.Image:
+
+def handle_author(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
     """Quick-access flag to set the Author/Artist tag."""
     author_name = values[0] if values else ""
-    console.print(f"  [bright_yellow]›[/] [yellow]Setting Author to '{author_name}'...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Setting Author to '{author_name}'...[/]"
+    )
 
     # We create a list of strings "Artist=..." and reuse update logic
     if not hasattr(args, "_author_handled_once"):
         args._author_handled_once = True
     return handle_update_metadata(image, image_name, [f"Artist={author_name}"], args)
 
-def handle_copyright(image: Image.Image, image_name: str, values: list, args) -> Image.Image:
+
+def handle_copyright(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
     """Quick-access flag to set the Copyright tag."""
     copyright_text = values[0] if values else ""
-    console.print(f"  [bright_yellow]›[/] [yellow]Setting Copyright to '{copyright_text}'...[/]")
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Setting Copyright to '{copyright_text}'...[/]"
+    )
 
-    return handle_update_metadata(image, image_name, [f"Copyright={copyright_text}"], args)
+    return handle_update_metadata(
+        image, image_name, [f"Copyright={copyright_text}"], args
+    )
