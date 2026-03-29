@@ -267,7 +267,7 @@ def main():
         dest="set_metadata",
         action=StoreInOrder,
         nargs="+",
-        help="Overwrites the image's metadata completely with the provided input (JSON file, inline JSON, or Key=Value pairs).",
+        help="Overwrites the image's metadata completely with the provided input (JSON file, inline JSON, or Key=Value pairs). Set Key=None to delete a tag.",
     )
     parser.add_argument(
         "-um",
@@ -275,7 +275,7 @@ def main():
         dest="update_metadata",
         action=StoreInOrder,
         nargs="+",
-        help="Merges the provided input with the image's existing metadata.",
+        help="Merges the provided input with the image's existing metadata. Set Key=None to delete a specific tag.",
     )
     parser.add_argument(
         "--author",

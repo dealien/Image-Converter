@@ -925,6 +925,10 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
             export_path = export_path[0] if export_path[0] else "batch_tags.json"
 
         try:
+            export_dir = Path(export_path).parent
+            if export_dir and str(export_dir) != ".":
+                os.makedirs(export_dir, exist_ok=True)
+
             with open(export_path, "w", encoding="utf-8") as f:
                 json.dump(cli_args.metadata_manifest, f, indent=2)
             console.print(
