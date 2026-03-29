@@ -6,7 +6,7 @@ Provides a function to flip an image horizontally, vertically, or both.
 from PIL import Image
 
 
-def flip_image(image_input: Image.Image, direction: str):
+def flip_image(image_input: Image.Image, direction: str) -> Image.Image:
     """Flip an image horizontally, vertically, or both.
 
     Args:
