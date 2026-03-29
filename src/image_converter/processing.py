@@ -65,7 +65,7 @@ class StyledTimeElapsedColumn(TimeElapsedColumn):
         super().__init__()
         self.style = style
 
-    def render(self, task):
+    def render(self, task) -> Text:
         """Render the time elapsed for a given task with the configured style.
 
         Args:

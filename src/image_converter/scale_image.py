@@ -21,7 +21,7 @@ def scale_image(
     scale_factor: float = None,
     new_size: tuple = None,
     resample_filter: str = "bilinear",
-):
+) -> Image.Image:
     """Scale an image up or down, preserving aspect ratio.
 
     Args:
