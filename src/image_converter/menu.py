@@ -108,7 +108,9 @@ def _ask_text(
     return result
 
 
-def _format_operation_display(index, op, extra_args):
+def _format_operation_display(
+    index: int, op: dict[str, Any], extra_args: dict[str, Any]
+) -> str:
     """Format an operation dictionary into a readable CLI-like string for display.
 
     Args:
@@ -133,7 +135,12 @@ def _format_operation_display(index, op, extra_args):
     return display_string
 
 
-def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=False):
+def _validate_number(
+    min_val: float | None = None,
+    max_val: float | None = None,
+    value_type: type = int,
+    allow_empty: bool = False,
+) -> Callable[[str], bool | str]:
     """Create a validation function for numeric input within a specified range.
 
     Args:
@@ -170,7 +177,9 @@ def _validate_number(min_val=None, max_val=None, value_type=int, allow_empty=Fal
 # --- Submenu Functions ---
 
 
-def prompt_for_flip_options(extra_args=None):
+def prompt_for_flip_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for image flipping options.
 
     Args:
@@ -190,7 +199,9 @@ def prompt_for_flip_options(extra_args=None):
     return {"dest": "flip", "values": [choice.lower()]}
 
 
-def prompt_for_scale_options(extra_args=None):
+def prompt_for_scale_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for image scaling options and resampling filter.
 
     Args:
@@ -250,7 +261,9 @@ def prompt_for_scale_options(extra_args=None):
     return {"dest": "scale", "values": values}
 
 
-def prompt_for_edge_detection_options(extra_args=None):
+def prompt_for_edge_detection_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for edge detection method and threshold (if applicable).
 
     Args:
@@ -282,7 +295,9 @@ def prompt_for_edge_detection_options(extra_args=None):
     return {"dest": "edge_detection", "values": [method]}
 
 
-def prompt_for_brightness_options(extra_args=None):
+def prompt_for_brightness_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for a brightness adjustment value.
 
     Args:
@@ -300,7 +315,9 @@ def prompt_for_brightness_options(extra_args=None):
     return {"dest": "brightness", "values": [int(val_str) if val_str else 0]}
 
 
-def prompt_for_contrast_options(extra_args=None):
+def prompt_for_contrast_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for a contrast adjustment value.
 
     Args:
@@ -318,7 +335,9 @@ def prompt_for_contrast_options(extra_args=None):
     return {"dest": "contrast", "values": [int(val_str) if val_str else 0]}
 
 
-def prompt_for_saturation_options(extra_args=None):
+def prompt_for_saturation_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for a saturation adjustment value.
 
     Args:
@@ -336,7 +355,9 @@ def prompt_for_saturation_options(extra_args=None):
     return {"dest": "saturation", "values": [int(val_str) if val_str else 0]}
 
 
-def prompt_for_blur_options(extra_args=None):
+def prompt_for_blur_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for a blur radius.
 
     Args:
@@ -354,7 +375,9 @@ def prompt_for_blur_options(extra_args=None):
     return {"dest": "blur", "values": [float(val_str) if val_str else 2.0]}
 
 
-def prompt_for_sharpen_options(extra_args=None):
+def prompt_for_sharpen_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for a sharpness intensity.
 
     Args:
@@ -372,7 +395,9 @@ def prompt_for_sharpen_options(extra_args=None):
     return {"dest": "sharpen", "values": [int(val_str) if val_str else 50]}
 
 
-def prompt_for_color_balance_options(extra_args=None):
+def prompt_for_color_balance_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for RGB color balance multipliers.
 
     Args:
@@ -412,7 +437,9 @@ def prompt_for_color_balance_options(extra_args=None):
     }
 
 
-def prompt_for_hue_rotation_options(extra_args=None):
+def prompt_for_hue_rotation_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for hue rotation degrees.
 
     Args:
@@ -430,7 +457,9 @@ def prompt_for_hue_rotation_options(extra_args=None):
     return {"dest": "hue_rotation", "values": [int(val_str) if val_str else 90]}
 
 
-def prompt_for_posterize_options(extra_args=None):
+def prompt_for_posterize_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for the number of bits for posterization.
 
     Args:
@@ -448,7 +477,9 @@ def prompt_for_posterize_options(extra_args=None):
     return {"dest": "posterize", "values": [int(val_str) if val_str else 4]}
 
 
-def prompt_for_border_options(extra_args=None):
+def prompt_for_border_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for border thickness, color, and position.
 
     Args:
@@ -485,7 +516,9 @@ def prompt_for_border_options(extra_args=None):
     }
 
 
-def prompt_for_vignette_options(extra_args=None):
+def prompt_for_vignette_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for a vignette intensity.
 
     Args:
@@ -503,7 +536,9 @@ def prompt_for_vignette_options(extra_args=None):
     return {"dest": "vignette", "values": [int(val_str) if val_str else 50]}
 
 
-def prompt_for_rotation_options(extra_args=None):
+def prompt_for_rotation_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     """Prompts the user for an image rotation angle.
 
     Args:
@@ -578,7 +613,9 @@ AVAILABLE_MANIPULATIONS = [
 # --- Menu Logic ---
 
 
-def remove_manipulation(operations, extra_args):
+def remove_manipulation(
+    operations: list[dict[str, Any]], extra_args: dict[str, Any]
+) -> list[dict[str, Any]]:
     """Presents a menu to remove a previously added manipulation from the pipeline.
 
     Args:
@@ -627,7 +664,7 @@ def remove_manipulation(operations, extra_args):
     return operations
 
 
-def select_images():
+def select_images() -> list[str]:
     """Find images in the 'Base Images' directory and prompts the user to select them.
 
     Returns:
@@ -681,7 +718,9 @@ def select_images():
             return []
 
 
-def select_manipulations(images_data):
+def select_manipulations(
+    images_data: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[str, Any], list[str], list[int]]:
     """Presents the main interactive menu for building the image processing pipeline.
 
     Args:
