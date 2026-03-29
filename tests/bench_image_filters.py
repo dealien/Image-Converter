@@ -22,7 +22,7 @@ from image_converter.image_filters import (
 )
 from image_converter.flip_image import flip_image
 from image_converter.scale_image import scale_image
-from image_converter.remove_background import remove_background, trim
+from image_converter.remove_background import trim
 
 
 @pytest.fixture
