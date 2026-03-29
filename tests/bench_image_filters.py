@@ -18,9 +18,11 @@ from image_converter.image_filters import (
     apply_border,
     rotate_image,
     apply_vignette,
+    edge_detection,
 )
 from image_converter.flip_image import flip_image
 from image_converter.scale_image import scale_image
+from image_converter.remove_background import trim
 
 
 @pytest.fixture
@@ -66,57 +68,89 @@ def test_bench_grayscale(benchmark, rgb_image):
 # --- Brightness ---
 
 
-def test_bench_adjust_brightness(benchmark, rgb_image):
+def test_bench_adjust_brightness_rgb(benchmark, rgb_image):
     benchmark(adjust_brightness, rgb_image, 50)
+
+
+def test_bench_adjust_brightness_rgba(benchmark, rgba_image):
+    benchmark(adjust_brightness, rgba_image, 50)
 
 
 # --- Contrast ---
 
 
-def test_bench_adjust_contrast(benchmark, rgb_image):
+def test_bench_adjust_contrast_rgb(benchmark, rgb_image):
     benchmark(adjust_contrast, rgb_image, 50)
+
+
+def test_bench_adjust_contrast_rgba(benchmark, rgba_image):
+    benchmark(adjust_contrast, rgba_image, 50)
 
 
 # --- Saturation ---
 
 
-def test_bench_adjust_saturation(benchmark, rgb_image):
+def test_bench_adjust_saturation_rgb(benchmark, rgb_image):
     benchmark(adjust_saturation, rgb_image, 50)
+
+
+def test_bench_adjust_saturation_rgba(benchmark, rgba_image):
+    benchmark(adjust_saturation, rgba_image, 50)
 
 
 # --- Blur ---
 
 
-def test_bench_apply_blur(benchmark, rgb_image):
+def test_bench_apply_blur_rgb(benchmark, rgb_image):
     benchmark(apply_blur, rgb_image, 5)
+
+
+def test_bench_apply_blur_rgba(benchmark, rgba_image):
+    benchmark(apply_blur, rgba_image, 5)
 
 
 # --- Sharpen ---
 
 
-def test_bench_apply_sharpen(benchmark, rgb_image):
+def test_bench_apply_sharpen_rgb(benchmark, rgb_image):
     benchmark(apply_sharpen, rgb_image, 50)
+
+
+def test_bench_apply_sharpen_rgba(benchmark, rgba_image):
+    benchmark(apply_sharpen, rgba_image, 50)
 
 
 # --- Color Balance ---
 
 
-def test_bench_apply_color_balance(benchmark, rgb_image):
+def test_bench_apply_color_balance_rgb(benchmark, rgb_image):
     benchmark(apply_color_balance, rgb_image, 1.5, 0.8, 1.2)
+
+
+def test_bench_apply_color_balance_rgba(benchmark, rgba_image):
+    benchmark(apply_color_balance, rgba_image, 1.5, 0.8, 1.2)
 
 
 # --- Hue Rotation ---
 
 
-def test_bench_rotate_hue(benchmark, rgb_image):
+def test_bench_rotate_hue_rgb(benchmark, rgb_image):
     benchmark(rotate_hue, rgb_image, 120)
+
+
+def test_bench_rotate_hue_rgba(benchmark, rgba_image):
+    benchmark(rotate_hue, rgba_image, 120)
 
 
 # --- Posterize ---
 
 
-def test_bench_apply_posterize(benchmark, rgb_image):
+def test_bench_apply_posterize_rgb(benchmark, rgb_image):
     benchmark(apply_posterize, rgb_image, 4)
+
+
+def test_bench_apply_posterize_rgba(benchmark, rgba_image):
+    benchmark(apply_posterize, rgba_image, 4)
 
 
 # --- Border ---
@@ -140,8 +174,27 @@ def test_bench_rotate_image_90(benchmark, rgb_image):
 # --- Vignette ---
 
 
-def test_bench_apply_vignette(benchmark, rgb_image):
+def test_bench_apply_vignette_rgb(benchmark, rgb_image):
     benchmark(apply_vignette, rgb_image, 75)
+
+
+def test_bench_apply_vignette_rgba(benchmark, rgba_image):
+    benchmark(apply_vignette, rgba_image, 75)
+
+
+# --- Edge Detection ---
+
+
+def test_bench_edge_detection_sobel(benchmark, rgb_image):
+    benchmark(edge_detection, rgb_image, "sobel")
+
+
+def test_bench_edge_detection_canny(benchmark, rgb_image):
+    benchmark(edge_detection, rgb_image, "canny")
+
+
+def test_bench_edge_detection_kovalevsky(benchmark, rgb_image):
+    benchmark(edge_detection, rgb_image, "kovalevsky")
 
 
 # --- Flip ---
@@ -164,3 +217,17 @@ def test_bench_scale_image_factor(benchmark, rgb_image):
 
 def test_bench_scale_image_lanczos(benchmark, rgb_image):
     benchmark(scale_image, rgb_image, scale_factor=2.0, resample_filter="lanczos")
+
+
+# --- Remove Background & Trim ---
+
+
+def test_bench_trim_rgb(benchmark, rgb_image):
+    benchmark(trim, rgb_image)
+
+
+def test_bench_trim_rgba_fast_path(benchmark, rgba_image):
+    # Set top-left pixel to transparent to trigger fast path
+    transparent_rgba = rgba_image.copy()
+    transparent_rgba.putpixel((0, 0), (0, 0, 0, 0))
+    benchmark(trim, transparent_rgba)
