@@ -1,5 +1,7 @@
 # 🖼️ Image Converter
 
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/dealien/Image-Converter?utm_source=badge)
+
 This is a versatile Python project designed to streamline everyday workflows for basic to advanced image manipulation. It also serves as an excellent testbed for Google's AI code generation tools like Gemini and Jules! 🤖✨
 
 ## 📝 Note on Test Images
