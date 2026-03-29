@@ -1,4 +1,3 @@
-import pytest
 from image_converter.metadata import cast_exif_value, parse_metadata_input
 
 def test_benchmark_cast_exif_value(benchmark):

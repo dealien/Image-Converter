@@ -8,10 +8,8 @@ import piexif
 from PIL import Image
 
 from image_converter.metadata import (
-    REVERSE_EXIF_MAP,
     build_reverse_exif_map,
     cast_exif_value,
-    dict_to_exif_bytes,
     handle_author,
     handle_copy_metadata,
     handle_copyright,
@@ -20,7 +18,6 @@ from image_converter.metadata import (
     handle_strip_metadata,
     handle_update_metadata,
     handle_view_metadata,
-    load_exif_as_flat_dict,
     parse_metadata_input,
 )
 

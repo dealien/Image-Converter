@@ -4,8 +4,6 @@ Provides operation handlers for metadata flags (view, export, strip, copy, set, 
 """
 
 import json
-import os
-from pathlib import Path
 from PIL import Image
 
 import piexif
