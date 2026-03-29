@@ -86,6 +86,17 @@ image-converter [file_path] [options]
 - `--quality [value]`: Output quality (1-100) per format. Evaluated in order of `--format` arguments.
 - `--flatten [color]`: Composite image against a solid color background (default: `white`) for output formats that may not consistently support alpha channels (e.g., `jpeg`, `webp`).
 
+**Metadata Operations:**
+
+- `-vm`, `--view-metadata`: Prints the existing metadata to the console.
+- `-em`, `--export-metadata [file_path]`: Exports the image's existing metadata and saves it to a specified JSON file. When processing batches, it outputs a single "Manifest" JSON dictionary.
+- `-sm`, `--strip-metadata`: Removes all privacy metadata (EXIF/IPTC/XMP) from the image. *Note: Preserves critical structural data like ICC profiles, DPI, transparency, and EXIF Orientation.*
+- `-cm`, `--copy-metadata [source_file]`: Extracts metadata from a specified source image and applies it to the current image in the pipeline.
+- `-setm`, `--set-metadata [input]`: Overwrites the image's metadata completely with the provided input (JSON file, inline JSON, or `Key=Value` pairs). Set `Key=None` to explicitly delete a tag.
+- `-um`, `--update-metadata [input]`: Merges the provided input with the image's existing metadata. Set `Key=None` to explicitly delete a tag.
+- `--author [Name]`: Quick-access flag to set the Author/Artist tag.
+- `--copyright [Text]`: Quick-access flag to set the Copyright tag.
+
 **Filters & Adjustments:**
 
 - `--brightness [value]`: Adjust brightness (-100 to 100).
@@ -112,6 +123,34 @@ image-converter "path/to/your/image.jpg" --remove-background
 
 ```bash
 image-converter "path/to/your/images/*.png" --scale 0.5x
+```
+
+### Strip privacy metadata but inject an Author tag
+
+```bash
+image-converter "vacation.jpg" --strip-metadata --author "Jane Doe"
+```
+
+### Update specific metadata tags and delete GPS data
+
+```bash
+image-converter "photo.jpg" --update-metadata Artist="Jane Doe" Copyright="2026 Dealien" GPSInfo=None
+```
+
+### Export metadata from a batch of images
+
+This will extract the existing metadata from all `.jpg` files in the `images` directory and save it to a single "Manifest" file named `batch_tags.json`.
+
+```bash
+image-converter "images/*.jpg" --export-metadata batch_tags.json
+```
+
+### Overwrite metadata completely using an exported JSON file
+
+If you exported a manifest like `batch_tags.json` and modified it in a text editor, you can re-apply the updated metadata to a batch. This completely overwrites any existing metadata on the images with the structured data from the JSON file.
+
+```bash
+image-converter "images/*.jpg" --set-metadata batch_tags.json
 ```
 
 ### 🔗 Chaining Multiple Operations

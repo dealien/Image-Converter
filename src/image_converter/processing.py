@@ -45,6 +45,16 @@ from .image_filters import (
 )
 from .remove_background import remove_background
 from .scale_image import scale_image
+from .metadata import (
+    handle_view_metadata,
+    handle_export_metadata,
+    handle_strip_metadata,
+    handle_copy_metadata,
+    handle_set_metadata,
+    handle_update_metadata,
+    handle_author,
+    handle_copyright,
+)
 
 
 class StyledTimeElapsedColumn(TimeElapsedColumn):
@@ -580,7 +590,23 @@ def _process_single_image(
         finally:
             img.close()
 
-        # Step 3: Save loop for each format
+        # Step 3: Determine if we should save
+        read_only_ops = {"view_metadata", "export_metadata"}
+        all_ops = {op_dest for op_dest, _, _ in prepared_operations}
+        is_read_only = all_ops and all_ops.issubset(read_only_ops)
+
+        if is_read_only and not has_explicit_format:
+            progress.update(
+                image_task,
+                description=f"{original_name} [dim](Skipping save, read-only)[/]",
+            )
+            progress.advance(image_task)
+            progress.update(
+                image_task, description=f"{original_name} [bright_green]✓ Done[/]"
+            )
+            return results
+
+        # Step 4: Save loop for each format
         progress.update(image_task, description=f"{original_name} [dim](Saving...)[/]")
         if not os.path.exists("Output/"):
             os.makedirs("Output/")
@@ -746,6 +772,14 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         "border": handle_border,
         "rotate": handle_rotate,
         "vignette": handle_vignette,
+        "view_metadata": handle_view_metadata,
+        "export_metadata": handle_export_metadata,
+        "strip_metadata": handle_strip_metadata,
+        "copy_metadata": handle_copy_metadata,
+        "set_metadata": handle_set_metadata,
+        "update_metadata": handle_update_metadata,
+        "author": handle_author,
+        "copyright": handle_copyright,
     }
 
     if not images_data:
@@ -872,6 +906,38 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         console.print()
         console.print("💻  [bold bright_cyan]Equivalent CLI Command[/]")
         console.print(f"[bright_yellow]> image-converter {cli_str}[/]")
+
+    # ── Handle Metadata Exports ────────────────────────
+    if hasattr(cli_args, "metadata_manifest") and cli_args.metadata_manifest:
+        import json
+
+        export_path = getattr(cli_args, "export_metadata_path", None)
+        if not export_path:
+            # Default fallback logic
+            if len(images_data) == 1:
+                base_name = Path(images_data[0][0]).stem
+                export_path = f"{base_name}_tags.json"
+            else:
+                export_path = "batch_tags.json"
+
+        # If it was a list with None, correct it
+        if isinstance(export_path, list):
+            export_path = export_path[0] if export_path[0] else "batch_tags.json"
+
+        try:
+            export_dir = Path(export_path).parent
+            if export_dir and str(export_dir) != ".":
+                os.makedirs(export_dir, exist_ok=True)
+
+            with open(export_path, "w", encoding="utf-8") as f:
+                json.dump(cli_args.metadata_manifest, f, indent=2)
+            console.print(
+                f"\n[bold bright_green]✓[/] [green]Exported metadata manifest to[/] [bright_white]'{export_path}'[/]"
+            )
+        except Exception as e:
+            console.print(
+                f"\n[bold bright_red]✗ Error exporting metadata manifest to '{export_path}': {e}[/]"
+            )
 
     # ── Results Table ──────────────────────────────────
     console.print()
