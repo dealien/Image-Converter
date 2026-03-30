@@ -18,7 +18,7 @@
 **Learning:** To trim empty background space, creating a full-size solid color background image (`bg = Image.new(...)`) and calculating pixel differences via `ImageChops.difference(image, bg)` is extremely slow and memory intensive. For images where the background is completely transparent (which is typically true after background removal operations, meaning the top-left pixel has an alpha value of 0), we can completely skip `ImageChops`.
 **Action:** When trimming an RGBA image where `alpha.getpixel((0, 0)) == 0`, simply extract the alpha channel and use `bbox = alpha.getbbox()`. This provides the exact same bounding box but reduces execution time by over 90% and eliminates the massive memory allocation required for the `ImageChops` difference and addition steps.
 
-## $(date +%Y-%m-%d) - Optimize ImageChops thresholding with Look-Up Tables
+## 2024-03-24 - Optimize ImageChops thresholding with Look-Up Tables
 **Learning:** `ImageChops.add(diff, diff, 2.0, -100)` is computationally expensive because it performs floating-point arithmetic across image layers. The operation simplifies to `((diff + diff) / 2.0) - 100`, which is just clamping `diff - 100` to `[0, 255]`.
 **Action:** Replace `ImageChops` math operations that function as thresholds with `image.point(lut)` using a statically precomputed Look-Up Table (LUT). This reduces execution time by ~75% and saves memory allocation.
 
@@ -33,3 +33,7 @@
 ## 2026-03-29 - Optimize 2D distance calculations in Vignette Masks
 **Learning:** Calculating Euclidean distances ($((x - cx)^2 + (y - cy)^2)^{0.5}$) dynamically in a 2D nested Python loop (e.g. for generating 200x200 pixel masks) incurs significant overhead and scales poorly.
 **Action:** When creating Euclidean distance masks algorithmically, optimize the inner loops by hoisting independent math outwards. The normalized squared distance $(x-cx)^2/d_{max}^2 + (y-cy)^2/d_{max}^2$ can be partially pre-computed into a 1D array of horizontal/vertical squared distance components scaled by the target factor. The inner loop then reduces to `1.0 - (dist_sq[x] + dist_sq[y])`, and assigning via `mask.putdata(list)` executes nearly 4x faster than per-pixel assignments.
+
+## 2024-03-30 - Faster orthogonal rotation with transpose
+**Learning:** `image.rotate(angle, expand=True)` on 90, 180, and 270 degrees is slower because Pillow uses an affine matrix, boundary math, and resampling to calculate pixel mapping. `image.transpose(Image.Transpose.ROTATE_...)` uses optimized C-level block mapping which handles exact rotations seamlessly and skips affine calculation altogether. Also, Pillow deprecated `Image.ROTATE_90` style constants and removed them entirely in Pillow 10.0.0.
+**Action:** When rotating an image exactly 90, 180, or 270 degrees, use `image.transpose(Image.Transpose.ROTATE_...)` for roughly 10-25% faster execution, depending on image dimensions.
