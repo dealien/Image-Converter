@@ -25,12 +25,16 @@ from image_converter.scale_image import scale_image
 from image_converter.remove_background import trim
 
 
-@pytest.fixture
-def rgb_image():
-    """Create a 512x512 RGB test image with a gradient pattern."""
-    arr = np.zeros((512, 512, 3), dtype=np.uint8)
-    x = np.arange(512)
-    y = np.arange(512)
+@pytest.fixture(params=[512, 2000], ids=["512x512", "2000x2000"])
+def rgb_image(request):
+    """Create a parameterized RGB test image with a gradient pattern."""
+    size = request.param
+    # Explicitly allow large images for benchmarking purposes
+    Image.MAX_IMAGE_PIXELS = None
+
+    arr = np.zeros((size, size, 3), dtype=np.uint8)
+    x = np.arange(size)
+    y = np.arange(size)
     xx, yy = np.meshgrid(x, y)
     arr[:, :, 0] = xx % 256
     arr[:, :, 1] = yy % 256
