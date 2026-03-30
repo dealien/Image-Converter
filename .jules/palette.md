@@ -8,3 +8,7 @@
 ## 2024-05-25 - Improve Empty States with Actionable Guidance
 **Learning:** Abruptly exiting a CLI tool when a default directory is empty (e.g., "No images found. Exiting.") leaves the user stranded without context on how to proceed, creating a dead-end experience.
 **Action:** Replace abrupt exits in empty states with helpful, actionable guidance explaining exactly what the user needs to do next (e.g., "Please place some images (e.g., .jpg, .png) in this directory and try again.").
+
+## 2024-05-19 - Add Ctrl+C Keyboard Shortcut Hint to Interactive Menus
+**Learning:** Terminal users often don't know they can use Ctrl+C to safely exit an interactive prompt without causing errors or saving unwanted changes. Making this explicit reduces anxiety.
+**Action:** When using `questionary` or similar CLI prompt libraries, always include `Ctrl+C to cancel` in the `instruction` string if the application handles `KeyboardInterrupt` gracefully.
