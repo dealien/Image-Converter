@@ -3,6 +3,7 @@
 Provides operation handlers for metadata flags (view, export, strip, copy, set, update, etc.).
 """
 
+import argparse
 import json
 from PIL import Image
 
@@ -22,6 +23,7 @@ def build_reverse_exif_map() -> dict:
     Returns:
         dict: A dictionary mapping human-readable EXIF tag names to a dict
               containing their IFD (e.g., "0th", "Exif"), ID (int), and type.
+
     """
     reverse_map = {}
     # piexif.TAGS contains "Image", which maps to "0th" in the actual dicts
@@ -68,7 +70,7 @@ def _get_type_name(type_id: int) -> str:
     }.get(type_id, "Unknown")
 
 
-def cast_exif_value(tag_name: str, value: str):
+def cast_exif_value(tag_name: str, value: str) -> None | bytes | int | tuple[int, int]:
     """Securely convert user string inputs into EXIF-compatible types based on REVERSE_EXIF_MAP.
 
     Args:
@@ -77,6 +79,7 @@ def cast_exif_value(tag_name: str, value: str):
 
     Returns:
         The cast value compatible with piexif, or raises ValueError.
+
     """
     if value == "None" or value is None:
         return None
@@ -261,7 +264,7 @@ def parse_metadata_input(values: list[str]) -> dict:
 
 
 def handle_view_metadata(
-    image: Image.Image, image_name: str, values: list, args
+    image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
     """Print the existing metadata to the console."""
     console.print(
@@ -283,7 +286,7 @@ def handle_view_metadata(
 
 
 def handle_export_metadata(
-    image: Image.Image, image_name: str, values: list, args
+    image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
     """Export the image's existing metadata to be collected into a JSON file."""
     console.print(
@@ -308,7 +311,7 @@ def handle_export_metadata(
 
 
 def handle_strip_metadata(
-    image: Image.Image, image_name: str, values: list, args
+    image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
     """Remove privacy metadata but preserve critical structural data (ICC, DPI, Orientation)."""
     console.print(
@@ -344,7 +347,7 @@ def handle_strip_metadata(
 
 
 def handle_copy_metadata(
-    image: Image.Image, image_name: str, values: list, args
+    image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
     """Extract metadata from a specified source image and apply it to the current image."""
     source_path = values[0] if values else None
@@ -376,7 +379,7 @@ def handle_copy_metadata(
 
 
 def handle_set_metadata(
-    image: Image.Image, image_name: str, values: list, args
+    image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
     """Overwrite the image's metadata completely with the provided input."""
     console.print(
@@ -396,7 +399,7 @@ def handle_set_metadata(
 
 
 def handle_update_metadata(
-    image: Image.Image, image_name: str, values: list, args
+    image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
     """Merge the provided input with the image's existing metadata."""
     console.print(
@@ -423,7 +426,7 @@ def handle_update_metadata(
 
 
 def handle_author(
-    image: Image.Image, image_name: str, values: list, args
+    image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
     """Quick-access flag to set the Author/Artist tag."""
     author_name = values[0] if values else ""
@@ -438,7 +441,7 @@ def handle_author(
 
 
 def handle_copyright(
-    image: Image.Image, image_name: str, values: list, args
+    image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
     """Quick-access flag to set the Copyright tag."""
     copyright_text = values[0] if values else ""
