@@ -815,7 +815,7 @@ def select_manipulations(
             choices=choices,
             pointer="▶",
             use_indicator=False,
-            instruction="(Use arrow keys to navigate, Enter to select)",
+            instruction="(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)",
         ).ask()
 
         if selection is None:  # C-c
@@ -846,7 +846,7 @@ def select_manipulations(
             selected_formats = questionary.checkbox(
                 "Select Output Formats (Leave empty for original format):",
                 choices=available_formats,
-                instruction="(Use Space to select/deselect, Enter to confirm)",
+                instruction="(Use Space to select/deselect, Enter to confirm, Ctrl+C to cancel)",
             ).ask()
 
             if selected_formats:
