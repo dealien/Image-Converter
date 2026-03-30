@@ -25,7 +25,7 @@ from image_converter.scale_image import scale_image
 from image_converter.remove_background import trim
 
 
-@pytest.fixture(params=[512, 2000, 10000], ids=["512x512", "2000x2000", "10000x10000"])
+@pytest.fixture(params=[512, 2000], ids=["512x512", "2000x2000"])
 def rgb_image(request):
     """Create a parameterized RGB test image with a gradient pattern."""
     size = request.param
@@ -190,20 +190,14 @@ def test_bench_apply_vignette_rgba(benchmark, rgba_image):
 
 
 def test_bench_edge_detection_sobel(benchmark, rgb_image):
-    if rgb_image.width >= 10000:
-        pytest.skip("Skipping edge detection for extreme image sizes")
     benchmark(edge_detection, rgb_image, "sobel")
 
 
 def test_bench_edge_detection_canny(benchmark, rgb_image):
-    if rgb_image.width >= 10000:
-        pytest.skip("Skipping edge detection for extreme image sizes")
     benchmark(edge_detection, rgb_image, "canny")
 
 
 def test_bench_edge_detection_kovalevsky(benchmark, rgb_image):
-    if rgb_image.width >= 10000:
-        pytest.skip("Skipping edge detection for extreme image sizes")
     benchmark(edge_detection, rgb_image, "kovalevsky")
 
 
