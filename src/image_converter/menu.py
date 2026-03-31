@@ -13,6 +13,7 @@ from prompt_toolkit.lexers import SimpleLexer
 from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.styles import Style
 from prompt_toolkit.application.current import get_app
+from prompt_toolkit.document import Document
 from .processing import process_images_and_save
 from .rich_menu import run_image_selector, render_combined_menu, _get_image_metadata
 from typing import Any, Callable, Optional
@@ -51,7 +52,12 @@ def _ask_text(
 
     """
 
-    def get_prompt_text():
+    def get_prompt_text() -> list[tuple[str, str]]:
+        """Dynamically generate the prompt text and styling based on current input buffer.
+
+        Returns:
+            list[tuple[str, str]]: A list of styled text tuples for the prompt.
+        """
         # Dynamic prompt generation based on current input buffer
         try:
             text = get_app().current_buffer.text
@@ -75,7 +81,15 @@ def _ask_text(
     if validate:
 
         class CustomValidator(Validator):
-            def validate(self, document):
+            def validate(self, document: Document) -> None:
+                """Validate the prompt_toolkit document against the custom logic.
+
+                Args:
+                    document: The document to validate.
+
+                Raises:
+                    ValidationError: If the validation fails.
+                """
                 res = validate(document.text)
                 if res is not True:
                     raise ValidationError(
@@ -154,7 +168,15 @@ def _validate_number(
 
     """
 
-    def validator(val_str):
+    def validator(val_str: str) -> "bool | str":
+        """Validate the string input against the specified numeric constraints.
+
+        Args:
+            val_str (str): The string value to validate.
+
+        Returns:
+            bool | str: True if valid, or an error message string otherwise.
+        """
         if not val_str:
             if allow_empty:
                 return True
@@ -213,7 +235,15 @@ def prompt_for_scale_options(
     """
     console.print("\n[dim cyan]--- Scale Options ---[/]")
 
-    def scale_validator(val_str):
+    def scale_validator(val_str: str) -> "bool | str":
+        """Validate the string input for scaling factors or specific pixel dimensions.
+
+        Args:
+            val_str (str): The string value to validate.
+
+        Returns:
+            bool | str: True if valid, or an error message string otherwise.
+        """
         if not val_str:
             return "Scale value cannot be empty."
         val_str = val_str.lower().strip()
@@ -909,7 +939,15 @@ def interactive_menu():
             )
             return
 
-        def _fetch_selected_image_data(p):
+        def _fetch_selected_image_data(p: str) -> dict:
+            """Fetch metadata for a selected image file path.
+
+            Args:
+                p (str): The path to the image file.
+
+            Returns:
+                dict: A dictionary containing image metadata.
+            """
             dims, size_str, fmt = _get_image_metadata(p)
             return {
                 "name": os.path.basename(p),

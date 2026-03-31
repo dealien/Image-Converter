@@ -70,7 +70,8 @@ def run_image_selector(image_files: list[str], image_dir: str) -> list[str]:
     if not image_files:
         return []
 
-    def _fetch_image_data(f):
+    def _fetch_image_data(f: str) -> dict:
+        """Fetch metadata for a given image file in the directory."""
         path = os.path.join(image_dir, f)
         dims, size_str, fmt = _get_image_metadata(path)
         return {"name": f, "path": path, "dims": dims, "size": size_str, "fmt": fmt}

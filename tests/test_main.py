@@ -1,3 +1,5 @@
+"""Tests for the main module and command-line entry point."""
+
 import os
 import sys
 import unittest
@@ -15,6 +17,8 @@ from image_converter.image_filters import invert_colors, grayscale  # noqa: E402
 
 
 class TestMain(unittest.TestCase):
+    """Test suite for the main application entry point and CLI argument parsing."""
+
     # Patch the function where it is looked up: in the 'processing' module
     @patch("image_converter.processing.remove_background")
     @patch("image_converter.main.move_images_to_subdirectory")
