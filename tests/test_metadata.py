@@ -41,9 +41,20 @@ class TestMetadata(unittest.TestCase):
         # Short/Long
         self.assertEqual(cast_exif_value("ResolutionUnit", "2"), 2)
 
+        # Test None
+        self.assertIsNone(cast_exif_value("Artist", "None"))
+        self.assertIsNone(cast_exif_value("Artist", None))
+
+        # Undefined
+        self.assertEqual(cast_exif_value("ExifVersion", "0231"), b"0231")
+
         # Unknown tag should raise ValueError
         with self.assertRaises(ValueError):
             cast_exif_value("UnknownTag", "123")
+
+        # Error during parsing
+        with self.assertRaisesRegex(ValueError, "Failed to cast"):
+            cast_exif_value("ResolutionUnit", "invalid")
 
     def test_parse_metadata_input_inline_json(self):
         """Test parsing an inline JSON string."""
