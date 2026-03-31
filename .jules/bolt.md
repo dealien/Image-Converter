@@ -37,3 +37,7 @@
 ## 2024-03-30 - Faster orthogonal rotation with transpose
 **Learning:** `image.rotate(angle, expand=True)` on 90, 180, and 270 degrees is slower because Pillow uses an affine matrix, boundary math, and resampling to calculate pixel mapping. `image.transpose(Image.Transpose.ROTATE_...)` uses optimized C-level block mapping which handles exact rotations seamlessly and skips affine calculation altogether. Also, Pillow deprecated `Image.ROTATE_90` style constants and removed them entirely in Pillow 10.0.0.
 **Action:** When rotating an image exactly 90, 180, or 270 degrees, use `image.transpose(Image.Transpose.ROTATE_...)` for roughly 10-25% faster execution, depending on image dimensions.
+
+## 2024-05-18 - ImageEnhance vs point() LUT
+**Learning:** Replaced `ImageEnhance.Brightness(image).enhance(factor)` with `image.point(lut)` using a statically cached LUT. Surprised to find that `ImageEnhance.Brightness` was actually faster for 2000x2000 images (34ms vs 40ms for RGB, 44ms vs 52ms for RGBA). The `ImageEnhance` C implementation natively optimizes this specific operation beyond a simple Python-constructed `.point()` lookup.
+**Action:** Do not blindly replace `ImageEnhance` with `.point()` LUTs unless it's a non-standard transform like Posterize where `ImageEnhance` isn't available and alternative methods (like `ImageOps.posterize`) are much slower.
