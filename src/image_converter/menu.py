@@ -849,7 +849,7 @@ def select_manipulations(
         ).ask()
 
         if selection is None:  # C-c
-            break
+            raise KeyboardInterrupt
 
         if selection == "PROCESS":
             if not selected_operations:
