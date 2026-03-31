@@ -10,6 +10,7 @@ from PIL import Image
 from image_converter.metadata import (
     build_reverse_exif_map,
     cast_exif_value,
+    dict_to_exif_bytes,
     handle_author,
     handle_copy_metadata,
     handle_copyright,
@@ -216,3 +217,30 @@ class TestMetadata(unittest.TestCase):
             )
         finally:
             os.remove(temp_path)
+
+    @patch("image_converter.metadata.console.print")
+    def test_dict_to_exif_bytes_edge_cases(self, mock_print):
+        """Test that dict_to_exif_bytes handles unknown tags and invalid values gracefully."""
+        # 1. Unknown tag
+        flat_dict = {"UnknownTag": "Value", "Artist": "Jane Doe"}
+        result = dict_to_exif_bytes(flat_dict)
+
+        mock_print.assert_any_call(
+            "[yellow]Warning: Unknown EXIF tag 'UnknownTag', skipping.[/]"
+        )
+
+        # Verify valid tag was processed
+        exif_dict = piexif.load(result)
+        self.assertEqual(exif_dict["0th"][piexif.ImageIFD.Artist], b"Jane Doe")
+
+        # 2. Invalid value (causes ValueError in cast_exif_value)
+        mock_print.reset_mock()
+        flat_dict = {"XResolution": "not_a_number"}
+        dict_to_exif_bytes(flat_dict)
+
+        called_with_error = False
+        for call in mock_print.call_args_list:
+            if "[red]Error parsing tag 'XResolution':" in call.args[0]:
+                called_with_error = True
+                break
+        self.assertTrue(called_with_error)
