@@ -682,15 +682,17 @@ def remove_manipulation(
     console.print(f"\n[yellow]Removed '{removed_op['dest']}'.[/]")
 
     # Cleanup extra args logic
-    if removed_op["dest"] == "scale" and not any(
-        op["dest"] == "scale" for op in operations
-    ):
+    remaining_dests = set()
+    has_kovalevsky = False
+    for op in operations:
+        dest = op["dest"]
+        remaining_dests.add(dest)
+        if dest == "edge_detection" and op.get("values", [""])[0] == "kovalevsky":
+            has_kovalevsky = True
+
+    if removed_op["dest"] == "scale" and "scale" not in remaining_dests:
         extra_args.pop("resample", None)
 
-    has_kovalevsky = any(
-        op["dest"] == "edge_detection" and op.get("values", [""])[0] == "kovalevsky"
-        for op in operations
-    )
     if not has_kovalevsky:
         extra_args.pop("threshold", None)
 
