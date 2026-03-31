@@ -1,3 +1,5 @@
+"""Tests for the image scaling functionality."""
+
 import unittest
 from PIL import Image
 
@@ -7,6 +9,8 @@ from image_converter.scale_image import scale_image, RESAMPLE_FILTERS  # noqa: E
 
 
 class TestScaleImage(unittest.TestCase):
+    """Test suite for the scale_image function and its various modes."""
+
     def setUp(self):
         """Set up a dummy image for testing."""
         self.original_image = Image.new("RGB", (200, 100))

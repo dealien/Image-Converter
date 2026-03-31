@@ -1,3 +1,5 @@
+"""Tests for the background removal functionality."""
+
 import os
 import unittest
 from unittest.mock import patch
@@ -9,6 +11,8 @@ from image_converter.remove_background import remove_background, trim  # noqa: E
 
 
 class TestRemoveBackground(unittest.TestCase):
+    """Test suite for the remove_background and trim functions."""
+
     def setUp(self):
         """Set up the test environment."""
         self.test_images_dir = "tests/test_images"
