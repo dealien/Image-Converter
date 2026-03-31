@@ -13,6 +13,7 @@ from prompt_toolkit.lexers import SimpleLexer
 from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.styles import Style
 from prompt_toolkit.application.current import get_app
+from prompt_toolkit.document import Document
 from .processing import process_images_and_save
 from .rich_menu import run_image_selector, render_combined_menu, _get_image_metadata
 from typing import Any, Callable, Optional
@@ -80,7 +81,7 @@ def _ask_text(
     if validate:
 
         class CustomValidator(Validator):
-            def validate(self, document: "prompt_toolkit.document.Document") -> None:
+            def validate(self, document: Document) -> None:
                 """Validate the prompt_toolkit document against the custom logic.
 
                 Args:
@@ -167,7 +168,7 @@ def _validate_number(
 
     """
 
-    def validator(val_str: str) -> bool | str:
+    def validator(val_str: str) -> "bool | str":
         """Validate the string input against the specified numeric constraints.
 
         Args:
@@ -234,7 +235,7 @@ def prompt_for_scale_options(
     """
     console.print("\n[dim cyan]--- Scale Options ---[/]")
 
-    def scale_validator(val_str: str) -> bool | str:
+    def scale_validator(val_str: str) -> "bool | str":
         """Validate the string input for scaling factors or specific pixel dimensions.
 
         Args:
