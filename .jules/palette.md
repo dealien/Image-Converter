@@ -12,3 +12,6 @@
 ## 2024-05-19 - Add Ctrl+C Keyboard Shortcut Hint to Interactive Menus
 **Learning:** Terminal users often don't know they can use Ctrl+C to safely exit an interactive prompt without causing errors or saving unwanted changes. Making this explicit reduces anxiety.
 **Action:** When using `questionary` or similar CLI prompt libraries, always include `Ctrl+C to cancel` in the `instruction` string if the application handles `KeyboardInterrupt` gracefully.
+## 2024-03-31 - Ctrl+C Cancel Handling in Interactive Terminal Menu
+**Learning:** Terminal UIs using `questionary` return `None` when the user presses `Ctrl+C`. Simply `break`ing out of a selection loop on `None` can cause unintended side-effects if the parent caller continues execution assuming the selection phase simply ended normally (like proceeding to process an empty task queue).
+**Action:** When `questionary.ask()` returns `None`, explicitly raise a `KeyboardInterrupt` to correctly signal to upstream callers that the entire operation is being aborted, matching the expected behavior of standard python CLI apps.
