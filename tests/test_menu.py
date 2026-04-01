@@ -373,6 +373,26 @@ def test_remove_manipulation_flow(mock_questionary):
     assert "resample" not in extra  # Cleaned up
 
 
+def test_remove_manipulation_kovalevsky_cleanup(mock_questionary):
+    ops = [
+        {"dest": "flip", "values": ["horizontal"]},
+        {"dest": "edge_detection", "values": ["kovalevsky"]},
+    ]
+    extra = {"threshold": 50}
+
+    # Remove flip, kovalevsky remains
+    mock_questionary.select.return_value.ask.return_value = 0
+    new_ops = menu.remove_manipulation(ops, extra)
+    assert len(new_ops) == 1
+    assert "threshold" in extra
+
+    # Remove kovalevsky, threshold should be cleaned up
+    mock_questionary.select.return_value.ask.return_value = 0
+    new_ops = menu.remove_manipulation(new_ops, extra)
+    assert len(new_ops) == 0
+    assert "threshold" not in extra
+
+
 def test_interactive_menu_flow(mock_questionary):
     with (
         patch(
