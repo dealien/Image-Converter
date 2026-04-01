@@ -77,8 +77,9 @@ def run_image_selector(image_files: list[str], image_dir: str) -> list[str]:
         return {"name": f, "path": path, "dims": dims, "size": size_str, "fmt": fmt}
 
     # Pre-fetch metadata in parallel to build nicely aligned strings
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        images_data = list(executor.map(_fetch_image_data, image_files))
+    with console.status("[bright_cyan]Loading image metadata...[/]", spinner="dots"):
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            images_data = list(executor.map(_fetch_image_data, image_files))
 
     # Header
     console.print()
