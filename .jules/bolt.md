@@ -41,3 +41,7 @@
 ## 2024-05-18 - ImageEnhance vs point() LUT
 **Learning:** Replaced `ImageEnhance.Brightness(image).enhance(factor)` with `image.point(lut)` using a statically cached LUT. Surprised to find that `ImageEnhance.Brightness` was actually faster for 2000x2000 images (34ms vs 40ms for RGB, 44ms vs 52ms for RGBA). The `ImageEnhance` C implementation natively optimizes this specific operation beyond a simple Python-constructed `.point()` lookup.
 **Action:** Do not blindly replace `ImageEnhance` with `.point()` LUTs unless it's a non-standard transform like Posterize where `ImageEnhance` isn't available and alternative methods (like `ImageOps.posterize`) are much slower.
+
+## 2024-04-01 - Optimizing RGBA Color Inversion
+**Learning:** For static, stateless image transformations like simple bitwise inversion (`255 - i`), the LUT generation (`list` comprehension and list multiplication) can dominate execution time for smaller images where `image.point()` evaluates incredibly quickly. Moving static arrays to module-level constants or caching them prevents constant memory allocation cycles.
+**Action:** Extracted the RGBA LUT generation in `invert_colors` out into `_RGBA_INVERT_LUT` at the module level.
