@@ -73,7 +73,7 @@ def _get_posterize_channel_lut(bits: int) -> list[int]:
 # ⚡ Bolt: Pre-compute a static Look-Up Table (LUT) for RGBA color inversion.
 # Reusing this constant avoids allocating four new lists of 256 integers
 # on every call to `invert_colors` for RGBA images.
-RGBA_INVERT_LUT = [255 - i for i in range(256)] * 3 + list(range(256))
+_RGBA_INVERT_LUT = [255 - i for i in range(256)] * 3 + list(range(256))
 
 
 @functools.lru_cache(maxsize=256)
@@ -104,11 +104,11 @@ def invert_colors(image: Image.Image) -> Image.Image:
     """
     if image.mode == "RGBA":
         # ⚡ Bolt: Fast path for RGBA using a Look-Up Table (LUT)
-        # Using a pre-computed static LUT (RGBA_INVERT_LUT) eliminates
+        # Using a pre-computed static LUT (_RGBA_INVERT_LUT) eliminates
         # redundant list allocations. Bypasses the overhead of `image.split()`
         # and `Image.merge()` while preserving the original alpha channel.
         # ~45% faster execution time.
-        return image.point(RGBA_INVERT_LUT)
+        return image.point(_RGBA_INVERT_LUT)
 
     if image.mode in ("RGB", "L"):
         return ImageOps.invert(image)
