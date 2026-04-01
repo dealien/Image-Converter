@@ -45,3 +45,7 @@
 ## 2024-04-01 - Optimizing RGBA Color Inversion
 **Learning:** For static, stateless image transformations like simple bitwise inversion (`255 - i`), the LUT generation (`list` comprehension and list multiplication) can dominate execution time for smaller images where `image.point()` evaluates incredibly quickly. Moving static arrays to module-level constants or caching them prevents constant memory allocation cycles.
 **Action:** Extracted the RGBA LUT generation in `invert_colors` out into `_RGBA_INVERT_LUT` at the module level.
+
+## 2024-05-24 - [Replace ImageEnhance.Brightness with a Cached Look-Up Table (LUT)]
+**Learning:** `PIL.ImageEnhance.Brightness` creates a degenerate completely black image and uses internal blending algorithms (`Image.blend`) to composite it with the original image. For RGBA images, this also requires channel splitting to avoid touching the alpha layer.
+**Action:** When a dynamic transformation applies simple linear per-channel math (like scaling values for brightness), use an `@functools.lru_cache` mapped to `image.point(lut)` instead. A carefully constructed 1D LUT (e.g., `lut * 3 + list(range(256))`) can safely map RGB color scaling while natively preserving the alpha channel as an identity map, avoiding heavy intermediate image allocations and channel splitting entirely for a ~10x speedup.
