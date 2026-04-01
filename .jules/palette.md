@@ -15,3 +15,7 @@
 ## 2024-03-31 - Ctrl+C Cancel Handling in Interactive Terminal Menu
 **Learning:** Terminal UIs using `questionary` return `None` when the user presses `Ctrl+C`. Simply `break`ing out of a selection loop on `None` can cause unintended side-effects if the parent caller continues execution assuming the selection phase simply ended normally (like proceeding to process an empty task queue).
 **Action:** When `questionary.ask()` returns `None`, explicitly raise a `KeyboardInterrupt` to correctly signal to upstream callers that the entire operation is being aborted, matching the expected behavior of standard python CLI apps.
+
+## 2025-04-01 - Added loading spinner during parallel metadata fetching in rich menu
+**Learning:** During parallel metadata fetching of image files using `ThreadPoolExecutor` within the `run_image_selector` function, the UI could appear to hang for large images or large directories, offering a poor UX for the user.
+**Action:** Always consider the UX impact of blocking IO-bound operations when starting interactive prompts. Wrap these operations in a visual loading indicator such as the `rich` `console.status` spinner, to signal to users that work is occurring in the background.
