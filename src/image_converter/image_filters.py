@@ -81,7 +81,7 @@ def _get_brightness_lut(factor: float) -> list[int]:
         list[int]: A list of 256 mapped values.
 
     """
-    return [max(0, min(255, int(i * factor))) for i in range(256)]
+    return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
 
 
 # ⚡ Bolt: Pre-compute a static Look-Up Table (LUT) for RGBA color inversion.
