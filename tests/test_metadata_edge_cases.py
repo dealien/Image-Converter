@@ -190,8 +190,6 @@ def test_handle_update_metadata_invalid_exif_dict_to_bytes(mock_print):
         assert result == mock_image
 
 
-
-
 def test_parse_metadata_input_json_exception():
     with patch("json.loads", side_effect=Exception("mocked JSON error")):
         with patch("image_converter.metadata.console.print") as mock_print:
@@ -263,9 +261,6 @@ def test_dict_to_exif_bytes_remove_key_where_ifd_does_not_exist():
     assert 315 not in exif_dict["0th"]
 
 
-
-
-
 def test_handle_update_metadata_invalid_exif_dict_load():
     mock_image = MagicMock(spec=Image.Image)
     # Give it an existing EXIF dict but we will make it raise an Exception during piexif.load
@@ -317,9 +312,6 @@ def test_handle_strip_metadata_piexif_exception():
         handle_strip_metadata(mock_image, "test.jpg", [], MagicMock())
         # Since dump failed, the 'exif' tag won't be populated with the Orientation
         assert "exif" not in mock_image.info
-
-
-
 
 
 def test_handle_author_first_time():
