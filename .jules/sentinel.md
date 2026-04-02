@@ -1,0 +1,4 @@
+## 2026-04-02 - Information Leakage via Exception Handling
+**Vulnerability:** In `parse_metadata_input` in `metadata.py`, raw exception details were passed directly to `console.print()` when JSON loading or parsing failed. This could potentially leak internal stack trace fragments, internal file paths, or other system details to a user.
+**Learning:** Even simple file I/O operations (like `json.load`) should catch and mask exceptions before returning error messages to the CLI to prevent sensitive internal data leakage.
+**Prevention:** Catch generic `Exception`s without capturing them to a variable (e.g. avoid `except Exception as e:` printing `e`), and instead return or print hardcoded generic error statements (e.g., "Error reading JSON file").

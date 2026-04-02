@@ -423,7 +423,8 @@ def test_parse_metadata_input_inline_json_error():
         result = parse_metadata_input(['{"BadJSON}'])
         assert result == {}
         assert mock_print.call_count == 1
-        assert "[red]Error parsing inline JSON" in mock_print.call_args[0][0]
+        # The expected output has been changed due to more specific error catching
+        assert "[red]Error: Inline JSON is not valid.[/]" in mock_print.call_args[0][0]
 
 
 def test_handle_view_metadata_empty_values_2():
