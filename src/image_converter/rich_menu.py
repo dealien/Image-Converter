@@ -16,6 +16,8 @@ from rich.panel import Panel
 from rich import box
 from rich.console import Console
 
+INSTR_CHECKBOX = "(Use arrow keys to navigate, Space to select, Enter to confirm, A to toggle all, Ctrl+C to cancel)"
+
 console = Console()
 
 # Set a safe limit for image size to prevent decompression bomb attacks (100MP)
@@ -114,7 +116,7 @@ def run_image_selector(image_files: list[str], image_dir: str) -> list[str]:
         "",
         choices=choices,
         qmark=" ",
-        instruction="(Use arrow keys to navigate, Space to select, Enter to confirm, A to toggle all, Ctrl+C to cancel)",
+        instruction=INSTR_CHECKBOX,
     ).ask()
 
     return selected or []

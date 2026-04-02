@@ -20,6 +20,11 @@ from typing import Any, Callable, Optional
 
 from .main import console
 
+INSTR_SELECT = "(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)"
+INSTR_MULTI_SELECT = (
+    "(Use Space to select/deselect, Enter to confirm, Ctrl+C to cancel)"
+)
+
 
 # --- Helper Functions ---
 
@@ -214,7 +219,7 @@ def prompt_for_flip_options(
     choice = questionary.select(
         "Select flip direction:",
         choices=["Horizontal", "Vertical", "Both"],
-        instruction="(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)",
+        instruction=INSTR_SELECT,
     ).ask()
     if not choice:
         return None
@@ -280,7 +285,7 @@ def prompt_for_scale_options(
         "Select Resample Filter:",
         choices=["Nearest", "Bilinear", "Bicubic", "Lanczos"],
         default="Bilinear",
-        instruction="(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)",
+        instruction=INSTR_SELECT,
     ).ask()
 
     if not resample_choice:
@@ -306,7 +311,7 @@ def prompt_for_edge_detection_options(
     method = questionary.select(
         "Select Edge Detection Method:",
         choices=["Sobel", "Canny", "Kovalevsky"],
-        instruction="(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)",
+        instruction=INSTR_SELECT,
     ).ask()
 
     if not method:
@@ -530,7 +535,7 @@ def prompt_for_border_options(
     position = questionary.select(
         "Border Position:",
         choices=["Expand", "Inside"],
-        instruction="(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)",
+        instruction=INSTR_SELECT,
     ).ask()
 
     if not position:
@@ -672,7 +677,7 @@ def remove_manipulation(
     choice_idx = questionary.select(
         "Select operation to remove:",
         choices=choices,
-        instruction="(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)",
+        instruction=INSTR_SELECT,
     ).ask()
 
     if choice_idx == -1 or choice_idx is None:
@@ -847,7 +852,7 @@ def select_manipulations(
             choices=choices,
             pointer="▶",
             use_indicator=False,
-            instruction="(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)",
+            instruction=INSTR_SELECT,
         ).ask()
 
         if selection is None:  # C-c
@@ -878,7 +883,7 @@ def select_manipulations(
             selected_formats = questionary.checkbox(
                 "Select Output Formats (Leave empty for original format):",
                 choices=available_formats,
-                instruction="(Use Space to select/deselect, Enter to confirm, Ctrl+C to cancel)",
+                instruction=INSTR_MULTI_SELECT,
             ).ask()
 
             if selected_formats:
