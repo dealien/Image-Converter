@@ -20,6 +20,18 @@ class TestRemoveBackground(unittest.TestCase):
             self.test_images_dir, "Tree Clear Sky 1.png"
         )
 
+    def test_trim_no_bbox_returns_original(self):
+        """Test that trim returns the original image if no bounding box is found."""
+        # Create a solid color RGB image (no alpha)
+        # This will bypass the alpha fast-path and diff will be completely black,
+        # resulting in diff.getbbox() returning None.
+        img = Image.new("RGB", (100, 100), color="blue")
+
+        trimmed_img = trim(img)
+
+        # Should return the exact same image instance
+        self.assertIs(trimmed_img, img)
+
     def test_trim(self):
         """Test that the trim function removes borders from an image."""
         # Create an image with a black border
