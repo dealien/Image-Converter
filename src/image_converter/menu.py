@@ -57,6 +57,7 @@ def _ask_text(
 
         Returns:
             list[tuple[str, str]]: A list of styled text tuples for the prompt.
+
         """
         # Dynamic prompt generation based on current input buffer
         try:
@@ -89,6 +90,7 @@ def _ask_text(
 
                 Raises:
                     ValidationError: If the validation fails.
+
                 """
                 res = validate(document.text)
                 if res is not True:
@@ -176,6 +178,7 @@ def _validate_number(
 
         Returns:
             bool | str: True if valid, or an error message string otherwise.
+
         """
         if not val_str:
             if allow_empty:
@@ -243,6 +246,7 @@ def prompt_for_scale_options(
 
         Returns:
             bool | str: True if valid, or an error message string otherwise.
+
         """
         if not val_str:
             return "Scale value cannot be empty."
@@ -295,6 +299,11 @@ def prompt_for_edge_detection_options(
     extra_args: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     """Prompts the user for edge detection method and threshold (if applicable).
+
+    Available Methods:
+        - **Sobel**: Emphasizes high spatial frequency regions that correspond to edges.
+        - **Canny**: Multi-stage algorithm providing robust and thin edge detection.
+        - **Kovalevsky**: A less common operator designed for optimal noise suppression, requiring an intensity threshold.
 
     Args:
         extra_args (dict, optional): Shared extra arguments dictionary, modified in-place to store 'threshold'. Defaults to None.
@@ -949,6 +958,7 @@ def interactive_menu():
 
             Returns:
                 dict: A dictionary containing image metadata.
+
             """
             dims, size_str, fmt = _get_image_metadata(p)
             return {
