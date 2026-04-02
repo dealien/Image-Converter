@@ -114,7 +114,7 @@ def run_image_selector(image_files: list[str], image_dir: str) -> list[str]:
         "",
         choices=choices,
         qmark=" ",
-        instruction="(Use arrow keys to navigate, Space to select, Enter to confirm, A to toggle all)",
+        instruction="(Use arrow keys to navigate, Space to select, Enter to confirm, A to toggle all, Ctrl+C to cancel)",
     ).ask()
 
     return selected or []
