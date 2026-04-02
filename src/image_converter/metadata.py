@@ -233,20 +233,31 @@ def parse_metadata_input(values: list[str]) -> dict:
         try:
             with open(values[0], "r", encoding="utf-8") as f:
                 return json.load(f)
+        except FileNotFoundError:
+            console.print("[red]Error: JSON file not found.[/]")
+            return {}
+        except PermissionError:
+            console.print("[red]Error: Permission denied reading JSON file.[/]")
+            return {}
+        except UnicodeDecodeError:
+            console.print("[red]Error: JSON file must be UTF-8 encoded.[/]")
+            return {}
+        except json.JSONDecodeError:
+            console.print("[red]Error: File is not valid JSON.[/]")
+            return {}
         except Exception:
-            console.print(
-                "[red]Error reading JSON file. Ensure the file is valid JSON.[/]"
-            )
+            console.print("[red]Error reading JSON file.[/]")
             return {}
 
     # Check 2: Inline JSON
     if len(values) == 1 and values[0].startswith("{"):
         try:
             return json.loads(values[0])
+        except json.JSONDecodeError:
+            console.print("[red]Error: Inline JSON is not valid.[/]")
+            return {}
         except Exception:
-            console.print(
-                "[red]Error parsing inline JSON. Ensure the format is valid.[/]"
-            )
+            console.print("[red]Error parsing inline JSON.[/]")
             return {}
 
     # Check 3: Key=Value pairs
