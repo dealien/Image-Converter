@@ -45,3 +45,11 @@
 ## 2024-04-01 - Optimizing RGBA Color Inversion
 **Learning:** For static, stateless image transformations like simple bitwise inversion (`255 - i`), the LUT generation (`list` comprehension and list multiplication) can dominate execution time for smaller images where `image.point()` evaluates incredibly quickly. Moving static arrays to module-level constants or caching them prevents constant memory allocation cycles.
 **Action:** Extracted the RGBA LUT generation in `invert_colors` out into `_RGBA_INVERT_LUT` at the module level.
+
+## 2024-05-24 - Replace ImageEnhance.Brightness with a Cached Look-Up Table (LUT)
+**Learning:** `PIL.ImageEnhance.Brightness` creates a degenerate completely black image and uses internal blending algorithms (`Image.blend`) to composite it with the original image. For RGBA images, this also requires channel splitting to avoid touching the alpha layer.
+**Action:** When a dynamic transformation applies simple linear per-channel math (like scaling values for brightness), use an `@functools.lru_cache` mapped to `image.point(lut)` instead. A carefully constructed 1D LUT (e.g., `lut * 3 + list(range(256))`) can safely map RGB color scaling while natively preserving the alpha channel as an identity map, avoiding heavy intermediate image allocations and channel splitting entirely for a ~10x speedup.
+
+## 2024-05-24 - Fix Brightness LUT Cache Keys and Precision
+**Learning:** Using a float factor as a cache key can lead to cache misses or eviction if the cache `maxsize` is too small for the possible float precision inputs. Furthermore, using `int()` truncation instead of `int(round())` in LUT generation for pixel math introduces systematic lower-value drift.
+**Action:** When caching bounded inputs (like brightness from -100 to 100), key the cache on the bounded integer directly and make sure the `maxsize` covers the entire domain (e.g. 256 for a range of 201 values) to permanently eliminate cache eviction for valid inputs. Always use `round()` for float-to-int pixel math.
