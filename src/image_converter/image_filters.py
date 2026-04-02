@@ -73,7 +73,7 @@ def _get_color_balance_lut(
     """
     lut = _get_scale_lut(r_f) + _get_scale_lut(g_f) + _get_scale_lut(b_f)
     if num_bands > 3:
-        lut += list(range(256)) * (num_bands - 3)
+        lut += _IDENTITY_LUT * (num_bands - 3)
     return lut
 
 
@@ -107,10 +107,13 @@ def _get_brightness_lut(brightness: int) -> list[int]:
     return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
 
 
+# Global identity Look-Up Table (LUT) for preserving an unchanged channel (like alpha).
+_IDENTITY_LUT = list(range(256))
+
 # ⚡ Bolt: Pre-compute a static Look-Up Table (LUT) for RGBA color inversion.
 # Reusing this constant avoids allocating four new lists of 256 integers
 # on every call to `invert_colors` for RGBA images.
-_RGBA_INVERT_LUT = [255 - i for i in range(256)] * 3 + list(range(256))
+_RGBA_INVERT_LUT = [255 - i for i in range(256)] * 3 + _IDENTITY_LUT
 
 
 @functools.lru_cache(maxsize=256)
@@ -126,7 +129,7 @@ def _get_hue_rotation_lut(shift: int) -> list[int]:
     """
     lut_h = [(p + shift) % 256 for p in range(256)]
     # S and V channels retain their original identity mappings.
-    return lut_h + list(range(256)) * 2
+    return lut_h + _IDENTITY_LUT * 2
 
 
 def invert_colors(image: Image.Image) -> Image.Image:
@@ -310,11 +313,11 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
     if image.mode == "L":
         lut = lut_channel
     elif image.mode == "LA":
-        lut = lut_channel + list(range(256))
+        lut = lut_channel + _IDENTITY_LUT
     elif image.mode == "RGB":
         lut = lut_channel * 3
     else:  # RGBA
-        lut = lut_channel * 3 + list(range(256))
+        lut = lut_channel * 3 + _IDENTITY_LUT
 
     return image.point(lut)
 
@@ -600,11 +603,11 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     if image.mode == "L":
         lut = lut_channel
     elif image.mode == "LA":
-        lut = lut_channel + list(range(256))
+        lut = lut_channel + _IDENTITY_LUT
     elif image.mode == "RGB":
         lut = lut_channel * 3
     elif image.mode == "RGBA":
-        lut = lut_channel * 3 + list(range(256))
+        lut = lut_channel * 3 + _IDENTITY_LUT
     else:
         # Fallback for any other unexpected modes
         lut = lut_channel * len(image.getbands())
