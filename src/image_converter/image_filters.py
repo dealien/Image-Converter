@@ -70,17 +70,18 @@ def _get_posterize_channel_lut(bits: int) -> list[int]:
     return [p & mask for p in range(256)]
 
 
-@functools.lru_cache(maxsize=16)
-def _get_brightness_lut(factor: float) -> list[int]:
+@functools.lru_cache(maxsize=256)
+def _get_brightness_lut(brightness: int) -> list[int]:
     """Create a cached Look-Up Table (LUT) for brightness adjustment.
 
     Args:
-        factor (float): The brightness adjustment factor.
+        brightness (int): The brightness adjustment level (-100 to 100).
 
     Returns:
         list[int]: A list of 256 mapped values.
 
     """
+    factor = 1.0 + (brightness / 100.0)
     return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
 
 
@@ -272,7 +273,6 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
         raise ValueError("Brightness must be between -100 and 100.")
     if brightness == 0:
         return image
-    factor = 1.0 + (brightness / 100.0)
 
     # ⚡ Bolt: Fast path for brightness adjustment using a Look-Up Table (LUT).
     # Using a cached flat LUT natively preserves the alpha channel (by mapping it to itself)
@@ -283,7 +283,7 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
     if image.mode not in ("L", "RGB", "RGBA", "LA"):
         image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
 
-    lut_channel = _get_brightness_lut(factor)
+    lut_channel = _get_brightness_lut(brightness)
 
     if image.mode == "L":
         lut = lut_channel
