@@ -53,3 +53,7 @@
 ## 2024-05-24 - Fix Brightness LUT Cache Keys and Precision
 **Learning:** Using a float factor as a cache key can lead to cache misses or eviction if the cache `maxsize` is too small for the possible float precision inputs. Furthermore, using `int()` truncation instead of `int(round())` in LUT generation for pixel math introduces systematic lower-value drift.
 **Action:** When caching bounded inputs (like brightness from -100 to 100), key the cache on the bounded integer directly and make sure the `maxsize` covers the entire domain (e.g. 256 for a range of 201 values) to permanently eliminate cache eviction for valid inputs. Always use `round()` for float-to-int pixel math.
+
+## 2024-05-25 - Cache Combined LUTs Instead of Repeated List Concatenation
+**Learning:** In functions applying color balance using multiple single-channel Look-Up Tables (LUTs) concatenated together (e.g., `lut = _get_scale_lut(r_f) + _get_scale_lut(g_f) + _get_scale_lut(b_f)`), the repeated dynamic list concatenation and identity map addition (`+ list(range(256))`) on every function call introduces unnecessary memory allocations and overhead, even if the individual channel LUTs are cached.
+**Action:** To optimize functions that build multi-channel LUTs from inputs, extract the full LUT concatenation into a single helper function and cache *that* with `@functools.lru_cache` based on the combined channel parameters and the number of image bands. This returns the pre-assembled list instantly and eliminates redundant list math on every execution.
