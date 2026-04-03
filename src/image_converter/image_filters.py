@@ -123,6 +123,7 @@ def _get_brightness_lut(brightness: int) -> list[int]:
 # Global identity Look-Up Table (LUT) for preserving an unchanged channel (like alpha).
 _IDENTITY_LUT = list(range(256))
 
+
 @functools.lru_cache(maxsize=1024)
 def _get_combined_brightness_lut(brightness: int, mode: str) -> list[int]:
     """Create a cached Look-Up Table (LUT) for adjusting the brightness across channels.
@@ -144,6 +145,7 @@ def _get_combined_brightness_lut(brightness: int, mode: str) -> list[int]:
         return lut_channel * 3
     else:  # RGBA
         return lut_channel * 3 + _IDENTITY_LUT
+
 
 # ⚡ Bolt: Pre-compute a static Look-Up Table (LUT) for RGBA color inversion.
 # Reusing this constant avoids allocating four new lists of 256 integers
