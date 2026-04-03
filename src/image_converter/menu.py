@@ -755,7 +755,7 @@ def select_images() -> list[str]:
         selected_paths = run_image_selector(image_files, image_dir)
 
         if selected_paths is None:  # User pressed Ctrl-C
-            return []
+            raise KeyboardInterrupt
 
         if selected_paths:
             return selected_paths
