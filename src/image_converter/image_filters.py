@@ -9,7 +9,7 @@ import functools
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
 
 
-@functools.lru_cache(maxsize=16)
+@functools.lru_cache(maxsize=128)
 def _generate_vignette_mask(mask_size: int, intensity: int) -> Image.Image:
     """Generate a small cached base mask for the vignette effect.
 
@@ -35,10 +35,23 @@ def _generate_vignette_mask(mask_size: int, intensity: int) -> Image.Image:
         dy2 = dist_sq[y]
         for x in range(mask_size):
             val = 1.0 - (dist_sq[x] + dy2)
-            append(int(255 * val) if val > 0.0 else 0)
+            append(int(round(255 * val)) if val > 0.0 else 0)
 
     mask.putdata(data)
     return mask
+
+
+def _generate_scaled_lut(factor: float) -> list[int]:
+    """Generate a Look-Up Table (LUT) for scaling a channel, clamping to [0, 255].
+
+    Args:
+        factor (float): The scaling factor.
+
+    Returns:
+        list[int]: A list of 256 mapped values.
+
+    """
+    return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
 
 
 @functools.lru_cache(maxsize=1024)
@@ -52,7 +65,7 @@ def _get_scale_lut(factor: float) -> list[int]:
         list[int]: A list of 256 mapped values.
 
     """
-    return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
+    return _generate_scaled_lut(factor)
 
 
 @functools.lru_cache(maxsize=1024)
@@ -104,7 +117,7 @@ def _get_brightness_lut(brightness: int) -> list[int]:
 
     """
     factor = 1.0 + (brightness / 100.0)
-    return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
+    return _generate_scaled_lut(factor)
 
 
 # Global identity Look-Up Table (LUT) for preserving an unchanged channel (like alpha).
@@ -545,7 +558,7 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     img_hsv = rgb_base.convert("HSV")
 
     # Hue is 0-255 in PIL HSV. Full circle is 256 steps.
-    shift = int((degrees / 360.0) * 256) % 256
+    shift = int(round((degrees / 360.0) * 256)) % 256
 
     # ⚡ Bolt: Use a cached Look-Up Table (LUT) for H, S, and V channels.
     # The H channel gets shifted, while S and V retain their original identity mappings.
