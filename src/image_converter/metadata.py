@@ -224,6 +224,13 @@ def parse_metadata_input(values: list[str]) -> dict:
     - JSON file path: ["tags.json"]
     - Inline JSON: ['{"Artist": "Jane Doe"}']
     - Key=Value pairs: ["Artist=Jane Doe", "Copyright=2026"]
+
+    Args:
+        values: The list of string values provided via CLI input.
+
+    Returns:
+        A dictionary containing the parsed key-value metadata pairs.
+
     """
     if not values:
         return {}
