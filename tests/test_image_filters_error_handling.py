@@ -102,3 +102,43 @@ def test_apply_posterize_rgba():
     res = apply_posterize(img, 4)
     assert res.mode == "RGBA"
     assert res.getpixel((0, 0))[3] == 128
+
+
+def test_combined_brightness_lut_unsupported_mode():
+    """Verifies _get_combined_brightness_lut raises ValueError for unsupported mode."""
+    from image_converter.image_filters import _get_combined_brightness_lut
+
+    with pytest.raises(ValueError, match="Unsupported mode: CMYK"):
+        _get_combined_brightness_lut(50, "CMYK")
+
+
+def test_combined_brightness_lut_rgb_la():
+    """Verifies _get_combined_brightness_lut supports RGB and LA."""
+    from image_converter.image_filters import _get_combined_brightness_lut
+
+    _get_combined_brightness_lut(50, "RGB")
+    _get_combined_brightness_lut(50, "LA")
+
+
+def test_combined_brightness_lut_l():
+    """Verifies _get_combined_brightness_lut supports L."""
+    from image_converter.image_filters import _get_combined_brightness_lut
+
+    _get_combined_brightness_lut(50, "L")
+
+
+def test_rotate_image_non_orthogonal():
+    """Verifies rotate_image clamps non-orthogonal inputs to the nearest 90 degrees."""
+    from image_converter.image_filters import rotate_image
+
+    img = Image.new("RGB", (10, 20))
+    res = rotate_image(img, 45)
+    # 45 is closer to 90 than 0 since round(45 / 90.0) -> round(0.5) is typically 0 in Python 3 for ties to even, wait
+    # round(0.5) is 0, wait! Let's check int(round(45 / 90.0)) -> 0!
+    # So 45 degrees rounds to 0. It should return the original image!
+    # Let's assert output size is 10x20
+    assert res.size == (10, 20)
+
+    # What about 46 degrees? 46 / 90 = 0.511 -> round(0.511) -> 1 -> 90 degrees
+    res2 = rotate_image(img, 46)
+    assert res2.size == (20, 10)
