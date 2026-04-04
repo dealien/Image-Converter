@@ -32,7 +32,7 @@ image-converter [file_path] [options]
 ## Metadata Operations
 
 - `-vm`, `--view-metadata`: Prints the existing metadata to the console.
-- `-em`, `--export-metadata [file_path]`: Exports the image's existing metadata and saves it to a specified JSON file. When processing batches, it outputs a single "Manifest" JSON dictionary.
+- `-em`, `--export-metadata [file_path]`: Exports the image's existing metadata and saves it to a specified JSON file. The `[file_path]` is optional; if omitted, it defaults to `<image>_tags.json` (for a single image) or `batch_tags.json` (for a batch). When processing batches, it outputs a single "Manifest" JSON dictionary.
 - `-sm`, `--strip-metadata`: Removes all privacy metadata (EXIF/IPTC/XMP) from the image. *Note: Preserves critical structural data like ICC profiles, DPI, transparency, and EXIF Orientation.*
 - `-cm`, `--copy-metadata [source_file]`: Extracts metadata from a specified source image and applies it to the current image in the pipeline.
 - `-setm`, `--set-metadata [input]`: Overwrites the image's metadata completely with the provided input (JSON file, inline JSON, or `Key=Value` pairs). Set `Key=None` to explicitly delete a tag.
