@@ -224,6 +224,13 @@ def parse_metadata_input(values: list[str]) -> dict:
     - JSON file path: ["tags.json"]
     - Inline JSON: ['{"Artist": "Jane Doe"}']
     - Key=Value pairs: ["Artist=Jane Doe", "Copyright=2026"]
+
+    Args:
+        values: The list of string values provided via CLI input.
+
+    Returns:
+        A dictionary containing the parsed key-value metadata pairs.
+
     """
     if not values:
         return {}
@@ -232,7 +239,13 @@ def parse_metadata_input(values: list[str]) -> dict:
     if len(values) == 1 and values[0].lower().endswith(".json"):
         try:
             with open(values[0], "r", encoding="utf-8") as f:
-                return json.load(f)
+                result = json.load(f)
+                if not isinstance(result, dict):
+                    console.print(
+                        "[red]Error: JSON file must contain a key-value dictionary object.[/]"
+                    )
+                    return {}
+                return result
         except FileNotFoundError:
             console.print("[red]Error: JSON file not found.[/]")
             return {}
@@ -252,7 +265,13 @@ def parse_metadata_input(values: list[str]) -> dict:
     # Check 2: Inline JSON
     if len(values) == 1 and values[0].startswith("{"):
         try:
-            return json.loads(values[0])
+            result = json.loads(values[0])
+            if not isinstance(result, dict):
+                console.print(
+                    "[red]Error: Inline JSON must be a key-value dictionary object.[/]"
+                )
+                return {}
+            return result
         except json.JSONDecodeError:
             console.print("[red]Error: Inline JSON is not valid.[/]")
             return {}
