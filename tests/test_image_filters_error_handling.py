@@ -128,27 +128,17 @@ def test_combined_brightness_lut_l():
 
 
 def test_rotate_image_non_orthogonal():
-    """Verifies rotate_image handles non-orthogonal rotations via fallback."""
+    """Verifies rotate_image clamps non-orthogonal inputs to the nearest 90 degrees."""
     from image_converter.image_filters import rotate_image
 
-    img = Image.new("RGB", (10, 10))
-    rotate_image(img, 45)
-    # The image will be clamped to 90 degrees though because of int(round(angle / 90.0)) * 90 % 360
-    # Ah wait, actually we need to hit a clamped angle that is not 0, 90, 180, or 270.
-    # But clamped_angle is int(round(angle / 90.0)) * 90 % 360
-    # The possible values are 0, 90, 180, 270.
-    # wait... 360 % 360 is 0.
-    # So clamped_angle CANNOT be anything other than 0, 90, 180, 270!
-    # Let me check...
+    img = Image.new("RGB", (10, 20))
+    res = rotate_image(img, 45)
+    # 45 is closer to 90 than 0 since round(45 / 90.0) -> round(0.5) is typically 0 in Python 3 for ties to even, wait
+    # round(0.5) is 0, wait! Let's check int(round(45 / 90.0)) -> 0!
+    # So 45 degrees rounds to 0. It should return the original image!
+    # Let's assert output size is 10x20
+    assert res.size == (10, 20)
 
-
-def test_rotate_image_fallback():
-    """Verifies rotate_image fallback when clamped_angle is not 90, 180, 270.
-    Since clamped_angle is int(round(angle / 90.0)) * 90 % 360, it will always be 0, 90, 180, or 270.
-    Therefore line 764 `return image.rotate(clamped_angle, expand=True)` is actually dead code!
-    Wait, let's verify if there is a bug or if it really is dead code.
-    If clamped_angle is 0, it returns early.
-    If clamped_angle is 90, 180, or 270, it returns via transpose.
-    So the last line is 100% unreachable. Let's not test it but note it.
-    """
-    pass
+    # What about 46 degrees? 46 / 90 = 0.511 -> round(0.511) -> 1 -> 90 degrees
+    res2 = rotate_image(img, 46)
+    assert res2.size == (20, 10)
