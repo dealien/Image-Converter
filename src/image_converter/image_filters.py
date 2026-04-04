@@ -125,11 +125,12 @@ _IDENTITY_LUT = list(range(256))
 
 
 @functools.lru_cache(maxsize=1024)
-def _get_combined_contrast_lut(contrast: int, mode: str) -> tuple[int, ...]:
+def _get_combined_contrast_lut(contrast: int, mean: int, mode: str) -> tuple[int, ...]:
     """Create a cached Look-Up Table (LUT) for adjusting the contrast across channels.
 
     Args:
         contrast (int): The contrast adjustment level (-100 to 100).
+        mean (int): The mean luminance of the image (0-255) serving as the anchor.
         mode (str): The image mode (e.g., 'RGB', 'RGBA', 'L', 'LA').
 
     Returns:
@@ -137,15 +138,10 @@ def _get_combined_contrast_lut(contrast: int, mode: str) -> tuple[int, ...]:
 
     """
     factor = 1.0 + (contrast / 100.0)
-    lut_img = Image.new("L", (256, 1))
-    lut_img.putdata(list(range(256)))
 
-    enh = ImageEnhance.Contrast(lut_img).enhance(factor)
-    import warnings
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
-        lut_channel = list(enh.getdata())
+    lut_channel = [
+        max(0, min(255, int(round((i - mean) * factor + mean)))) for i in range(256)
+    ]
 
     if mode == "L":
         return tuple(lut_channel)
@@ -418,7 +414,14 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
     if image.mode not in ("L", "RGB", "RGBA", "LA"):
         image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
 
-    lut = _get_combined_contrast_lut(contrast, image.mode)
+    from PIL import ImageStat
+
+    # Pillow's native ImageEnhance.Contrast anchors the expansion to the mean luminance
+    # of the image. We extract this dynamically to preserve the exact semantics while
+    # using a static 1D map calculation instead of full image matrix math.
+    mean = int(round(ImageStat.Stat(image.convert("L")).mean[0]))
+
+    lut = _get_combined_contrast_lut(contrast, mean, image.mode)
 
     return image.point(lut)
 
