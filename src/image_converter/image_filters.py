@@ -142,6 +142,7 @@ def _get_combined_contrast_lut(contrast: int, mode: str) -> tuple[int, ...]:
 
     enh = ImageEnhance.Contrast(lut_img).enhance(factor)
     import warnings
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
         lut_channel = list(enh.getdata())
