@@ -547,3 +547,46 @@ def test_handle_export_metadata_with_existing_manifest():
     handle_export_metadata(mock_image, "test.jpg", [], mock_args)
     assert "test.jpg" in mock_args.metadata_manifest
     assert "existing.jpg" in mock_args.metadata_manifest
+
+
+@patch("image_converter.metadata.console.print")
+def test_parse_metadata_input_json_file_permission_error(mock_print):
+    """Test parse_metadata_input handling PermissionError when reading a JSON file."""
+    with patch("builtins.open", side_effect=PermissionError("mocked permission error")):
+        assert parse_metadata_input(["locked_file.json"]) == {}
+        mock_print.assert_called_once()
+        assert (
+            "[red]Error: Permission denied reading JSON file.[/]"
+            in mock_print.call_args[0][0]
+        )
+
+
+@patch("image_converter.metadata.console.print")
+def test_parse_metadata_input_json_file_unicode_decode_error(mock_print):
+    """Test parse_metadata_input handling UnicodeDecodeError when reading a JSON file."""
+    with patch(
+        "builtins.open",
+        side_effect=UnicodeDecodeError("utf-8", b"", 0, 1, "mocked error"),
+    ):
+        assert parse_metadata_input(["bad_encoding.json"]) == {}
+        mock_print.assert_called_once()
+        assert (
+            "[red]Error: JSON file must be UTF-8 encoded.[/]"
+            in mock_print.call_args[0][0]
+        )
+
+
+@patch("image_converter.metadata.console.print")
+def test_parse_metadata_input_json_file_json_decode_error(mock_print):
+    """Test parse_metadata_input handling JSONDecodeError when reading a JSON file."""
+    import json
+
+    with patch("builtins.open"):
+        with patch(
+            "json.load", side_effect=json.JSONDecodeError("mocked error", "", 0)
+        ):
+            assert parse_metadata_input(["bad_format.json"]) == {}
+            mock_print.assert_called_once()
+            assert (
+                "[red]Error: File is not valid JSON.[/]" in mock_print.call_args[0][0]
+            )
