@@ -974,8 +974,11 @@ def interactive_menu():
                 "path": p,
             }
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            images_data = list(executor.map(_fetch_selected_image_data, paths))
+        with console.status(
+            "[bright_cyan]Loading selected image metadata...[/]", spinner="dots"
+        ):
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                images_data = list(executor.map(_fetch_selected_image_data, paths))
 
         ops, extra_args, out_formats, out_qualities = select_manipulations(images_data)
 
