@@ -39,12 +39,12 @@ class TestRichMenuSelector(unittest.TestCase):
     def test_run_image_selector_cancelled(
         self, mock_print, mock_metadata, mock_checkbox
     ):
-        """Verifies that returning None from the prompt returns an empty list."""
+        """Verifies that returning None from the prompt returns None."""
         mock_metadata.return_value = ("100x100", "10KB", "PNG")
         mock_checkbox.return_value.ask.return_value = None
 
         result = rich_menu.run_image_selector(["test.png"], "/fake/dir")
-        self.assertEqual(result, [])
+        self.assertIsNone(result)
 
     @patch("image_converter.rich_menu.os.path.getsize")
     def test_get_image_metadata_mb(self, mock_getsize):

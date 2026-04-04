@@ -58,7 +58,7 @@ def _get_image_metadata(path: str) -> tuple[str, str, str]:
     return dims, size_str, fmt
 
 
-def run_image_selector(image_files: list[str], image_dir: str) -> list[str]:
+def run_image_selector(image_files: list[str], image_dir: str) -> list[str] | None:
     """Render a tabular-style selection menu using questionary.
 
     Args:
@@ -66,7 +66,7 @@ def run_image_selector(image_files: list[str], image_dir: str) -> list[str]:
         image_dir (str): The directory containing the image files.
 
     Returns:
-        list: A list of selected image file paths.
+        list | None: A list of selected image file paths, or None if cancelled.
 
     """
     if not image_files:
@@ -119,7 +119,7 @@ def run_image_selector(image_files: list[str], image_dir: str) -> list[str]:
         instruction=INSTR_CHECKBOX,
     ).ask()
 
-    return selected or []
+    return selected
 
 
 def render_combined_menu(

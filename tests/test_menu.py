@@ -257,8 +257,8 @@ def test_select_images_ctrl_c(mock_run_image_selector):
         patch("image_converter.menu.os.path.isfile", return_value=True),
     ):
         mock_run_image_selector.return_value = None  # Ctrl-C
-        paths = menu.select_images()
-        assert paths == []
+        with pytest.raises(KeyboardInterrupt):
+            menu.select_images()
 
 
 def test_select_manipulations_process_empty_pipeline_cancel(mock_questionary):
