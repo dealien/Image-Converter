@@ -123,6 +123,32 @@ def _get_brightness_lut(brightness: int) -> list[int]:
 # Global identity Look-Up Table (LUT) for preserving an unchanged channel (like alpha).
 _IDENTITY_LUT = list(range(256))
 
+
+@functools.lru_cache(maxsize=1024)
+def _get_combined_brightness_lut(brightness: int, mode: str) -> tuple[int, ...]:
+    """Create a cached Look-Up Table (LUT) for adjusting the brightness across channels.
+
+    Args:
+        brightness (int): The brightness adjustment level (-100 to 100).
+        mode (str): The image mode (e.g., 'RGB', 'RGBA', 'L', 'LA').
+
+    Returns:
+        tuple[int, ...]: A fully concatenated, immutable LUT for all channels.
+
+    """
+    lut_channel = _get_brightness_lut(brightness)
+    if mode == "L":
+        return tuple(lut_channel)
+    elif mode == "LA":
+        return tuple(lut_channel + _IDENTITY_LUT)
+    elif mode == "RGB":
+        return tuple(lut_channel * 3)
+    elif mode == "RGBA":
+        return tuple(lut_channel * 3 + _IDENTITY_LUT)
+    else:
+        raise ValueError(f"Unsupported mode: {mode}")
+
+
 # ⚡ Bolt: Pre-compute a static Look-Up Table (LUT) for RGBA color inversion.
 # Reusing this constant avoids allocating four new lists of 256 integers
 # on every call to `invert_colors` for RGBA images.
@@ -321,16 +347,7 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
     if image.mode not in ("L", "RGB", "RGBA", "LA"):
         image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
 
-    lut_channel = _get_brightness_lut(brightness)
-
-    if image.mode == "L":
-        lut = lut_channel
-    elif image.mode == "LA":
-        lut = lut_channel + _IDENTITY_LUT
-    elif image.mode == "RGB":
-        lut = lut_channel * 3
-    else:  # RGBA
-        lut = lut_channel * 3 + _IDENTITY_LUT
+    lut = _get_combined_brightness_lut(brightness, image.mode)
 
     return image.point(lut)
 
