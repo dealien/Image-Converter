@@ -125,7 +125,7 @@ _IDENTITY_LUT = list(range(256))
 
 
 @functools.lru_cache(maxsize=1024)
-def _get_combined_brightness_lut(brightness: int, mode: str) -> list[int]:
+def _get_combined_brightness_lut(brightness: int, mode: str) -> tuple[int, ...]:
     """Create a cached Look-Up Table (LUT) for adjusting the brightness across channels.
 
     Args:
@@ -133,18 +133,18 @@ def _get_combined_brightness_lut(brightness: int, mode: str) -> list[int]:
         mode (str): The image mode (e.g., 'RGB', 'RGBA', 'L', 'LA').
 
     Returns:
-        list[int]: A fully concatenated LUT for all channels.
+        tuple[int, ...]: A fully concatenated, immutable LUT for all channels.
 
     """
     lut_channel = _get_brightness_lut(brightness)
     if mode == "L":
-        return lut_channel
+        return tuple(lut_channel)
     elif mode == "LA":
-        return lut_channel + _IDENTITY_LUT
+        return tuple(lut_channel + _IDENTITY_LUT)
     elif mode == "RGB":
-        return lut_channel * 3
+        return tuple(lut_channel * 3)
     elif mode == "RGBA":
-        return lut_channel * 3 + _IDENTITY_LUT
+        return tuple(lut_channel * 3 + _IDENTITY_LUT)
     else:
         raise ValueError(f"Unsupported mode: {mode}")
 
