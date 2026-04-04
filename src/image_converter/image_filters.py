@@ -143,8 +143,10 @@ def _get_combined_brightness_lut(brightness: int, mode: str) -> list[int]:
         return lut_channel + _IDENTITY_LUT
     elif mode == "RGB":
         return lut_channel * 3
-    else:  # RGBA
+    elif mode == "RGBA":
         return lut_channel * 3 + _IDENTITY_LUT
+    else:
+        raise ValueError(f"Unsupported mode: {mode}")
 
 
 # ⚡ Bolt: Pre-compute a static Look-Up Table (LUT) for RGBA color inversion.
