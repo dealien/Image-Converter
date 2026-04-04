@@ -5,3 +5,7 @@
 ## 2025-05-18 - Type Hints on Inner Functions
 **Learning:** When adding type hints to inner callback functions (like `validate` in `prompt_toolkit`), using string literals (e.g., `"prompt_toolkit.document.Document"`) for types that are not explicitly imported at the module level prevents `NameError` or `ImportError` runtime crashes while still providing valuable type information for documentation.
 **Action:** Always use string literal type hints for complex objects or external library types that aren't already imported in the current module's scope, especially when documenting nested or inner functions.
+
+## 2025-05-19 - Synchronizing README and Dedicated Docs
+**Learning:** Projects with both a comprehensive `README.md` and a dedicated `docs/` folder (like MkDocs) often suffer from synchronization drift. Features or CLI options added to the main README are frequently forgotten in the corresponding files in the `docs/` directory.
+**Action:** When documenting a project with multiple doc sources, always cross-reference the main `README.md` against files in `docs/` (like `index.md` or `cli_usage.md`) to ensure feature lists and usage options are fully synchronized.

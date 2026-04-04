@@ -18,6 +18,7 @@ This is a versatile Python project designed to streamline everyday workflows for
   - Apply Gaussian Blur or Sharpening.
   - Posterize (reduce color depth).
 - 🔄 **Transformations:** Flip images (horizontally, vertically, or both), add borders, and rotate by 90-degree increments.
+- 💾 **Advanced Exporting:** Convert images native to modern formats like `AVIF` or `HEIC`, controlling export qualities individually or grouped. Includes options to flatten alpha transparency for formats that don't support it.
 - 📁 **Batch Processing:** Apply any of the above manipulations to a single image or to all images within a directory automatically.
 
 ## 🚀 Installation

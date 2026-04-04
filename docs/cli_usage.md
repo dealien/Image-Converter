@@ -27,6 +27,18 @@ image-converter [file_path] [options]
 
 - `--format [type]`: Output format (e.g. `png`, `jpg`, `webp`, `heic`, `avif`). Can be used multiple times.
 - `--quality [value]`: Output quality (1-100) per format. Evaluated in order of `--format` arguments.
+- `--flatten [color]`: Composite image against a solid color background (default: `white`) for output formats that may not consistently support alpha channels (e.g., `jpeg`, `webp`).
+
+## Metadata Operations
+
+- `-vm`, `--view-metadata`: Prints the existing metadata to the console.
+- `-em`, `--export-metadata [file_path]`: Exports the image's existing metadata and saves it to a specified JSON file. The `[file_path]` is optional; if omitted, it defaults to `<image>_tags.json` (for a single image) or `batch_tags.json` (for a batch). When processing batches, it outputs a single "Manifest" JSON dictionary.
+- `-sm`, `--strip-metadata`: Removes all privacy metadata (EXIF/IPTC/XMP) from the image. *Note: Preserves critical structural data like ICC profiles, DPI, transparency, and EXIF Orientation.*
+- `-cm`, `--copy-metadata [source_file]`: Extracts metadata from a specified source image and applies it to the current image in the pipeline.
+- `-setm`, `--set-metadata [input]`: Overwrites the image's metadata completely with the provided input (JSON file, inline JSON, or `Key=Value` pairs). Set `Key=None` to explicitly delete a tag.
+- `-um`, `--update-metadata [input]`: Merges the provided input with the image's existing metadata. Set `Key=None` to explicitly delete a tag.
+- `--author [Name]`: Quick-access flag to set the Author/Artist tag.
+- `--copyright [Text]`: Quick-access flag to set the Copyright tag.
 
 ## Filters & Adjustments
 
@@ -60,6 +72,20 @@ image-converter "path/to/your/images/*.png" --scale 0.5x
 
 ```bash
 image-converter "path/to/your/images/*" --format webp --quality 50 --format jpg --quality 50
+```
+
+### Strip privacy metadata but inject an Author tag
+
+```bash
+image-converter "vacation.jpg" --strip-metadata --author "Jane Doe"
+```
+
+### Export metadata from a batch of images
+
+This will extract the existing metadata from all `.jpg` files in the `images` directory and save it to a single "Manifest" file named `batch_tags.json`.
+
+```bash
+image-converter "images/*.jpg" --export-metadata batch_tags.json
 ```
 
 ### Chaining Multiple Operations
