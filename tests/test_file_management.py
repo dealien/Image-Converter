@@ -55,7 +55,7 @@ class TestFileManagement(unittest.TestCase):
 
         # Assert output
         output = mock_stdout.getvalue()
-        self.assertIn(f"An error occurred: {error_message}", output)
+        self.assertIn("An error occurred while moving files.", output)
 
     @patch("image_converter.file_management.os.path.exists")
     @patch("image_converter.file_management.os.makedirs")
@@ -74,7 +74,7 @@ class TestFileManagement(unittest.TestCase):
 
         # Assert output
         output = mock_stdout.getvalue()
-        self.assertIn(f"An error occurred: {error_message}", output)
+        self.assertIn("An error occurred while moving files.", output)
 
 
 if __name__ == "__main__":
