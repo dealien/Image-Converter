@@ -155,6 +155,39 @@ class TestMain(unittest.TestCase):
             main()
         mock_menu.assert_called_once()
 
+    @patch("image_converter.main.console.print")
+    def test_no_actions_specified(self, mock_console_print):
+        """Test that main exits early and prints a warning when no actions or formats are specified."""
+        # Provide a file argument but no operations or format flags
+        with patch.object(sys, "argv", ["main.py", "dummy.png"]):
+            main()
+
+        mock_console_print.assert_called_with(
+            "[yellow]No actions specified. Please provide at least one operation flag (e.g., --invert, --scale 2x) "
+            "or an output format (e.g., --format webp).[/]\n"
+            "[dim white]To see all available options, run with --help or use the interactive --menu.[/]"
+        )
+
+    @patch("image_converter.main.move_images_to_subdirectory")
+    @patch("glob.glob")
+    @patch("image_converter.main.console.print")
+    def test_no_files_found(self, mock_console_print, mock_glob, mock_move):
+        """Test that main prints a warning and exits when no files match the pattern."""
+        # Mock glob to return empty list (no files found)
+        mock_glob.return_value = []
+
+        # Run main with an operation and a custom file pattern
+        with patch.object(sys, "argv", ["main.py", "nonexistent*.png", "--invert"]):
+            main()
+
+        mock_console_print.assert_any_call(
+            "[yellow]No files found matching pattern: 'nonexistent*.png'[/]\n"
+            "[dim white]Please verify the file path or ensure images exist in the target directory.[/]"
+        )
+        mock_console_print.assert_any_call(
+            "[dim white]Please check the path or place some images in the specified directory and try again.[/]"
+        )
+
     @patch("image_converter.main.move_images_to_subdirectory")
     @patch("glob.glob")
     @patch("image_converter.main.console.print")
