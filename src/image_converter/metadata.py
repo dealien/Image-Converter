@@ -373,7 +373,9 @@ def handle_strip_metadata(
                 }
                 new_info["exif"] = piexif.dump(new_exif)
         except Exception:
-            pass
+            console.print(
+                "  [dim yellow]Warning: Failed to parse orientation EXIF data. Skipping.[/]"
+            )
 
     # Modify the image info in place or create a copy to prevent side effects on the original dictionary
     image.info = new_info
@@ -450,7 +452,9 @@ def handle_update_metadata(
         try:
             base_exif_dict = piexif.load(existing_exif_bytes)
         except Exception:
-            pass
+            console.print(
+                "  [dim yellow]Warning: Failed to load existing EXIF data. Skipping.[/]"
+            )
 
     new_exif_bytes = dict_to_exif_bytes(input_dict, base_exif_dict)
     if new_exif_bytes:

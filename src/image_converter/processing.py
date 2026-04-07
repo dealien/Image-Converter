@@ -699,11 +699,11 @@ def _process_single_image(
                 if temp_path and os.path.exists(temp_path):
                     try:
                         os.close(fd)
-                    except Exception:
+                    except OSError:
                         pass
                     try:
                         os.remove(temp_path)
-                    except Exception:
+                    except OSError:
                         pass
                 results.append((output_filename, False, "—", 0, str(loop_err)))
                 progress.console.print(
@@ -729,7 +729,7 @@ def _process_single_image(
         if temp_path and os.path.exists(temp_path):
             try:
                 os.close(fd)
-            except Exception:
+            except OSError:
                 pass
             try:
                 os.remove(temp_path)
