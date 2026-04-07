@@ -19,3 +19,7 @@
 ## 2025-04-01 - Added loading spinner during parallel metadata fetching in rich menu
 **Learning:** During parallel metadata fetching of image files using `ThreadPoolExecutor` within the `run_image_selector` function, the UI could appear to hang for large images or large directories, offering a poor UX for the user.
 **Action:** Always consider the UX impact of blocking IO-bound operations when starting interactive prompts. Wrap these operations in a visual loading indicator such as the `rich` `console.status` spinner, to signal to users that work is occurring in the background.
+
+## 2024-05-24 - explicit keyboard shortcuts for confirm prompts
+**Learning:** questionary.confirm does not display keyboard hints or handle Ctrl+C explicitly out-of-the-box. We must provide explicit `instruction` strings and manually check for `None` to raise KeyboardInterrupt.
+**Action:** Add INSTR_CONFIRM constant and check for None on all confirm calls.
