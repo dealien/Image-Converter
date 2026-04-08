@@ -590,3 +590,27 @@ def test_parse_metadata_input_json_file_json_decode_error(mock_print):
             assert (
                 "[red]Error: File is not valid JSON.[/]" in mock_print.call_args[0][0]
             )
+
+
+@patch("image_converter.metadata.console.print")
+def test_parse_metadata_input_json_file_non_dict(mock_print, tmp_path):
+    """Test parse_metadata_input handling JSON file that does not evaluate to a dict."""
+    json_file = tmp_path / "not_dict.json"
+    json_file.write_text('["not", "a", "dict"]')
+
+    assert parse_metadata_input([str(json_file)]) == {}
+    mock_print.assert_called_once_with(
+        "[red]Error: JSON file must contain a key-value dictionary object.[/]"
+    )
+
+
+@patch("image_converter.metadata.console.print")
+@patch("image_converter.metadata.json.loads")
+def test_parse_metadata_input_inline_json_non_dict(mock_loads, mock_print):
+    """Test parse_metadata_input handling inline JSON that does not evaluate to a dict."""
+    mock_loads.return_value = ["not", "a", "dict"]
+
+    assert parse_metadata_input(['{"fake_key": "fake_value"}']) == {}
+    mock_print.assert_called_once_with(
+        "[red]Error: Inline JSON must be a key-value dictionary object.[/]"
+    )
