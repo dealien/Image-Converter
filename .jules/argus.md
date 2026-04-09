@@ -30,6 +30,10 @@
 **Learning:** The image trimming logic in `src/image_converter/remove_background.py` uses `ImageChops.difference` and `getbbox()` to find content. If an image is completely uniform (no borders or transparent areas to trim), `getbbox()` returns `None`. This is an easy branch to miss if only testing images with actual transparent borders.
 **Action:** When testing image manipulation functions that rely on `getbbox()` for cropping or boundary detection, always include an edge case test where the entire image is a solid, uniform color (without an alpha channel if that triggers a different path) to ensure the fallback `return original_image` branch is covered.
 
-## 2024-05-18 - [Valid JSON Resolving to Non-Dictionaries]
+## 2025-02-28 - Testing Valid JSON That Resolves to Non-Dictionary
+**Learning:** In `src/image_converter/metadata.py`, defensive parsing logic checks if inline JSON strings start with `{` before running `json.loads`. Because of this filter, any naturally valid JSON string that passes this check will always return a dictionary. Testing the failure block (`if not isinstance(result, dict)`) requires using `unittest.mock.patch` to artificially force `json.loads` to return a list or integer while still providing a valid-looking string `{"fake": "json"}`.
+**Action:** When testing defensive type-validation paths for pre-filtered inputs, explicitly mock the parser to return the invalid type rather than trying to craft a raw string that bypasses the filter.
+
+## 2024-05-18 - Valid JSON Resolving to Non-Dictionaries
 **Learning:** When parsing JSON input (e.g., via `json.load()` or `json.loads()`), it is critical to explicitly validate the structure of the resulting data (e.g., `isinstance(result, dict)`) before returning it. Valid JSON can resolve to a list, string, or number, which will cause downstream runtime crashes if callers assume a dictionary and invoke methods like `.items()`.
 **Action:** When writing tests for JSON parsing or metadata inputs, always include edge cases where the input is structurally valid JSON but resolves to a list or integer instead of a dictionary, ensuring graceful error handling.

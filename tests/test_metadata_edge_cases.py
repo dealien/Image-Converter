@@ -1,4 +1,7 @@
 import argparse
+import json
+import os
+import tempfile
 from unittest.mock import MagicMock, patch
 from PIL import Image
 import piexif
@@ -590,3 +593,31 @@ def test_parse_metadata_input_json_file_json_decode_error(mock_print):
             assert (
                 "[red]Error: File is not valid JSON.[/]" in mock_print.call_args[0][0]
             )
+
+
+@patch("image_converter.metadata.console.print")
+def test_parse_metadata_input_inline_json_not_dict(mock_print):
+    with patch("json.loads", return_value=[1, 2, 3]):
+        assert parse_metadata_input(['{"fake": "json"}']) == {}
+        mock_print.assert_called_once()
+        assert (
+            "[red]Error: Inline JSON must be a key-value dictionary object.[/]"
+            in mock_print.call_args[0][0]
+        )
+
+
+@patch("image_converter.metadata.console.print")
+def test_parse_metadata_input_json_file_not_dict(mock_print):
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as f:
+        json.dump([1, 2, 3], f)
+        temp_path = f.name
+
+    try:
+        assert parse_metadata_input([temp_path]) == {}
+        mock_print.assert_called_once()
+        assert (
+            "[red]Error: JSON file must contain a key-value dictionary object.[/]"
+            in mock_print.call_args[0][0]
+        )
+    finally:
+        os.remove(temp_path)
