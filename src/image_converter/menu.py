@@ -24,6 +24,7 @@ INSTR_SELECT = "(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)"
 INSTR_MULTI_SELECT = (
     "(Use Space to select/deselect, Enter to confirm, Ctrl+C to cancel)"
 )
+INSTR_CONFIRM = "(y/n, Enter to confirm, Ctrl+C to cancel)"
 
 
 # --- Helper Functions ---
@@ -740,8 +741,8 @@ def select_images() -> list[str]:
                 )
             ]
         )
-    except Exception as e:
-        console.print(f"[red]Read error: {e}[/]")
+    except Exception:
+        console.print("[red]Read error while accessing the directory.[/]")
         return []
 
     if not image_files:
@@ -761,8 +762,12 @@ def select_images() -> list[str]:
             return selected_paths
 
         confirm = questionary.confirm(
-            "No images selected. Re-select images?", default=True
+            "No images selected. Re-select images?",
+            default=True,
+            instruction=INSTR_CONFIRM,
         ).ask()
+        if confirm is None:
+            raise KeyboardInterrupt
         if not confirm:
             return []
 
@@ -870,8 +875,12 @@ def select_manipulations(
         if selection == "PROCESS":
             if not selected_operations:
                 confirm = questionary.confirm(
-                    "Pipeline is empty. Process anyway?", default=False
+                    "Pipeline is empty. Process anyway?",
+                    default=False,
+                    instruction=INSTR_CONFIRM,
                 ).ask()
+                if confirm is None:
+                    raise KeyboardInterrupt
                 if not confirm:
                     continue
 
@@ -911,8 +920,12 @@ def select_manipulations(
                     output_qualities.append(int(q_str) if q_str else 90)
 
             flatten_confirm = questionary.confirm(
-                "Flatten transparent backgrounds?", default=False
+                "Flatten transparent backgrounds?",
+                default=False,
+                instruction=INSTR_CONFIRM,
             ).ask()
+            if flatten_confirm is None:
+                raise KeyboardInterrupt
             if flatten_confirm:
                 flatten_color = _ask_text(
                     "Background color for flattening (Name or Hex)", default_val="white"
@@ -999,5 +1012,5 @@ def interactive_menu():
 
     except KeyboardInterrupt:
         console.print("\n[yellow]Cancelled.[/]")
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/]")
+    except Exception:
+        console.print("[red]An unexpected error occurred.[/]")
