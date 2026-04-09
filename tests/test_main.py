@@ -169,7 +169,7 @@ class TestMain(unittest.TestCase):
 
         # Check that the exception message was printed
         mock_console_print.assert_called_with(
-            "[red]Error while loading file(s): Mocked loading error[/]"
+            "[red]Error while loading file(s). Please verify the directory and try again.[/]"
         )
 
 

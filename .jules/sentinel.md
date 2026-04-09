@@ -7,3 +7,8 @@
 **Vulnerability:** Found multiple instances of `except Exception: pass` in `processing.py` and `metadata.py`. This anti-pattern silently swallowed any error (like `KeyboardInterrupt`, `MemoryError`, or severe data corruption errors), which could hide security flaws or resource leaks.
 **Learning:** Swallowing all exceptions makes the system fail silently, leaving it in an unknown state which attackers could potentially exploit. File operations like `os.remove()` should only catch expected errors like `OSError`.
 **Prevention:** Always scope exception handling to specific, expected error types (e.g., `OSError` instead of `Exception`), or log/print a safe warning when catching generic exceptions to ensure visibility into application health.
+
+## 2026-04-05 - Fix Exception Data Leakage
+**Vulnerability:** Raw exception strings (e.g., stack traces, internal paths) were exposed directly to users via CLI output.
+**Learning:** This application directly passed the exception instance `e` to `console.print(f"... {e}")` in high-level try/except blocks (e.g., `main.py`, `menu.py`, `file_management.py`), inadvertently creating an information disclosure vulnerability.
+**Prevention:** Always use safe, generic error messages when outputting to user-facing interfaces. Log the raw exception details internally using a dedicated logging framework if debugging information is required, but never leak them directly to the end-user.

@@ -60,5 +60,5 @@ def move_images_to_subdirectory(subdirectory_name: str):
                         f"[bright_green]Moved:[/] {filename} to {subdirectory_name}"
                     )  # Informative message
 
-    except Exception as e:  # Handle potential errors
-        console.print(f"[red]An error occurred: {e}[/]")
+    except Exception:  # Handle potential errors
+        console.print("[red]An error occurred while moving files.[/]")
