@@ -19,3 +19,11 @@
 ## 2025-04-01 - Added loading spinner during parallel metadata fetching in rich menu
 **Learning:** During parallel metadata fetching of image files using `ThreadPoolExecutor` within the `run_image_selector` function, the UI could appear to hang for large images or large directories, offering a poor UX for the user.
 **Action:** Always consider the UX impact of blocking IO-bound operations when starting interactive prompts. Wrap these operations in a visual loading indicator such as the `rich` `console.status` spinner, to signal to users that work is occurring in the background.
+
+## 2025-04-06 - Explicit Instruction Strings for questionary.confirm
+**Learning:** By default, `questionary.confirm` prompts do not display any keyboard shortcut instructions, leaving users unaware of options like `Ctrl+C` to cancel or `y/n` for explicit choices.
+**Action:** Explicitly provide an `instruction` string constant (e.g., `(y/n, Enter to confirm, Ctrl+C to cancel)`) to all `questionary.confirm` calls to surface hidden interaction paths.
+
+## 2025-05-19 - Add Ctrl+C instruction to Confirmation Prompts
+**Learning:** By default, `questionary.confirm()` prompts do not display what keyboard shortcuts are available to cancel the prompt. Without this, users may not know they can use `Ctrl+C` to abort the prompt and entire execution flow.
+**Action:** Always provide an explicit `instruction` string (like `instruction="(y/n, Enter to confirm, Ctrl+C to cancel)"`) to `questionary.confirm()` calls. In addition, `questionary.confirm()` returns `None` on a keyboard interrupt, so it's critical to check `if confirm is None: raise KeyboardInterrupt` to ensure the flow is aborted correctly, as a "No" would evaluate to `False`.

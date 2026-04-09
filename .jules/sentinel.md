@@ -1,4 +1,4 @@
-## 2026-04-02 - Information Leakage via Exception Handling
-**Vulnerability:** In `parse_metadata_input` in `metadata.py`, raw exception details were passed directly to `console.print()` when JSON loading or parsing failed. This could potentially leak internal stack trace fragments, internal file paths, or other system details to a user.
-**Learning:** Even simple file I/O operations (like `json.load`) should catch and mask exceptions before returning error messages to the CLI to prevent sensitive internal data leakage.
-**Prevention:** Catch generic `Exception`s without capturing them to a variable (e.g. avoid `except Exception as e:` printing `e`), and instead return or print hardcoded generic error statements (e.g., "Error reading JSON file").
+## 2026-04-05 - Fix Exception Data Leakage
+**Vulnerability:** Raw exception strings (e.g., stack traces, internal paths) were exposed directly to users via CLI output.
+**Learning:** This application directly passed the exception instance `e` to `console.print(f"... {e}")` in high-level try/except blocks (e.g., `main.py`, `menu.py`, `file_management.py`), inadvertently creating an information disclosure vulnerability.
+**Prevention:** Always use safe, generic error messages when outputting to user-facing interfaces. Log the raw exception details internally using a dedicated logging framework if debugging information is required, but never leak them directly to the end-user.
