@@ -12,6 +12,7 @@
 ## 2024-05-19 - Add Ctrl+C Keyboard Shortcut Hint to Interactive Menus
 **Learning:** Terminal users often don't know they can use Ctrl+C to safely exit an interactive prompt without causing errors or saving unwanted changes. Making this explicit reduces anxiety.
 **Action:** When using `questionary` or similar CLI prompt libraries, always include `Ctrl+C to cancel` in the `instruction` string if the application handles `KeyboardInterrupt` gracefully.
+
 ## 2024-03-31 - Ctrl+C Cancel Handling in Interactive Terminal Menu
 **Learning:** Terminal UIs using `questionary` return `None` when the user presses `Ctrl+C`. Simply `break`ing out of a selection loop on `None` can cause unintended side-effects if the parent caller continues execution assuming the selection phase simply ended normally (like proceeding to process an empty task queue).
 **Action:** When `questionary.ask()` returns `None`, explicitly raise a `KeyboardInterrupt` to correctly signal to upstream callers that the entire operation is being aborted, matching the expected behavior of standard python CLI apps.
@@ -20,10 +21,6 @@
 **Learning:** During parallel metadata fetching of image files using `ThreadPoolExecutor` within the `run_image_selector` function, the UI could appear to hang for large images or large directories, offering a poor UX for the user.
 **Action:** Always consider the UX impact of blocking IO-bound operations when starting interactive prompts. Wrap these operations in a visual loading indicator such as the `rich` `console.status` spinner, to signal to users that work is occurring in the background.
 
-## 2024-05-24 - explicit keyboard shortcuts for confirm prompts
-**Learning:** questionary.confirm does not display keyboard hints or handle Ctrl+C explicitly out-of-the-box. We must provide explicit `instruction` strings and manually check for `None` to raise KeyboardInterrupt.
-**Action:** Add INSTR_CONFIRM constant and check for None on all confirm calls.
-
-## 2025-05-19 - Add Ctrl+C instruction to Confirmation Prompts
-**Learning:** By default, `questionary.confirm()` prompts do not display what keyboard shortcuts are available to cancel the prompt. Without this, users may not know they can use `Ctrl+C` to abort the prompt and entire execution flow.
-**Action:** Always provide an explicit `instruction` string (like `instruction="(y/n, Enter to confirm, Ctrl+C to cancel)"`) to `questionary.confirm()` calls. In addition, `questionary.confirm()` returns `None` on a keyboard interrupt, so it's critical to check `if confirm is None: raise KeyboardInterrupt` to ensure the flow is aborted correctly, as a "No" would evaluate to `False`.
+## 2025-04-06 - Explicit Instruction Strings for questionary.confirm
+**Learning:** By default, `questionary.confirm` prompts do not display any keyboard shortcut instructions, leaving users unaware of options like `Ctrl+C` to cancel or `y/n` for explicit choices.
+**Action:** Explicitly provide an `instruction` string constant (e.g., `(y/n, Enter to confirm, Ctrl+C to cancel)`) to all `questionary.confirm` calls to surface hidden interaction paths.
