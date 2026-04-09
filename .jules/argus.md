@@ -29,6 +29,11 @@
 ## 2026-04-02 - Trim Bounding Box Edge Case
 **Learning:** The image trimming logic in `src/image_converter/remove_background.py` uses `ImageChops.difference` and `getbbox()` to find content. If an image is completely uniform (no borders or transparent areas to trim), `getbbox()` returns `None`. This is an easy branch to miss if only testing images with actual transparent borders.
 **Action:** When testing image manipulation functions that rely on `getbbox()` for cropping or boundary detection, always include an edge case test where the entire image is a solid, uniform color (without an alpha channel if that triggers a different path) to ensure the fallback `return original_image` branch is covered.
+
 ## 2024-04-08 - Unreachable `image.rotate()` after exact 90-degree fast-paths
 **Learning:** In `src/image_converter/image_filters.py`, the fallback `image.rotate(clamped_angle, expand=True)` on line 802 is strictly unreachable. The `clamped_angle` computation rounds to nearest 90 (0, 90, 180, 270). The preceding `if/elif` block explicitly handles all four possible values (0 returns early, the other three use `transpose`). Thus, attempting to cover line 802 is impossible without modifying the math, exposing a case where code was written for a broader domain than what the input sanitization actually permits.
 **Action:** When adding fast-paths for a discrete set of input possibilities that comprehensively covers all sanitized inputs, remove the fallback generalized logic instead of leaving it as dead, un-coverable code.
+
+## 2024-05-18 - Valid JSON Resolving to Non-Dictionaries
+**Learning:** When parsing JSON input (e.g., via `json.load()` or `json.loads()`), it is critical to explicitly validate the structure of the resulting data (e.g., `isinstance(result, dict)`) before returning it. Valid JSON can resolve to a list, string, or number, which will cause downstream runtime crashes if callers assume a dictionary and invoke methods like `.items()`.
+**Action:** When writing tests for JSON parsing or metadata inputs, always include edge cases where the input is structurally valid JSON but resolves to a list or integer instead of a dictionary, ensuring graceful error handling.

@@ -564,7 +564,9 @@ def test_select_images_error_handling(mock_questionary):
     ):
         res = select_images()
         assert res == []
-        mock_print.assert_called_with("[red]Read error: mocked error[/]")
+        mock_print.assert_called_with(
+            "[red]Read error while accessing the directory.[/]"
+        )
 
 
 def test_select_images_no_images(mock_questionary):
@@ -620,4 +622,4 @@ def test_interactive_menu_general_exception(mock_print, mock_select_images):
 
     menu.interactive_menu()
 
-    mock_print.assert_called_with("[red]Error: mocked error[/]")
+    mock_print.assert_called_with("[red]An unexpected error occurred.[/]")
