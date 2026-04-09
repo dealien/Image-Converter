@@ -244,3 +244,31 @@ class TestMetadata(unittest.TestCase):
                 called_with_error = True
                 break
         self.assertTrue(called_with_error)
+
+    @patch("image_converter.metadata.console.print")
+    def test_parse_metadata_input_json_not_dict(self, mock_print):
+        """Test parsing a JSON file that is valid JSON but resolves to a list (not a dict)."""
+        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as f:
+            json.dump(["Artist", "Jane Doe"], f)
+            temp_path = f.name
+
+        try:
+            result = parse_metadata_input([temp_path])
+            self.assertEqual(result, {})
+            mock_print.assert_called_with(
+                "[red]Error: JSON file must contain a key-value dictionary object.[/]"
+            )
+        finally:
+            os.remove(temp_path)
+
+    @patch("image_converter.metadata.console.print")
+    @patch("image_converter.metadata.json.loads")
+    def test_parse_metadata_input_inline_not_dict(self, mock_loads, mock_print):
+        """Test parsing an inline JSON string that resolves to a list (not a dict)."""
+        mock_loads.return_value = ["Artist", "Jane Doe"]
+        values = ['{"fake": "json"}']
+        result = parse_metadata_input(values)
+        self.assertEqual(result, {})
+        mock_print.assert_called_with(
+            "[red]Error: Inline JSON must be a key-value dictionary object.[/]"
+        )

@@ -25,6 +25,7 @@ INSTR_CONFIRM = "(y/n, Enter to confirm, Ctrl+C to cancel)"
 INSTR_MULTI_SELECT = (
     "(Use Space to select/deselect, Enter to confirm, Ctrl+C to cancel)"
 )
+INSTR_CONFIRM = "(y/n, Enter to confirm, Ctrl+C to cancel)"
 
 
 # --- Helper Functions ---
@@ -741,8 +742,8 @@ def select_images() -> list[str]:
                 )
             ]
         )
-    except Exception as e:
-        console.print(f"[red]Read error: {e}[/]")
+    except Exception:
+        console.print("[red]Read error while accessing the directory.[/]")
         return []
 
     if not image_files:
@@ -1018,5 +1019,5 @@ def interactive_menu():
 
     except KeyboardInterrupt:
         console.print("\n[yellow]Cancelled.[/]")
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/]")
+    except Exception:
+        console.print("[red]An unexpected error occurred.[/]")
