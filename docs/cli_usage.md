@@ -80,12 +80,26 @@ image-converter "path/to/your/images/*" --format webp --quality 50 --format jpg 
 image-converter "vacation.jpg" --strip-metadata --author "Jane Doe"
 ```
 
+### Update specific metadata tags and delete GPS data
+
+```bash
+image-converter "photo.jpg" --update-metadata Artist="Jane Doe" Copyright="2026 Dealien" GPSInfo=None
+```
+
 ### Export metadata from a batch of images
 
 This will extract the existing metadata from all `.jpg` files in the `images` directory and save it to a single "Manifest" file named `batch_tags.json`.
 
 ```bash
 image-converter "images/*.jpg" --export-metadata batch_tags.json
+```
+
+### Overwrite metadata completely using an exported JSON file
+
+If you exported a manifest like `batch_tags.json` and modified it in a text editor, you can re-apply the updated metadata to a batch. This completely overwrites any existing metadata on the images with the structured data from the JSON file.
+
+```bash
+image-converter "images/*.jpg" --set-metadata batch_tags.json
 ```
 
 ### Chaining Multiple Operations
