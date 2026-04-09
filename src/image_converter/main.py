@@ -345,8 +345,10 @@ def main():
             if os.path.isfile(filepath):
                 filename = Path(filepath).name
                 images_data.append([filename, filepath])
-    except Exception as e:
-        console.print(f"[red]Error while loading file(s): {e}[/]")
+    except Exception:
+        console.print(
+            "[red]Error while loading file(s). Please verify the directory and try again.[/]"
+        )
         return
 
     process_images_and_save(images_data, args.ordered_operations, args)

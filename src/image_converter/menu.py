@@ -741,8 +741,8 @@ def select_images() -> list[str]:
                 )
             ]
         )
-    except Exception as e:
-        console.print(f"[red]Read error: {e}[/]")
+    except Exception:
+        console.print("[red]Read error while accessing the directory.[/]")
         return []
 
     if not image_files:
@@ -766,6 +766,8 @@ def select_images() -> list[str]:
             default=True,
             instruction=INSTR_CONFIRM,
         ).ask()
+        if confirm is None:
+            raise KeyboardInterrupt
         if not confirm:
             return []
 
@@ -877,6 +879,8 @@ def select_manipulations(
                     default=False,
                     instruction=INSTR_CONFIRM,
                 ).ask()
+                if confirm is None:
+                    raise KeyboardInterrupt
                 if not confirm:
                     continue
 
@@ -920,6 +924,8 @@ def select_manipulations(
                 default=False,
                 instruction=INSTR_CONFIRM,
             ).ask()
+            if flatten_confirm is None:
+                raise KeyboardInterrupt
             if flatten_confirm:
                 flatten_color = _ask_text(
                     "Background color for flattening (Name or Hex)", default_val="white"
@@ -1006,5 +1012,5 @@ def interactive_menu():
 
     except KeyboardInterrupt:
         console.print("\n[yellow]Cancelled.[/]")
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/]")
+    except Exception:
+        console.print("[red]An unexpected error occurred.[/]")

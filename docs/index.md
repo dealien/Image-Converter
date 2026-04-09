@@ -16,6 +16,7 @@ This is a versatile Python project designed to streamline everyday workflows for
   - Adjust color balance (RGB channels) or rotate Hue.
   - Apply Edge Detection (Sobel, Canny, Kovalevsky).
   - Apply Gaussian Blur or Sharpening.
+  - Apply Vignette effect.
   - Posterize (reduce color depth).
 - 🔄 **Transformations:** Flip images (horizontally, vertically, or both), add borders, and rotate by 90-degree increments.
 - 💾 **Advanced Exporting:** Convert images native to modern formats like `AVIF` or `HEIC`, controlling export qualities individually or grouped. Includes options to flatten alpha transparency for formats that don't support it.
