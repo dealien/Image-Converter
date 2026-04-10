@@ -1,3 +1,7 @@
+## 2024-04-06 - CLI Exception Handler Mocking
+**Learning:** Testing CLI arguments like `sys.argv` and file finding with `glob.glob` using `@patch` requires completely isolating standard output using `@patch("image_converter.main.console.print")` to verify error states reliably.
+**Action:** Mock file resolution (`glob.glob`) rather than depending on disk contents when covering error paths for empty or invalid paths in the main CLI entry point.
+
 ## 2026-03-20 - Edge Cases and Fast Paths in PIL Image Processing
 **Learning:** Certain Pillow `ImageEnhance` operations and edge detection methods have specific mathematical and boundary constraints (e.g., Kovalevsky requiring >= 6x6 pixel images to perform 5-pixel comparison window diffs, or alpha channels being preserved via manual fast paths in RGBA modes).
 **Action:** When adding test coverage to image processing functions, always include edge cases for extreme input dimensions (small images, zero values) and test multi-channel preservation (RGBA) specifically on optimization fast-paths.
