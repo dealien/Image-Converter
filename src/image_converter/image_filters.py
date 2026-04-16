@@ -239,7 +239,9 @@ def grayscale(image: Image.Image) -> Image.Image:
     return ImageOps.grayscale(image)
 
 
-def _kovalevsky_scan(array_to_scan: "numpy.ndarray", output_map: "numpy.ndarray", threshold: int) -> None:  # noqa: F821
+def _kovalevsky_scan(
+    array_to_scan: "numpy.ndarray", output_map: "numpy.ndarray", threshold: int  # noqa: F821
+) -> None:  # noqa: F821
     """Perform a 1D Kovalevsky edge detection scan.
 
     Args:
