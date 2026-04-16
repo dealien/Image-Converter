@@ -9,3 +9,6 @@
 ## 2025-05-19 - Synchronizing README and Dedicated Docs
 **Learning:** Projects with both a comprehensive `README.md` and a dedicated `docs/` folder (like MkDocs) often suffer from synchronization drift. Features or CLI options added to the main README are frequently forgotten in the corresponding files in the `docs/` directory.
 **Action:** When documenting a project with multiple doc sources, always cross-reference the main `README.md` against files in `docs/` (like `index.md` or `cli_usage.md`) to ensure feature lists and usage options are fully synchronized.
+## 2025-05-19 - Using string literals for type hinting missing parameters
+**Learning:** When adding type hints to undocumented functions without module-level imports, use string literals (e.g., `"numpy.ndarray"`) to avoid runtime `NameError` exceptions while satisfying the documentation builder (`mkdocs`). This was observed when adding hints to `_kovalevsky_scan` which caused `mkdocs build --strict` to fail until string literal hints were applied.
+**Action:** When acting as Scribe to add type hints to undocumented inner or private functions, evaluate if the type module is imported globally. If not, use string-based forward references (`"type"`) to add the hint safely.
