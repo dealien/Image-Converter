@@ -12,3 +12,8 @@
 **Vulnerability:** Raw exception strings (e.g., stack traces, internal paths) were exposed directly to users via CLI output.
 **Learning:** This application directly passed the exception instance `e` to `console.print(f"... {e}")` in high-level try/except blocks (e.g., `main.py`, `menu.py`, `file_management.py`), inadvertently creating an information disclosure vulnerability.
 **Prevention:** Always use safe, generic error messages when outputting to user-facing interfaces. Log the raw exception details internally using a dedicated logging framework if debugging information is required, but never leak them directly to the end-user.
+
+## 2025-02-27 - Decompression Bomb Vulnerability in Pillow
+**Vulnerability:** The application was globally overriding `Image.MAX_IMAGE_PIXELS = 100_000_000` to "prevent decompression bomb attacks". However, Pillow's default is actually stricter (~89.4 million pixels). By explicitly setting it higher, the code inadvertently weakened security against DoS attacks. Additionally, modifying module-level state locally inside functions (`rich_menu.py`) is a dangerous practice that can cause unexpected side effects across the application.
+**Learning:** Do not manually override security limits unless explicitly required, and understand the default protections of established libraries before attempting to "enhance" them.
+**Prevention:** Rely on Pillow's default decompression bomb protection. Never set global state variables within local function scope.
