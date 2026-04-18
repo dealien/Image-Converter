@@ -20,9 +20,6 @@ INSTR_CHECKBOX = "(Use arrow keys to navigate, Space to select, Enter to confirm
 
 console = Console()
 
-# Set a safe limit for image size to prevent decompression bomb attacks (100MP)
-Image.MAX_IMAGE_PIXELS = 100_000_000
-
 
 def _get_image_metadata(path: str) -> tuple[str, str, str]:
     """Retrieve basic metadata for an image file.
@@ -47,7 +44,6 @@ def _get_image_metadata(path: str) -> tuple[str, str, str]:
         size_str = "—"
 
     try:
-        Image.MAX_IMAGE_PIXELS = 100_000_000
         with Image.open(path) as img:
             dims = f"{img.width} × {img.height}"
             fmt = img.format or "UNKNOWN"

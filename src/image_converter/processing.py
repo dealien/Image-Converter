@@ -93,9 +93,6 @@ class StyledTimeElapsedColumn(TimeElapsedColumn):
 
 console = Console()
 
-# Set a safe limit for image size to prevent decompression bomb attacks (100MP)
-Image.MAX_IMAGE_PIXELS = 100_000_000
-
 # --- Operation Handlers ---
 
 
@@ -566,7 +563,6 @@ def _process_single_image(
     try:
         # Step 1: Open
         progress.update(image_task, description=f"{original_name} [dim](Opening...)[/]")
-        Image.MAX_IMAGE_PIXELS = 100_000_000
         img = Image.open(image_path)
         try:
             img.load()
