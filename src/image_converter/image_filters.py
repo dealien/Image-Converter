@@ -239,7 +239,11 @@ def grayscale(image: Image.Image) -> Image.Image:
     return ImageOps.grayscale(image)
 
 
-def _kovalevsky_scan(array_to_scan, output_map, threshold: int) -> None:
+def _kovalevsky_scan(
+    array_to_scan: "numpy.ndarray",  # noqa: F821
+    output_map: "numpy.ndarray",  # noqa: F821
+    threshold: int,  # noqa: F821
+) -> None:  # noqa: F821
     """Perform a 1D Kovalevsky edge detection scan.
 
     Args:
@@ -275,6 +279,11 @@ def _kovalevsky_scan(array_to_scan, output_map, threshold: int) -> None:
 
 def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Image.Image:
     """Apply edge detection to an image using one of three methods.
+
+    The supported methods offer different trade-offs:
+    - **sobel**: Fast and simple gradient-based detection. Good for basic edge outlines.
+    - **canny**: Multi-stage algorithm that provides clean, thin edges and reduces noise. Best for structural detection.
+    - **kovalevsky**: Custom algorithmic approach sensitive to local variations based on a defined threshold.
 
     Args:
         image (Image.Image): The input image.
