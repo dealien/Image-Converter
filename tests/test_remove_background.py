@@ -92,6 +92,15 @@ class TestRemoveBackground(unittest.TestCase):
         # Check that some pixels are transparent
         self.assertTrue(any(pixel[3] == 0 for pixel in output_img.getdata()))
 
+    def test_trim_single_band_image(self):
+        """Test trim on an image with a single band (e.g. mode 'L') to ensure bg_color is converted to tuple."""
+        # Create a solid L mode image (single band)
+        # Without any foreground, getbbox on diff should return None
+        img = Image.new("L", (100, 100), color=255)
+
+        trimmed_img = trim(img)
+        self.assertIs(trimmed_img, img)
+
 
 if __name__ == "__main__":
     unittest.main()
