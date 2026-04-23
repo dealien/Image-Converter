@@ -24,3 +24,6 @@
 ## 2025-04-06 - Explicit Instruction Strings for questionary.confirm
 **Learning:** By default, `questionary.confirm` prompts do not display any keyboard shortcut instructions, leaving users unaware of options like `Ctrl+C` to cancel or `y/n` for explicit choices.
 **Action:** Explicitly provide an `instruction` string constant (e.g., `(y/n, Enter to confirm, Ctrl+C to cancel)`) to all `questionary.confirm` calls to surface hidden interaction paths.
+## 2024-04-23 - Full Keyboard Navigation Hints for Multi-Select Prompts
+**Learning:** `questionary.checkbox` prompts support advanced keyboard shortcuts like 'A to toggle all' and standard arrow key navigation. If these aren't explicitly mentioned in the `instruction` string, users may rely solely on Space and Enter, leading to slower interaction when managing many items.
+**Action:** Always include complete accessibility hints for multi-select prompts (e.g., `(Use arrow keys to navigate, Space to select, Enter to confirm, A to toggle all, Ctrl+C to cancel)`) to maximize feature discoverability and improve power-user efficiency.

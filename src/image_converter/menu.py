@@ -22,9 +22,7 @@ from .main import console
 
 INSTR_SELECT = "(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)"
 INSTR_CONFIRM = "(y/n, Enter to confirm, Ctrl+C to cancel)"
-INSTR_MULTI_SELECT = (
-    "(Use Space to select/deselect, Enter to confirm, Ctrl+C to cancel)"
-)
+INSTR_MULTI_SELECT = "(Use arrow keys to navigate, Space to select, Enter to confirm, A to toggle all, Ctrl+C to cancel)"
 INSTR_CONFIRM = "(y/n, Enter to confirm, Ctrl+C to cancel)"
 
 
