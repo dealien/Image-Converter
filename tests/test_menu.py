@@ -623,3 +623,47 @@ def test_interactive_menu_general_exception(mock_print, mock_select_images):
     menu.interactive_menu()
 
     mock_print.assert_called_with("[red]An unexpected error occurred.[/]")
+
+
+def test_select_manipulations_cancel_selection(mock_questionary):
+    """Verifies KeyboardInterrupt is raised when Ctrl-C is pressed during manipulation selection."""
+    mock_questionary.select.return_value.ask.return_value = None
+    with pytest.raises(KeyboardInterrupt):
+        menu.select_manipulations([])
+
+
+def test_select_manipulations_process_empty_pipeline_confirm_cancel(mock_questionary):
+    """Verifies KeyboardInterrupt is raised when Ctrl-C is pressed during empty pipeline confirmation."""
+    mock_questionary.select.return_value.ask.side_effect = ["PROCESS"]
+    mock_questionary.confirm.return_value.ask.return_value = None
+    with pytest.raises(KeyboardInterrupt):
+        menu.select_manipulations([])
+
+
+def test_select_manipulations_flatten_confirm_cancel(mock_questionary):
+    """Verifies KeyboardInterrupt is raised when Ctrl-C is pressed during flatten confirmation."""
+    mock_questionary.select.return_value.ask.side_effect = ["PROCESS"]
+    mock_questionary.confirm.return_value.ask.side_effect = [True, None]
+    with pytest.raises(KeyboardInterrupt):
+        menu.select_manipulations([])
+
+
+@patch("image_converter.menu.questionary.confirm")
+@patch("image_converter.menu.questionary.checkbox")
+@patch("image_converter.menu.os.path.isdir", return_value=True)
+def test_select_images_no_images_reselect_cancel(
+    mock_isdir, mock_checkbox, mock_confirm
+):
+    """Verifies KeyboardInterrupt is raised when Ctrl-C is pressed during re-select confirmation."""
+    with (
+        patch("image_converter.menu.os.listdir", return_value=["img1.png"]),
+        patch("image_converter.menu.os.path.isfile", return_value=True),
+        patch("image_converter.rich_menu.Image.open") as mock_open,
+        patch("image_converter.menu.os.path.getsize", return_value=1024),
+    ):
+        mock_open.return_value.__enter__.return_value.size = (100, 100)
+        mock_open.return_value.__enter__.return_value.format = "PNG"
+        mock_checkbox.return_value.ask.return_value = []
+        mock_confirm.return_value.ask.return_value = None
+        with pytest.raises(KeyboardInterrupt):
+            menu.select_images()
