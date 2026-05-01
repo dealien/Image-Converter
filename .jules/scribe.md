@@ -12,3 +12,7 @@
 ## 2025-05-19 - Using string literals for type hinting missing parameters
 **Learning:** When adding type hints to undocumented functions without module-level imports, use string literals (e.g., `"numpy.ndarray"`) to avoid runtime `NameError` exceptions while satisfying the documentation builder (`mkdocs`). This was observed when adding hints to `_kovalevsky_scan` which caused `mkdocs build --strict` to fail until string literal hints were applied.
 **Action:** When acting as Scribe to add type hints to undocumented inner or private functions, evaluate if the type module is imported globally. If not, use string-based forward references (`"type"`) to add the hint safely.
+
+## 2025-05-19 - MkDocs Pygments Incompatibility
+**Learning:** Building MkDocs documentation with the `mkdocstrings-python` plugin can fail with an obfuscated `AttributeError: 'NoneType' object has no attribute 'replace'` within Python's built-in `html.escape` function. This crash is triggered by an upstream regression in Pygments version 2.20.0 when formatting syntax-highlighted code blocks with missing optional file names.
+**Action:** When adding or verifying MkDocs documentation for Python API modules, downgrade the `pygments` package to version `2.18.0` if build errors occur, and ensure all required type hints use string literals to avoid import crashes during documentation generation.

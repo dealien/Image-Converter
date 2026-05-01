@@ -21,24 +21,19 @@ def _generate_vignette_mask(mask_size: int, intensity: int) -> Image.Image:
         Image.Image: The generated base mask image.
 
     """
-    mask = Image.new("L", (mask_size, mask_size))
+    import numpy as np
 
     center = mask_size / 2.0
     factor = (intensity / 100.0) / (2.0 * center**2)
 
-    # Pre-calculate squared distances multiplied by factor for 1D arrays
-    dist_sq = [(((i - center) ** 2) * factor) for i in range(mask_size)]
+    y, x = np.ogrid[:mask_size, :mask_size]
+    dist_sq = ((x - center) ** 2 + (y - center) ** 2) * factor
 
-    data = []
-    append = data.append
-    for y in range(mask_size):
-        dy2 = dist_sq[y]
-        for x in range(mask_size):
-            val = 1.0 - (dist_sq[x] + dy2)
-            append(int(round(255 * val)) if val > 0.0 else 0)
+    val = 1.0 - dist_sq
+    # Use np.round to match the original int(round(...)) behavior before casting
+    mask_data = np.round(np.clip(val * 255, 0, 255)).astype(np.uint8)
 
-    mask.putdata(data)
-    return mask
+    return Image.fromarray(mask_data, mode="L")
 
 
 def _generate_scaled_lut(factor: float) -> list[int]:
