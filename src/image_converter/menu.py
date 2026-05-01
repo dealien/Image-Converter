@@ -23,7 +23,7 @@ from .main import console
 INSTR_SELECT = "(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)"
 INSTR_CONFIRM = "(y/n, Enter to confirm, Ctrl+C to cancel)"
 INSTR_MULTI_SELECT = "(Use arrow keys to navigate, Space to select, Enter to confirm, A to toggle all, Ctrl+C to cancel)"
-INSTR_CONFIRM = "(y/n, Enter to confirm, Ctrl+C to cancel)"
+INSTR_TEXT = " (Enter to confirm, Ctrl+C to cancel)"
 
 
 # --- Helper Functions ---
@@ -34,6 +34,7 @@ _CUSTOM_STYLE = Style.from_dict(
         "question": "bold",  # Questionary default bold
         "answer": "#FF9D00 bold",  # Questionary default Orange
         "default": "fg:cyan",  # Our custom Cyan for default
+        "instruction": "fg:darkgray",  # Dim color for instructions
     }
 )
 
@@ -79,6 +80,7 @@ def _ask_text(
             formatted_msg.append((style_class, str(default_val)))
             formatted_msg.append(("", "]"))
 
+        formatted_msg.append(("class:instruction", INSTR_TEXT))
         formatted_msg.append(("class:question", ": "))
         return formatted_msg
 
