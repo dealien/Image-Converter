@@ -29,4 +29,5 @@ nav:
   - API Reference: 
       - Core: api/core.md
       - Filters: api/filters.md
+      - Metadata: api/metadata.md
       - Utilities & Menu: api/utilities.md
