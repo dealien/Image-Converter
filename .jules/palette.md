@@ -29,3 +29,7 @@
 ## 2024-04-23 - Full Keyboard Navigation Hints for Multi-Select Prompts
 **Learning:** `questionary.checkbox` prompts support advanced keyboard shortcuts like 'A to toggle all' and standard arrow key navigation. If these aren't explicitly mentioned in the `instruction` string, users may rely solely on Space and Enter, leading to slower interaction when managing many items.
 **Action:** Always include complete accessibility hints for multi-select prompts (e.g., `(Use arrow keys to navigate, Space to select, Enter to confirm, A to toggle all, Ctrl+C to cancel)`) to maximize feature discoverability and improve power-user efficiency.
+
+## 2025-05-18 - Missing Keyboard Instructions in Prompt Toolkit Input
+**Learning:** When migrating from `questionary.text().ask()` to custom `prompt_toolkit` implementations (like `_ask_text`) for advanced styling, default instruction texts are often lost. Users might not know they can use Ctrl+C to safely exit or Enter to accept default inputs without explicit guidance.
+**Action:** When using `prompt_toolkit`'s `PromptSession` (e.g., in `_ask_text`), explicitly append a styled instruction string (e.g., `(Enter to confirm, Ctrl+C to cancel)`) to the formatted message buffer to maintain UX consistency and keyboard shortcut discoverability.
