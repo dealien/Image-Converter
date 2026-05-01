@@ -49,3 +49,7 @@
 ## 2024-05-24 - Questionary `KeyboardInterrupt` Uncovered Edge Cases
 **Learning:** When using interactive CLI prompts through `questionary` (like `select`, `confirm`, `checkbox`), user cancellations (e.g., pressing `Ctrl+C`) return `None`. If these are intended to propagate up as a `KeyboardInterrupt` to be cleanly caught by the main CLI loop, this specific error path must be explicitly tested. Mocking the underlying questionary return value (`mock.return_value.ask.return_value = None`) is an effective approach to guarantee this cancellation path is exercised.
 **Action:** When working on interactive CLI tools using `questionary` or similar libraries, ensure tests exist for `Ctrl+C` / `None` return values by setting `mock.return_value.ask.return_value = None` and asserting that `KeyboardInterrupt` is explicitly raised.
+
+## 2024-05-01 - Add rigorous unit tests for Look-Up Table (LUT) logic
+**Learning:** Functions that generate Look-Up Tables (LUTs) used in image processing (such as `_get_combined_contrast_lut` or `_get_combined_brightness_lut`) require tests that not only assert successful execution but strictly assert the length and exact structural composition of the generated sequence based on the specified image mode. Just executing them to improve line coverage masks potential issues.
+**Action:** When adding tests for LUT-generating functions, always assert that the returned LUT has the correct length (e.g., 256 for 'L', 256 * 3 for 'RGB', 256 * 4 for 'RGBA') and verify any constant identity preservation segments within the LUT.

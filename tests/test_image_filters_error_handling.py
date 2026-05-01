@@ -116,15 +116,21 @@ def test_combined_brightness_lut_rgb_la():
     """Verifies _get_combined_brightness_lut supports RGB and LA."""
     from image_converter.image_filters import _get_combined_brightness_lut
 
-    _get_combined_brightness_lut(50, "RGB")
-    _get_combined_brightness_lut(50, "LA")
+    res_rgb = _get_combined_brightness_lut(50, "RGB")
+    res_la = _get_combined_brightness_lut(50, "LA")
+    assert isinstance(res_rgb, tuple)
+    assert len(res_rgb) == 256 * 3
+    assert isinstance(res_la, tuple)
+    assert len(res_la) == 256 * 2
 
 
 def test_combined_brightness_lut_l():
     """Verifies _get_combined_brightness_lut supports L."""
     from image_converter.image_filters import _get_combined_brightness_lut
 
-    _get_combined_brightness_lut(50, "L")
+    res = _get_combined_brightness_lut(50, "L")
+    assert isinstance(res, tuple)
+    assert len(res) == 256
 
 
 def test_rotate_image_non_orthogonal():
@@ -142,3 +148,43 @@ def test_rotate_image_non_orthogonal():
     # What about 46 degrees? 46 / 90 = 0.511 -> round(0.511) -> 1 -> 90 degrees
     res2 = rotate_image(img, 46)
     assert res2.size == (20, 10)
+
+
+def test_combined_contrast_lut_unsupported_mode():
+    """Verifies _get_combined_contrast_lut raises ValueError for unsupported mode."""
+    from image_converter.image_filters import _get_combined_contrast_lut
+
+    with pytest.raises(ValueError, match="Unsupported mode: CMYK"):
+        _get_combined_contrast_lut(50, 128, "CMYK")
+
+
+def test_combined_contrast_lut_rgb_la():
+    """Verifies _get_combined_contrast_lut supports RGB and LA."""
+    from image_converter.image_filters import _get_combined_contrast_lut
+
+    res_rgb = _get_combined_contrast_lut(50, 128, "RGB")
+    res_la = _get_combined_contrast_lut(50, 128, "LA")
+    assert isinstance(res_rgb, tuple)
+    assert len(res_rgb) == 256 * 3
+    assert isinstance(res_la, tuple)
+    assert len(res_la) == 256 * 2
+
+
+def test_combined_contrast_lut_l():
+    """Verifies _get_combined_contrast_lut supports L."""
+    from image_converter.image_filters import _get_combined_contrast_lut
+
+    res = _get_combined_contrast_lut(50, 128, "L")
+    assert isinstance(res, tuple)
+    assert len(res) == 256
+
+
+def test_combined_contrast_lut_rgba():
+    """Verifies _get_combined_contrast_lut supports RGBA."""
+    from image_converter.image_filters import _get_combined_contrast_lut
+
+    res = _get_combined_contrast_lut(50, 128, "RGBA")
+    assert isinstance(res, tuple)
+    assert len(res) == 256 * 4
+    # The last 256 values should be the identity LUT for alpha preservation
+    assert list(res[-256:]) == list(range(256))
