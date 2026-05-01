@@ -608,12 +608,12 @@ def test_parse_metadata_input_inline_json_not_dict(mock_print):
 
 @patch("image_converter.metadata.console.print")
 def test_parse_metadata_input_json_file_not_dict(mock_print):
-    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as f:
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", dir=".") as f:
         json.dump([1, 2, 3], f)
         temp_path = f.name
 
     try:
-        assert parse_metadata_input([temp_path]) == {}
+        assert parse_metadata_input([os.path.basename(temp_path)]) == {}
         mock_print.assert_called_once()
         assert (
             "[red]Error: JSON file must contain a key-value dictionary object.[/]"

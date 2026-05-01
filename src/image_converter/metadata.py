@@ -5,6 +5,7 @@ Provides operation handlers for metadata flags (view, export, strip, copy, set, 
 
 import argparse
 import json
+import os
 from PIL import Image
 
 import piexif
@@ -237,8 +238,9 @@ def parse_metadata_input(values: list[str]) -> dict:
 
     # Check 1: File
     if len(values) == 1 and values[0].lower().endswith(".json"):
+        safe_path = os.path.basename(values[0])
         try:
-            with open(values[0], "r", encoding="utf-8") as f:
+            with open(safe_path, "r", encoding="utf-8") as f:
                 result = json.load(f)
                 if not isinstance(result, dict):
                     console.print(
@@ -339,7 +341,7 @@ def handle_export_metadata(
 
     # Store the requested file path in args if one was provided
     if values and values[0]:
-        args.export_metadata_path = values[0]
+        args.export_metadata_path = os.path.basename(values[0])
 
     return image
 
@@ -386,7 +388,7 @@ def handle_copy_metadata(
     image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
     """Extract metadata from a specified source image and apply it to the current image."""
-    source_path = values[0] if values else None
+    source_path = os.path.basename(values[0]) if values else None
     if not source_path:
         console.print(
             "  [bright_red]✗[/] [red]Source file path required for --copy-metadata.[/]"

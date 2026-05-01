@@ -71,12 +71,14 @@ class TestMetadata(unittest.TestCase):
 
     def test_parse_metadata_input_json_file(self):
         """Test parsing a JSON file."""
-        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as f:
+        with tempfile.NamedTemporaryFile(
+            "w", delete=False, suffix=".json", dir="."
+        ) as f:
             json.dump({"Artist": "Jane Doe", "Copyright": "2026"}, f)
             temp_path = f.name
 
         try:
-            values = [temp_path]
+            values = [os.path.basename(temp_path)]
             result = parse_metadata_input(values)
             self.assertEqual(result, {"Artist": "Jane Doe", "Copyright": "2026"})
         finally:
@@ -190,7 +192,9 @@ class TestMetadata(unittest.TestCase):
     def test_handle_copy_metadata(self):
         """Test copying EXIF from a source image."""
         # Create a real temporary source image with EXIF
-        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".jpg") as f:
+        with tempfile.NamedTemporaryFile(
+            "w", delete=False, suffix=".jpg", dir="."
+        ) as f:
             temp_path = f.name
 
         try:
@@ -209,7 +213,9 @@ class TestMetadata(unittest.TestCase):
 
             mock_args = MockArgs()
 
-            handle_copy_metadata(mock_image, "target.jpg", [temp_path], mock_args)
+            handle_copy_metadata(
+                mock_image, "target.jpg", [os.path.basename(temp_path)], mock_args
+            )
 
             new_exif_dict = piexif.load(mock_image.info["exif"])
             self.assertEqual(
@@ -248,12 +254,14 @@ class TestMetadata(unittest.TestCase):
     @patch("image_converter.metadata.console.print")
     def test_parse_metadata_input_json_not_dict(self, mock_print):
         """Test parsing a JSON file that is valid JSON but resolves to a list (not a dict)."""
-        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as f:
+        with tempfile.NamedTemporaryFile(
+            "w", delete=False, suffix=".json", dir="."
+        ) as f:
             json.dump(["Artist", "Jane Doe"], f)
             temp_path = f.name
 
         try:
-            result = parse_metadata_input([temp_path])
+            result = parse_metadata_input([os.path.basename(temp_path)])
             self.assertEqual(result, {})
             mock_print.assert_called_with(
                 "[red]Error: JSON file must contain a key-value dictionary object.[/]"
