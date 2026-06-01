@@ -838,6 +838,7 @@ def select_manipulations(
             choices.append(
                 questionary.Choice("   ❌ Remove an Operation", value="REMOVE")
             )
+        choices.append(questionary.Choice("   🛑 Exit", value="EXIT"))
         choices.append(questionary.Separator(line=""))
 
         # Operations Tree Root
@@ -873,6 +874,9 @@ def select_manipulations(
         ).ask()
 
         if selection is None:  # C-c
+            raise KeyboardInterrupt
+
+        if selection == "EXIT":
             raise KeyboardInterrupt
 
         if selection == "PROCESS":
