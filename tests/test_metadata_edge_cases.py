@@ -194,7 +194,9 @@ def test_handle_update_metadata_invalid_exif_dict_to_bytes(mock_print):
 
 
 def test_parse_metadata_input_json_exception():
-    with patch("json.loads", side_effect=json.JSONDecodeError("mocked JSON error", "", 0)):
+    with patch(
+        "json.loads", side_effect=json.JSONDecodeError("mocked JSON error", "", 0)
+    ):
         with patch("image_converter.metadata.console.print") as mock_print:
             assert parse_metadata_input(['{"invalid"}']) == {}
             mock_print.assert_called_once()
