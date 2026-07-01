@@ -53,3 +53,7 @@
 ## 2024-05-01 - Add rigorous unit tests for Look-Up Table (LUT) logic
 **Learning:** Functions that generate Look-Up Tables (LUTs) used in image processing (such as `_get_combined_contrast_lut` or `_get_combined_brightness_lut`) require tests that not only assert successful execution but strictly assert the length and exact structural composition of the generated sequence based on the specified image mode. Just executing them to improve line coverage masks potential issues.
 **Action:** When adding tests for LUT-generating functions, always assert that the returned LUT has the correct length (e.g., 256 for 'L', 256 * 3 for 'RGB', 256 * 4 for 'RGBA') and verify any constant identity preservation segments within the LUT.
+
+## 2024-05-27 - Test skip save logic for read-only operations
+**Learning:** When testing the skip save logic for read-only operations in `process_images_and_save`, you must properly mock `rich.progress.Progress` by hooking into the context manager using `.return_value.__enter__.return_value`. Testing UI state outputs is easiest by tracking `call_args_list` directly on the mocked `Progress` update method since `process_images_and_save` drives updates directly using the returned context object.
+**Action:** When testing components utilizing Rich's context manager (like `Progress`), ensure `__enter__` returns a fully functional MagicMock configured to track calls such as `.update()` or `.advance()`, then iterate through `call_args_list` to assert string patterns without worrying about layout objects.
