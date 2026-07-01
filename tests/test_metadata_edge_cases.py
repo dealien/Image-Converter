@@ -109,7 +109,7 @@ def test_dict_to_exif_bytes_remove_key_string_none():
 
 @patch("image_converter.metadata.console.print")
 def test_dict_to_exif_bytes_exception(mock_print):
-    with patch("piexif.dump", side_effect=Exception("mocked error")):
+    with patch("piexif.dump", side_effect=ValueError("mocked error")):
         flat_dict = {"Artist": "Jane Doe"}
         result = dict_to_exif_bytes(flat_dict)
         assert result == b""
@@ -155,7 +155,7 @@ def test_handle_update_metadata_invalid_existing_exif():
 def test_handle_strip_metadata_exif_load_exception():
     mock_image = MagicMock(spec=Image.Image)
     mock_image.info = {"exif": b"Invalid_but_not_Exif\\x00\\x00"}
-    with patch("piexif.load", side_effect=Exception("Mock load error")):
+    with patch("piexif.load", side_effect=ValueError("Mock load error")):
         handle_strip_metadata(mock_image, "test.jpg", [], MagicMock())
         assert "exif" not in mock_image.info
 
@@ -194,7 +194,7 @@ def test_handle_update_metadata_invalid_exif_dict_to_bytes(mock_print):
 
 
 def test_parse_metadata_input_json_exception():
-    with patch("json.loads", side_effect=Exception("mocked JSON error")):
+    with patch("json.loads", side_effect=json.JSONDecodeError("mocked JSON error", "", 0)):
         with patch("image_converter.metadata.console.print") as mock_print:
             assert parse_metadata_input(['{"invalid"}']) == {}
             mock_print.assert_called_once()
@@ -240,7 +240,7 @@ def test_handle_update_metadata_piexif_load_error():
     mock_image = MagicMock(spec=Image.Image)
     # It has bytes, so it tries piexif.load, but that raises an exception
     mock_image.info = {"exif": b"Invalid exif bytes that fail load"}
-    with patch("piexif.load", side_effect=Exception("Load fail")):
+    with patch("piexif.load", side_effect=ValueError("Load fail")):
         # The exception is ignored and it uses base_exif_dict=None
         handle_update_metadata(mock_image, "test.jpg", ["Artist=Jane"], MagicMock())
         assert b"Jane" in mock_image.info["exif"]
@@ -269,7 +269,7 @@ def test_handle_update_metadata_invalid_exif_dict_load():
     # Give it an existing EXIF dict but we will make it raise an Exception during piexif.load
     mock_image.info = {"exif": b"InvalidBytesToCauseLoadException"}
 
-    with patch("piexif.load", side_effect=Exception("Load Exception")):
+    with patch("piexif.load", side_effect=ValueError("Load Exception")):
         # We also need a patch to ensure it falls through silently
         # If dict_to_exif_bytes receives base_exif_dict=None, it won't merge the old tags.
         with patch(
@@ -310,7 +310,7 @@ def test_handle_strip_metadata_piexif_exception():
     mock_image.info = {"exif": piexif.dump(exif_dict)}
 
     # Make piexif.dump raise Exception on the rebuilding
-    with patch("piexif.dump", side_effect=Exception("Dump fail")):
+    with patch("piexif.dump", side_effect=ValueError("Dump fail")):
         # Should gracefully catch exception and not crash
         handle_strip_metadata(mock_image, "test.jpg", [], MagicMock())
         # Since dump failed, the 'exif' tag won't be populated with the Orientation
@@ -336,7 +336,7 @@ def test_dict_to_exif_bytes_fallback_to_0th_for_unknown_ifd():
 
 def test_load_exif_as_flat_dict_exception_during_dict_creation():
     # Make dict creation fail to hit the exception block
-    with patch("piexif.load", side_effect=Exception("Failed to load")):
+    with patch("piexif.load", side_effect=ValueError("Failed to load")):
         assert load_exif_as_flat_dict(b"valid_exif_bytes") == {}
 
 
@@ -366,7 +366,7 @@ def test_load_exif_as_flat_dict_value_not_bytes():
 
 def test_parse_metadata_input_json_file_exception():
     # File exists but fails to be read/parsed
-    with patch("builtins.open", side_effect=Exception("mocked open error")):
+    with patch("builtins.open", side_effect=OSError("mocked open error")):
         with patch("image_converter.metadata.console.print") as mock_print:
             assert parse_metadata_input(["some_file.json"]) == {}
             mock_print.assert_called_once()
@@ -446,7 +446,7 @@ def test_handle_copy_metadata_source_open_fail():
     mock_args = MagicMock()
     del mock_args.cached_source_exif
     with patch("image_converter.metadata.console.print") as mock_print:
-        with patch("PIL.Image.open", side_effect=Exception("Failed to open")):
+        with patch("PIL.Image.open", side_effect=OSError("Failed to open")):
             handle_copy_metadata(
                 mock_image, "test.jpg", ["some_bad_file.jpg"], mock_args
             )
@@ -457,7 +457,7 @@ def test_handle_copy_metadata_source_open_fail():
 def test_handle_update_metadata_base_dict_not_built():
     mock_image = MagicMock(spec=Image.Image)
     mock_image.info = {"exif": b"Invalid_but_not_Exif\\x00\\x00"}
-    with patch("piexif.load", side_effect=Exception("Failed to load")):
+    with patch("piexif.load", side_effect=ValueError("Failed to load")):
         with patch(
             "image_converter.metadata.dict_to_exif_bytes", return_value=b"test"
         ) as mock_dict_to_bytes:
