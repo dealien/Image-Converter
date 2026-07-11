@@ -157,6 +157,15 @@ image-converter "images/*.jpg" --set-metadata batch_tags.json
 
 The true power of this tool lies in its ability to chain multiple operations. The manipulations are applied sequentially in the order you provide them.
 
+```mermaid
+graph LR
+    A[Original Image] -->|--invert| B(Inverted Colors)
+    B -->|--flip vertical| C(Flipped Vertically)
+    C -->|--grayscale| D(Grayscale)
+    D -->|--remove-background| E(Transparent Background)
+    E -->|--invert| F[Final Image]
+```
+
 For example, to take an image, invert its colors, flip it vertically, convert it to grayscale, remove the background, and then invert the colors *again*, you can run:
 
 ```bash
