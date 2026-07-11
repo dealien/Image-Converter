@@ -2,7 +2,7 @@ import argparse
 import os
 import shutil
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 
 from image_converter import processing
@@ -198,3 +198,36 @@ class TestProcessImagesAndSaveEdgeCases(unittest.TestCase):
 
         mock_save.assert_called_once()
         self.assertEqual(mock_save.call_args[1].get("format"), "TIFF")
+
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.Progress")
+    @patch("image_converter.processing.Image.open")
+    def test_read_only_skip_save(self, mock_open, mock_progress_class, mock_print):
+        """Verifies that processing skips the save step for read-only operations when no format is specified."""
+        # Configure mock progress context manager
+        mock_progress = MagicMock()
+        mock_progress_class.return_value.__enter__.return_value = mock_progress
+
+        mock_img = MagicMock()
+        mock_img.mode = "RGB"
+        mock_open.return_value.__enter__.return_value = mock_img
+
+        images_data = [(self.test_image_name, self.test_image_path)]
+        ordered_operations = [{"dest": "view_metadata", "values": []}]
+
+        args = argparse.Namespace()
+        args.format = None
+        args.quality = None
+
+        processing.process_images_and_save(images_data, ordered_operations, args)
+
+        # Verify that the skip save message was displayed
+        found_skip = False
+        for call in mock_progress.update.call_args_list:
+            if "Skipping save, read-only" in str(call):
+                found_skip = True
+
+        self.assertTrue(
+            found_skip, "Should have skipped saving for read-only operations"
+        )
+        mock_img.save.assert_not_called()
