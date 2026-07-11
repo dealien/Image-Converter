@@ -5,6 +5,7 @@ Provides operation handlers for metadata flags (view, export, strip, copy, set, 
 
 import argparse
 import json
+import struct
 from PIL import Image
 
 import piexif
@@ -128,7 +129,7 @@ def load_exif_as_flat_dict(exif_bytes: bytes) -> dict:
 
     try:
         exif_dict = piexif.load(exif_bytes)
-    except Exception:
+    except (ValueError, piexif.InvalidImageDataError, struct.error, OSError):
         return {}
 
     flat_dict = {}
@@ -147,7 +148,7 @@ def load_exif_as_flat_dict(exif_bytes: bytes) -> dict:
                     # Clean up null terminators
                     val_str = value.decode("utf-8").rstrip("\x00")
                     flat_dict[tag_name] = val_str
-                except Exception:
+                except UnicodeDecodeError:
                     # Keep raw bytes repr or ignore if too complex for JSON
                     flat_dict[tag_name] = str(value)
             elif (
@@ -212,7 +213,7 @@ def dict_to_exif_bytes(flat_dict: dict, base_exif_dict: dict = None) -> bytes:
 
     try:
         return piexif.dump(exif_dict)
-    except Exception as e:
+    except (ValueError, piexif.InvalidImageDataError, struct.error) as e:
         console.print(f"[red]Error building EXIF bytes: {e}[/]")
         return b""
 
@@ -258,7 +259,7 @@ def parse_metadata_input(values: list[str]) -> dict:
         except json.JSONDecodeError:
             console.print("[red]Error: File is not valid JSON.[/]")
             return {}
-        except Exception:
+        except OSError:
             console.print("[red]Error reading JSON file.[/]")
             return {}
 
@@ -274,9 +275,6 @@ def parse_metadata_input(values: list[str]) -> dict:
             return result
         except json.JSONDecodeError:
             console.print("[red]Error: Inline JSON is not valid.[/]")
-            return {}
-        except Exception:
-            console.print("[red]Error parsing inline JSON.[/]")
             return {}
 
     # Check 3: Key=Value pairs
@@ -372,7 +370,7 @@ def handle_strip_metadata(
                     "thumbnail": None,
                 }
                 new_info["exif"] = piexif.dump(new_exif)
-        except Exception:
+        except (ValueError, piexif.InvalidImageDataError, struct.error, OSError):
             console.print(
                 "  [dim yellow]Warning: Failed to parse orientation EXIF data. Skipping.[/]"
             )
@@ -402,7 +400,7 @@ def handle_copy_metadata(
         try:
             with Image.open(source_path) as src_img:
                 args.cached_source_exif = src_img.info.get("exif", b"")
-        except Exception as e:
+        except OSError as e:
             console.print(
                 f"  [bright_red]✗[/] [red]Failed to open source image '{source_path}': {e}[/]"
             )
@@ -451,7 +449,7 @@ def handle_update_metadata(
     if existing_exif_bytes and existing_exif_bytes != b"Exif\x00\x00":
         try:
             base_exif_dict = piexif.load(existing_exif_bytes)
-        except Exception:
+        except (ValueError, piexif.InvalidImageDataError, struct.error, OSError):
             console.print(
                 "  [dim yellow]Warning: Failed to load existing EXIF data. Skipping.[/]"
             )

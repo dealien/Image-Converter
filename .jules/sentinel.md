@@ -17,3 +17,8 @@
 **Vulnerability:** The application was globally overriding `Image.MAX_IMAGE_PIXELS = 100_000_000` to "prevent decompression bomb attacks". However, Pillow's default is actually stricter (~89.4 million pixels). By explicitly setting it higher, the code inadvertently weakened security against DoS attacks. Additionally, modifying module-level state locally inside functions (`rich_menu.py`) is a dangerous practice that can cause unexpected side effects across the application.
 **Learning:** Do not manually override security limits unless explicitly required, and understand the default protections of established libraries before attempting to "enhance" them.
 **Prevention:** Rely on Pillow's default decompression bomb protection. Never set global state variables within local function scope.
+
+## 2025-07-01 - Replace broad exception blocks in metadata handler
+**Vulnerability:** The application was catching broad `Exception` in metadata parsing operations (e.g., `piexif.load`, `piexif.dump`, byte decoding), which could mask logic errors and bugs like `NameError`, preventing them from surfacing for debugging, and thus breaking fail-secure principles.
+**Learning:** Broad exception handling is often used initially for robustness but it hides underlying issues. In a local CLI application, hiding error details with generic catch-alls hinders maintainability.
+**Prevention:** Use targeted exception handling (e.g., catching `ValueError`, `struct.error`, `OSError`, `UnicodeDecodeError`) so that expected failures are handled gracefully and unexpected bugs bubble up appropriately.
