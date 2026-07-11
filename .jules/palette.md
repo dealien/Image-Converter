@@ -33,3 +33,7 @@
 ## 2025-05-18 - Missing Keyboard Instructions in Prompt Toolkit Input
 **Learning:** When migrating from `questionary.text().ask()` to custom `prompt_toolkit` implementations (like `_ask_text`) for advanced styling, default instruction texts are often lost. Users might not know they can use Ctrl+C to safely exit or Enter to accept default inputs without explicit guidance.
 **Action:** When using `prompt_toolkit`'s `PromptSession` (e.g., in `_ask_text`), explicitly append a styled instruction string (e.g., `(Enter to confirm, Ctrl+C to cancel)`) to the formatted message buffer to maintain UX consistency and keyboard shortcut discoverability.
+
+## 2025-03-04 - Explicit Exit Options in Interactive CLI Menus
+**Learning:** Adding a clear visual "Exit" option in the main operations menu avoids user frustration of having to rely purely on keyboard shortcuts (`Ctrl+C`) to quit the interactive UI safely.
+**Action:** Always provide explicit, discoverable exit paths in terminal menus alongside keyboard interrupt handlers.

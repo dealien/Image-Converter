@@ -667,3 +667,10 @@ def test_select_images_no_images_reselect_cancel(
         mock_confirm.return_value.ask.return_value = None
         with pytest.raises(KeyboardInterrupt):
             menu.select_images()
+
+
+def test_select_manipulations_exit_selection(mock_questionary):
+    """Verifies KeyboardInterrupt is raised when 'EXIT' is selected."""
+    mock_questionary.select.return_value.ask.return_value = "EXIT"
+    with pytest.raises(KeyboardInterrupt):
+        menu.select_manipulations([])
