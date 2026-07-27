@@ -6,7 +6,8 @@ edge detection, color balance, hue rotation, posterization, borders, and rotatio
 """
 
 import functools
-from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
+
+from PIL import Image, ImageColor, ImageEnhance, ImageFilter, ImageOps
 
 
 @functools.lru_cache(maxsize=128)
@@ -397,6 +398,9 @@ def invert_colors(image: Image.Image) -> Image.Image:
         Image.Image: The image with inverted colors.
 
     """
+    if image.mode in ("1", "RGB", "L"):
+        return ImageOps.invert(image)
+
     _INVERT_LUT = [255 - i for i in range(256)]
 
     if image.mode in ("P", "PA") and image.getpalette():
@@ -408,12 +412,9 @@ def invert_colors(image: Image.Image) -> Image.Image:
     if image.mode in ("LA", "La"):
         return image.point(_INVERT_LUT + _IDENTITY_LUT)
 
-    if image.mode in ("RGB", "L", "CMYK", "YCbCr", "LAB", "HSV"):
+    if image.mode in ("CMYK", "YCbCr", "LAB", "HSV"):
         lut = _INVERT_LUT * len(image.getbands())
         return image.point(lut)
-
-    if image.mode in ("RGB", "L"):
-        return ImageOps.invert(image)
 
     return ImageOps.invert(image.convert("RGB"))
 
@@ -493,9 +494,8 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
     try:
         # Not every system has scikit-image installed, and it's not a required
         # dependency for the main functionality
-        from skimage import feature, filters
-
         import numpy as np
+        from skimage import feature, filters
     except ImportError:
         raise ImportError("scikit-image and numpy are required for edge detection.")
 
@@ -561,6 +561,8 @@ def _get_image_mean_luminance(image: Image.Image) -> int:
     from PIL import ImageStat
 
     if image.mode in ("L", "1"):
+        return int(round(ImageStat.Stat(image).mean[0]))
+    elif image.mode.startswith("I") or image.mode == "F":
         return int(round(ImageStat.Stat(image).mean[0]))
     elif image.mode in ("LAB", "LA", "La"):
         return int(round(ImageStat.Stat(image.getchannel("L")).mean[0]))
@@ -901,7 +903,7 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     elif image.mode == "CMYK":
         lut = lut_channel * 4
     else:
-        if "A" in image.mode or "a" in image.mode:
+        if image.mode in ("RGBA", "LA", "PA", "RGBa", "La"):
             lut = lut_channel * max(1, num_bands - 1) + _IDENTITY_LUT
         else:
             lut = lut_channel * num_bands

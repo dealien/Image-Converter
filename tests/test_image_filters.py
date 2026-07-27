@@ -1,27 +1,27 @@
-import unittest
 import os
 import random
+import unittest
 from unittest.mock import MagicMock
+
+import numpy as np
 from PIL import Image
+
 from image_converter.image_filters import (
-    invert_colors,
-    grayscale,
-    edge_detection,
     adjust_brightness,
     adjust_contrast,
     adjust_saturation,
     apply_blur,
-    apply_sharpen,
-    apply_color_balance,
-    rotate_hue,
-    apply_posterize,
     apply_border,
-    rotate_image,
+    apply_color_balance,
+    apply_posterize,
+    apply_sharpen,
     apply_vignette,
+    edge_detection,
+    grayscale,
+    invert_colors,
+    rotate_hue,
+    rotate_image,
 )
-
-
-import numpy as np
 
 
 class TestImageFilters(unittest.TestCase):
@@ -643,13 +643,24 @@ class TestExtendedImageModeLUTs(unittest.TestCase):
         self.assertEqual(posterized.mode, "YCbCr")
 
     def test_lab_mode_luts(self):
-        """Test brightness and contrast on LAB images."""
+        """Test brightness, contrast, and posterize on LAB images."""
         img = Image.new("LAB", (20, 20), (128, 128, 128))
         brightened = adjust_brightness(img, 15)
         self.assertEqual(brightened.mode, "LAB")
 
         contrasted = adjust_contrast(img, 15)
         self.assertEqual(contrasted.mode, "LAB")
+
+        posterized = apply_posterize(img, bits=4)
+        self.assertEqual(posterized.mode, "LAB")
+        pixel = posterized.getpixel((0, 0))
+        self.assertEqual(len(pixel), 3)
+
+    def test_mode_1_invert(self):
+        """Test invert_colors on binary mode '1' images preserving mode."""
+        img = Image.new("1", (10, 10), 0)
+        inverted = invert_colors(img)
+        self.assertEqual(inverted.mode, "1")
 
     def test_hsv_mode_luts(self):
         """Test brightness, contrast, and hue rotation on HSV images."""
