@@ -27,7 +27,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-cov",
-    "ruff",
+    "ruff==0.15.5",
 ]
 docs = [
     "mkdocs==1.6.1",
@@ -45,6 +45,10 @@ where = ["src"]
 
 [tool.ruff]
 line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["E501", "E402", "B904", "B905", "B007"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
