@@ -15,6 +15,7 @@ This is a versatile Python project designed to streamline everyday workflows for
 - ✂️ **Remove Background:** Automatically removes the background from an image.
 - 📐 **Scale & Resize:** Resizes images by a specific factor (e.g., `2x`) or to fit within given dimensions (e.g., `800px 600px`). Supports various resampling filters.
 - 🎨 **Image Filters & Adjustments:**
+  - Expanded native image mode support (`CMYK`, `YCbCr`, `LAB`, `HSV`, `P`, `PA`, `1`, `I;16`, `RGBA`, `LA`) across all LUT processing filters.
   - Invert colors or convert to grayscale.
   - Adjust brightness, contrast, and saturation.
   - Adjust color balance (RGB channels) or rotate Hue.

@@ -594,10 +594,98 @@ class TestImageColorOps(unittest.TestCase):
         self.assertEqual(posterized_img.getpixel((0, 0))[1], 128)
 
     def test_posterize_non_standard_mode(self):
-        """Verifies that non-standard modes are safely converted before posterization."""
+        """Verifies that non-standard modes like CMYK are posterized natively preserving mode."""
         cmyk_img = Image.new("CMYK", (10, 10), (100, 150, 200, 50))
         posterized_img = apply_posterize(cmyk_img, bits=4)
-        self.assertEqual(posterized_img.mode, "RGB")
+        self.assertEqual(posterized_img.mode, "CMYK")
+
+    def test_invert_colors_not_rgba_rgb_l(self):
+        """Verifies color inversion natively supports modes like CMYK preserving mode."""
+        img = Image.new("CMYK", (10, 10), (100, 50, 20, 10))
+        inverted = invert_colors(img)
+        self.assertEqual(inverted.mode, "CMYK")
+
+    def test_apply_color_balance_not_rgb_rgba(self):
+        """Verifies color balance natively applies to non-RGB/RGBA modes."""
+        img = Image.new("CMYK", (10, 10), (100, 50, 20, 10))
+        balanced = apply_color_balance(img, 1.5, 1.0, 1.0)
+        self.assertEqual(balanced.mode, "CMYK")
+
+
+class TestExtendedImageModeLUTs(unittest.TestCase):
+    """Tests LUT-based operations across extended Pillow image modes."""
+
+    def test_cmyk_mode_luts(self):
+        """Test brightness, contrast, posterize, and invert on CMYK images."""
+        img = Image.new("CMYK", (20, 20), (100, 50, 200, 20))
+        brightened = adjust_brightness(img, 20)
+        self.assertEqual(brightened.mode, "CMYK")
+
+        contrasted = adjust_contrast(img, 20)
+        self.assertEqual(contrasted.mode, "CMYK")
+
+        posterized = apply_posterize(img, 4)
+        self.assertEqual(posterized.mode, "CMYK")
+
+        inverted = invert_colors(img)
+        self.assertEqual(inverted.mode, "CMYK")
+
+    def test_ycbcr_mode_luts(self):
+        """Test brightness, contrast, and posterize on YCbCr images."""
+        img = Image.new("YCbCr", (20, 20), (128, 100, 150))
+        brightened = adjust_brightness(img, 10)
+        self.assertEqual(brightened.mode, "YCbCr")
+
+        contrasted = adjust_contrast(img, 10)
+        self.assertEqual(contrasted.mode, "YCbCr")
+
+        posterized = apply_posterize(img, 4)
+        self.assertEqual(posterized.mode, "YCbCr")
+
+    def test_lab_mode_luts(self):
+        """Test brightness and contrast on LAB images."""
+        img = Image.new("LAB", (20, 20), (128, 128, 128))
+        brightened = adjust_brightness(img, 15)
+        self.assertEqual(brightened.mode, "LAB")
+
+        contrasted = adjust_contrast(img, 15)
+        self.assertEqual(contrasted.mode, "LAB")
+
+    def test_hsv_mode_luts(self):
+        """Test brightness, contrast, and hue rotation on HSV images."""
+        img = Image.new("HSV", (20, 20), (100, 200, 150))
+        brightened = adjust_brightness(img, 20)
+        self.assertEqual(brightened.mode, "HSV")
+
+        rotated = rotate_hue(img, 90)
+        self.assertEqual(rotated.mode, "HSV")
+
+    def test_palette_mode_luts(self):
+        """Test brightness, contrast, and posterize on Palette (P) images."""
+        img_rgb = Image.new("RGB", (20, 20), (100, 150, 200))
+        img_p = img_rgb.convert("P")
+        self.assertEqual(img_p.mode, "P")
+
+        brightened = adjust_brightness(img_p, 25)
+        self.assertEqual(brightened.mode, "P")
+
+        contrasted = adjust_contrast(img_p, 25)
+        self.assertEqual(contrasted.mode, "P")
+
+        posterized = apply_posterize(img_p, 4)
+        self.assertEqual(posterized.mode, "P")
+
+        inverted = invert_colors(img_p)
+        self.assertEqual(inverted.mode, "P")
+
+    def test_16bit_integer_mode_luts(self):
+        """Test 16-bit integer (I;16) brightness and contrast adjustments."""
+        img = Image.new("I;16", (20, 20), 30000)
+        brightened = adjust_brightness(img, 10)
+        self.assertTrue(brightened.mode.startswith("I;16"))
+
+        contrasted = adjust_contrast(img, 10)
+        self.assertTrue(contrasted.mode.startswith("I;16"))
 
     def test_posterize_fallback_mode(self):
         """Verifies the fallback LUT application for unexpected but valid modes."""
@@ -856,7 +944,7 @@ class TestImageFiltersEdgeCases(unittest.TestCase):
         """Verifies color inversion for images not in RGBA, RGB, or L mode (e.g. CMYK)."""
         img = Image.new("CMYK", (10, 10), (100, 50, 20, 10))
         inverted = invert_colors(img)
-        self.assertEqual(inverted.mode, "RGB")
+        self.assertEqual(inverted.mode, "CMYK")
 
     def test_edge_detection_missing_deps(self):
         """Verifies that an ImportError is raised if scikit-image is missing."""
@@ -889,10 +977,10 @@ class TestImageFiltersEdgeCases(unittest.TestCase):
         self.assertIs(sharpened, img)
 
     def test_apply_color_balance_not_rgb_rgba(self):
-        """Verifies that color balancing a grayscale (L) image converts it to RGB."""
-        img = Image.new("L", (10, 10), 128)
+        """Verifies color balance natively supports non-RGB/RGBA modes (e.g. CMYK)."""
+        img = Image.new("CMYK", (10, 10), (100, 50, 20, 10))
         balanced = apply_color_balance(img, 1.5, 1.0, 1.0)
-        self.assertEqual(balanced.mode, "RGB")
+        self.assertEqual(balanced.mode, "CMYK")
 
     def test_apply_posterize_l_mode(self):
         """Verifies that posterizing an L mode image returns an L mode image."""

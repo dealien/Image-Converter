@@ -51,6 +51,18 @@ def rgba_image(rgb_image):
     return rgba
 
 
+@pytest.fixture
+def cmyk_image(rgb_image):
+    """Create a CMYK version of the test image."""
+    return rgb_image.convert("CMYK")
+
+
+@pytest.fixture
+def palette_image(rgb_image):
+    """Create a Palette (P) version of the test image."""
+    return rgb_image.convert("P")
+
+
 # --- Invert Colors ---
 
 
@@ -78,6 +90,14 @@ def test_bench_adjust_brightness_rgb(benchmark, rgb_image):
 
 def test_bench_adjust_brightness_rgba(benchmark, rgba_image):
     benchmark(adjust_brightness, rgba_image, 50)
+
+
+def test_bench_adjust_brightness_cmyk(benchmark, cmyk_image):
+    benchmark(adjust_brightness, cmyk_image, 50)
+
+
+def test_bench_adjust_brightness_palette(benchmark, palette_image):
+    benchmark(adjust_brightness, palette_image, 50)
 
 
 # --- Contrast ---
