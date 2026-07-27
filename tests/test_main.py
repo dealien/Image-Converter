@@ -3,17 +3,16 @@
 import os
 import sys
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from PIL import Image, ImageChops
 
+# Import the image filter functions to create an expected image
+from image_converter.image_filters import grayscale, invert_colors  # noqa: E402
 
 # Add the project root to the Python path
-
 # Import the main function that we want to test
 from image_converter.main import main  # noqa: E402
-
-# Import the image filter functions to create an expected image
-from image_converter.image_filters import invert_colors, grayscale  # noqa: E402
 
 
 class TestMain(unittest.TestCase):
@@ -104,8 +103,9 @@ class TestMain(unittest.TestCase):
 
     def test_store_in_order_action(self):
         """Test the StoreInOrder argparse action handles None, scalars, and multiple ops."""
-        from image_converter.main import StoreInOrder
         import argparse
+
+        from image_converter.main import StoreInOrder
 
         parser = argparse.ArgumentParser()
         parser.add_argument("--scale", action=StoreInOrder, dest="scale")

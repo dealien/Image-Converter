@@ -1,8 +1,10 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 from prompt_toolkit.validation import ValidationError
-from unittest.mock import MagicMock, patch
-from image_converter.menu import prompt_for_scale_options, _ask_text, select_images
+
 from image_converter import menu
+from image_converter.menu import _ask_text, prompt_for_scale_options, select_images
 
 # --- Fixtures ---
 

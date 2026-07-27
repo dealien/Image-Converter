@@ -1,13 +1,14 @@
 import pytest
 from PIL import Image
+
 from image_converter.image_filters import (
     adjust_brightness,
     adjust_contrast,
     adjust_saturation,
     apply_blur,
+    apply_posterize,
     apply_sharpen,
     rotate_hue,
-    apply_posterize,
 )
 
 

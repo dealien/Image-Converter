@@ -4,25 +4,25 @@ import numpy as np
 import pytest
 from PIL import Image
 
+from image_converter.flip_image import flip_image
 from image_converter.image_filters import (
-    invert_colors,
-    grayscale,
     adjust_brightness,
     adjust_contrast,
     adjust_saturation,
     apply_blur,
-    apply_sharpen,
-    apply_color_balance,
-    rotate_hue,
-    apply_posterize,
     apply_border,
-    rotate_image,
+    apply_color_balance,
+    apply_posterize,
+    apply_sharpen,
     apply_vignette,
     edge_detection,
+    grayscale,
+    invert_colors,
+    rotate_hue,
+    rotate_image,
 )
-from image_converter.flip_image import flip_image
-from image_converter.scale_image import scale_image
 from image_converter.remove_background import trim
+from image_converter.scale_image import scale_image
 
 
 @pytest.fixture(params=[512, 2000], ids=["512x512", "2000x2000"])

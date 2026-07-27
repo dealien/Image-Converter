@@ -1,6 +1,6 @@
+import glob
 import os
 import shutil
-import glob
 
 
 def setup_test_images():

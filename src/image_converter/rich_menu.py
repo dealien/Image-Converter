@@ -4,17 +4,17 @@ Utilizes the `rich` and `questionary` libraries to render formatted tables,
 selection menus, and pipeline summaries for the interactive CLI.
 """
 
-import os
-import questionary
 import concurrent.futures
+import os
 from typing import Any
-from PIL import Image
 
-from rich.table import Table
-from rich.text import Text
-from rich.panel import Panel
+import questionary
+from PIL import Image
 from rich import box
 from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 
 INSTR_CHECKBOX = "(Use arrow keys to navigate, Space to select, Enter to confirm, A to toggle all, Ctrl+C to cancel)"
 

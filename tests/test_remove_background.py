@@ -3,10 +3,10 @@
 import os
 import unittest
 from unittest.mock import patch
+
 from PIL import Image, ImageChops
 
 # Add the project root to the Python path
-
 from image_converter.remove_background import remove_background, trim  # noqa: E402
 
 

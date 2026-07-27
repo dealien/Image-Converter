@@ -10,7 +10,6 @@ import time
 from pathlib import Path
 
 from PIL import Image
-
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
@@ -36,25 +35,25 @@ from .image_filters import (
     apply_color_balance,
     apply_posterize,
     apply_sharpen,
+    apply_vignette,
     edge_detection,
     grayscale,
     invert_colors,
     rotate_hue,
     rotate_image,
-    apply_vignette,
+)
+from .metadata import (
+    handle_author,
+    handle_copy_metadata,
+    handle_copyright,
+    handle_export_metadata,
+    handle_set_metadata,
+    handle_strip_metadata,
+    handle_update_metadata,
+    handle_view_metadata,
 )
 from .remove_background import remove_background
 from .scale_image import scale_image
-from .metadata import (
-    handle_view_metadata,
-    handle_export_metadata,
-    handle_strip_metadata,
-    handle_copy_metadata,
-    handle_set_metadata,
-    handle_update_metadata,
-    handle_author,
-    handle_copyright,
-)
 
 
 class StyledTimeElapsedColumn(TimeElapsedColumn):

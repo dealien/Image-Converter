@@ -6,9 +6,9 @@ Provides operation handlers for metadata flags (view, export, strip, copy, set, 
 import argparse
 import json
 import struct
-from PIL import Image
 
 import piexif
+from PIL import Image
 from rich.console import Console
 
 console = Console()

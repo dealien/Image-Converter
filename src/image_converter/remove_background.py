@@ -5,8 +5,9 @@ and trim empty space from the resulting image.
 """
 
 import functools
-from rembg import remove
+
 from PIL import Image, ImageOps
+from rembg import remove
 
 
 def remove_background(

@@ -1,11 +1,11 @@
 """Tests for the image scaling functionality."""
 
 import unittest
+
 from PIL import Image
 
 # Add the parent directory to the path so we can import the scale_image module
-
-from image_converter.scale_image import scale_image, RESAMPLE_FILTERS  # noqa: E402
+from image_converter.scale_image import RESAMPLE_FILTERS, scale_image  # noqa: E402
 
 
 class TestScaleImage(unittest.TestCase):

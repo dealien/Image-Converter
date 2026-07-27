@@ -3,22 +3,23 @@
 Provides a fully interactive UI to select images and build an image processing pipeline.
 """
 
-import os
 import concurrent.futures
+import os
 from types import SimpleNamespace
-import questionary
-from prompt_toolkit import PromptSession, print_formatted_text
-from prompt_toolkit.formatted_text import FormattedText
-from prompt_toolkit.lexers import SimpleLexer
-from prompt_toolkit.validation import Validator, ValidationError
-from prompt_toolkit.styles import Style
-from prompt_toolkit.application.current import get_app
-from prompt_toolkit.document import Document
-from .processing import process_images_and_save
-from .rich_menu import run_image_selector, render_combined_menu, _get_image_metadata
 from typing import Any, Callable, Optional
 
+import questionary
+from prompt_toolkit import PromptSession, print_formatted_text
+from prompt_toolkit.application.current import get_app
+from prompt_toolkit.document import Document
+from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.lexers import SimpleLexer
+from prompt_toolkit.styles import Style
+from prompt_toolkit.validation import ValidationError, Validator
+
 from .main import console
+from .processing import process_images_and_save
+from .rich_menu import _get_image_metadata, render_combined_menu, run_image_selector
 
 INSTR_SELECT = "(Use arrow keys to navigate, Enter to select, Ctrl+C to cancel)"
 INSTR_CONFIRM = "(y/n, Enter to confirm, Ctrl+C to cancel)"

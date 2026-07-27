@@ -1,8 +1,8 @@
+import os
 import unittest
 from unittest.mock import patch
-import os
-from image_converter import rich_menu
-from image_converter import menu
+
+from image_converter import menu, rich_menu
 
 
 class TestMetadataParallel(unittest.TestCase):

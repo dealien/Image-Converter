@@ -3,21 +3,22 @@ import json
 import os
 import tempfile
 from unittest.mock import MagicMock, patch
-from PIL import Image
+
 import piexif
+from PIL import Image
 
 from image_converter.metadata import (
     cast_exif_value,
+    dict_to_exif_bytes,
+    handle_author,
+    handle_copy_metadata,
+    handle_export_metadata,
+    handle_set_metadata,
+    handle_strip_metadata,
+    handle_update_metadata,
+    handle_view_metadata,
     load_exif_as_flat_dict,
     parse_metadata_input,
-    dict_to_exif_bytes,
-    handle_view_metadata,
-    handle_copy_metadata,
-    handle_set_metadata,
-    handle_update_metadata,
-    handle_strip_metadata,
-    handle_author,
-    handle_export_metadata,
 )
 
 

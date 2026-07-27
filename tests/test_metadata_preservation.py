@@ -1,9 +1,11 @@
-import unittest
+import argparse
 import os
 import shutil
+import unittest
+
 from PIL import Image
+
 from image_converter import processing
-import argparse
 
 
 class TestMetadataPreservation(unittest.TestCase):

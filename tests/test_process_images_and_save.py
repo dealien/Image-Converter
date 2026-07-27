@@ -1,10 +1,11 @@
 """Unit tests for the main image processing pipeline in processing.py."""
 
-import unittest
-from unittest.mock import patch
 import argparse
 import os
 import shutil
+import unittest
+from unittest.mock import patch
+
 from PIL import Image, ImageChops
 
 from image_converter import processing
@@ -118,7 +119,7 @@ class TestProcessImagesAndSave(unittest.TestCase):
         processing.process_images_and_save(images_data, ordered_operations, args)
 
         # Expected output from manual application
-        from image_converter.image_filters import invert_colors, grayscale
+        from image_converter.image_filters import grayscale, invert_colors
 
         with Image.open(self.test_image_path) as img:
             expected_image = grayscale(invert_colors(img.copy()))
