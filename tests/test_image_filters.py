@@ -1054,6 +1054,101 @@ class TestImageFiltersEdgeCases(unittest.TestCase):
         shift = int(round((150 / 360.0) * 256)) % 256
         self.assertEqual(shift, 107)
 
+    def test_all_filters_preserve_palette_transparency(self):
+        """Verifies that palette mode images with transparency metadata retain transparency across all filters."""
+        p_img = Image.new("P", (10, 10), 0)
+        p_img.putpalette([0, 0, 0, 255, 255, 255] + [0] * 762)
+        p_img.info["transparency"] = 0
+
+        filters_to_test = [
+            lambda img: adjust_brightness(img, 50),
+            lambda img: adjust_contrast(img, 50),
+            lambda img: adjust_saturation(img, 50),
+            lambda img: apply_blur(img, 2),
+            lambda img: apply_sharpen(img, 50),
+            lambda img: apply_color_balance(img, 50, 50, 50),
+            lambda img: apply_posterize(img, 4),
+            lambda img: invert_colors(img),
+            lambda img: rotate_hue(img, 45),
+            lambda img: apply_vignette(img, 50),
+        ]
+
+        for fn in filters_to_test:
+            res = fn(p_img)
+            has_transparency = ("A" in res.getbands()) or ("transparency" in res.info)
+            self.assertTrue(
+                has_transparency,
+                f"Transparency metadata was lost by filter operation: {fn}",
+            )
+
+    def test_all_filters_preserve_la_alpha(self):
+        """Verifies that LA (Grayscale + Alpha) mode images preserve their alpha channel across all filters."""
+        la_img = Image.new("LA", (10, 10), (100, 128))
+
+        filters_to_test = [
+            lambda img: adjust_brightness(img, 50),
+            lambda img: adjust_contrast(img, 50),
+            lambda img: adjust_saturation(img, 50),
+            lambda img: apply_blur(img, 2),
+            lambda img: apply_sharpen(img, 50),
+            lambda img: apply_color_balance(img, 50, 50, 50),
+            lambda img: apply_posterize(img, 4),
+            lambda img: invert_colors(img),
+            lambda img: rotate_hue(img, 45),
+            lambda img: apply_vignette(img, 50),
+        ]
+
+        for fn in filters_to_test:
+            res = fn(la_img)
+            self.assertIn("A", res.getbands())
+            self.assertEqual(res.getchannel("A").getextrema(), (128, 128))
+
+    def test_all_filters_preserve_info_metadata(self):
+        """Verifies that image.info metadata (dpi, icc_profile) is retained across all filters."""
+        meta_img = Image.new("RGB", (10, 10), (100, 100, 100))
+        meta_img.info["dpi"] = (300, 300)
+        meta_img.info["icc_profile"] = b"dummy_icc_bytes"
+
+        filters_to_test = [
+            lambda img: adjust_brightness(img, 50),
+            lambda img: adjust_contrast(img, 50),
+            lambda img: adjust_saturation(img, 50),
+            lambda img: apply_blur(img, 2),
+            lambda img: apply_sharpen(img, 50),
+            lambda img: apply_color_balance(img, 50, 50, 50),
+            lambda img: apply_posterize(img, 4),
+            lambda img: invert_colors(img),
+            lambda img: rotate_hue(img, 45),
+            lambda img: apply_vignette(img, 50),
+        ]
+
+        for fn in filters_to_test:
+            res = fn(meta_img)
+            self.assertEqual(res.info.get("dpi"), (300, 300))
+            self.assertEqual(res.info.get("icc_profile"), b"dummy_icc_bytes")
+
+    def test_all_filters_zero_alpha_scenario(self):
+        """Verifies that all-zero alpha RGBA images complete without runtime errors across all filters."""
+        zero_img = Image.new("RGBA", (10, 10), (0, 0, 0, 0))
+
+        filters_to_test = [
+            lambda img: adjust_brightness(img, 50),
+            lambda img: adjust_contrast(img, 50),
+            lambda img: adjust_saturation(img, 50),
+            lambda img: apply_blur(img, 2),
+            lambda img: apply_sharpen(img, 50),
+            lambda img: apply_color_balance(img, 50, 50, 50),
+            lambda img: apply_posterize(img, 4),
+            lambda img: invert_colors(img),
+            lambda img: rotate_hue(img, 45),
+            lambda img: apply_vignette(img, 50),
+        ]
+
+        for fn in filters_to_test:
+            res = fn(zero_img)
+            self.assertIn("A", res.getbands())
+            self.assertEqual(res.getchannel("A").getextrema(), (0, 0))
+
 
 class TestPainterlyEffects(unittest.TestCase):
     """Tests for the oil-painting and cartoonify filters."""

@@ -685,21 +685,24 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
         return image
     factor = 1.0 + (saturation / 100.0)
 
-    if image.mode == "RGBA":
-        # Fast path for RGBA: enhance directly and restore original alpha
+    if "A" in image.getbands():
         alpha = image.getchannel("A")
-        enhanced = ImageEnhance.Color(image).enhance(factor)
-        enhanced.putalpha(alpha)
-        return enhanced
+    elif image.info.get("transparency") is not None:
+        alpha = image.convert("RGBA").getchannel("A")
+    else:
+        alpha = None
 
     # No-op for grayscale to preserve mode and avoid unintended conversion
     if image.mode == "L":
         return image
 
-    # Convert other modes to 'RGB'
-    if image.mode != "RGB":
-        image = image.convert("RGB")
-    return ImageEnhance.Color(image).enhance(factor)
+    working = image.convert("RGB") if image.mode != "RGB" else image
+    enhanced = ImageEnhance.Color(working).enhance(factor)
+    if image.info:
+        enhanced.info.update(image.info)
+    if alpha is not None:
+        enhanced.putalpha(alpha)
+    return enhanced
 
 
 def apply_blur(image: Image.Image, radius: int) -> Image.Image:
@@ -723,7 +726,22 @@ def apply_blur(image: Image.Image, radius: int) -> Image.Image:
         raise ValueError("Radius must be non-negative.")
     if radius == 0:
         return image
-    return image.filter(ImageFilter.GaussianBlur(radius))
+    if "A" in image.getbands():
+        alpha = image.getchannel("A")
+    elif image.info.get("transparency") is not None:
+        alpha = image.convert("RGBA").getchannel("A")
+    else:
+        alpha = None
+
+    working = (
+        image.convert("RGB") if image.mode not in ("RGB", "RGBA", "L", "LA") else image
+    )
+    blurred = working.filter(ImageFilter.GaussianBlur(radius))
+    if image.info:
+        blurred.info.update(image.info)
+    if alpha is not None:
+        blurred.putalpha(alpha)
+    return blurred
 
 
 def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
@@ -751,17 +769,20 @@ def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
     # Map 0-100 to a factor (e.g., 1.0 to 2.0)
     factor = 1.0 + (sharpness / 100.0)
 
-    if image.mode == "RGBA":
-        # Fast path for RGBA: enhance directly and restore original alpha
+    if "A" in image.getbands():
         alpha = image.getchannel("A")
-        enhanced = ImageEnhance.Sharpness(image).enhance(factor)
+    elif image.info.get("transparency") is not None:
+        alpha = image.convert("RGBA").getchannel("A")
+    else:
+        alpha = None
+
+    working = image.convert("RGB") if image.mode not in ("RGB", "L") else image
+    enhanced = ImageEnhance.Sharpness(working).enhance(factor)
+    if image.info:
+        enhanced.info.update(image.info)
+    if alpha is not None:
         enhanced.putalpha(alpha)
-        return enhanced
-
-    if image.mode not in ("RGB", "L"):
-        image = image.convert("RGB")
-
-    return ImageEnhance.Sharpness(image).enhance(factor)
+    return enhanced
 
 
 def apply_color_balance(
@@ -813,10 +834,24 @@ def apply_color_balance(
         lut_b = _get_scale_lut(b_f)
         return _apply_palette_lut(image, lut_r, lut_g, lut_b)
 
+    if image.mode in ("LA", "La"):
+        alpha = image.getchannel("A")
+        rgba = image.convert("RGBA")
+        num_bands = len(rgba.getbands())
+        lut = _get_color_balance_lut(r_f, g_f, b_f, num_bands)
+        res = rgba.point(lut)
+        if image.info:
+            res.info.update(image.info)
+        res.putalpha(alpha)
+        return res
+
     num_bands = len(image.getbands())
     lut = _get_color_balance_lut(r_f, g_f, b_f, num_bands)
 
-    return image.point(lut)
+    res = image.point(lut)
+    if image.info:
+        res.info.update(image.info)
+    return res
 
 
 def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
@@ -1054,7 +1089,12 @@ def apply_vignette(image: Image.Image, intensity: int = 50) -> Image.Image:
 
     width, height = image.size
 
-    alpha_channel = image.getchannel("A") if "A" in image.getbands() else None
+    if "A" in image.getbands():
+        alpha_channel = image.getchannel("A")
+    elif image.info.get("transparency") is not None:
+        alpha_channel = image.convert("RGBA").getchannel("A")
+    else:
+        alpha_channel = None
 
     # Needs to be RGB/L for composite
     if image.mode not in ("RGB", "L"):
@@ -1082,7 +1122,10 @@ def apply_vignette(image: Image.Image, intensity: int = 50) -> Image.Image:
     black_bg = Image.new(working_image.mode, (width, height), 0)
     vignetted = Image.composite(working_image, black_bg, full_mask)
 
-    if alpha_channel:
+    if image.info:
+        vignetted.info.update(image.info)
+
+    if alpha_channel is not None:
         vignetted.putalpha(alpha_channel)
 
     return vignetted
