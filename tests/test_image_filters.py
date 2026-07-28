@@ -1085,6 +1085,55 @@ class TestPainterlyEffects(unittest.TestCase):
             alpha_extrema = result.getchannel("A").getextrema()
             self.assertEqual(alpha_extrema, (0, 255))
 
+    def test_painterly_preserves_palette_transparency(self):
+        """Verifies that Palette images with transparency metadata retain their alpha."""
+        rgba_img = Image.new("RGBA", (10, 10), (255, 0, 0, 128))
+        palette_img = rgba_img.convert("P")
+        palette_img.info["transparency"] = 0
+
+        for effect in (apply_oil_painting, apply_cartoonify):
+            result_img = effect(palette_img, intensity=5)
+            has_alpha_band = "A" in result_img.getbands()
+            has_transparency_info = "transparency" in result_img.info
+            self.assertTrue(
+                has_alpha_band or has_transparency_info,
+                "Transparency was completely lost",
+            )
+            if has_alpha_band:
+                expected_alpha = (
+                    palette_img.convert("RGBA").getchannel("A").getextrema()
+                )
+                self.assertEqual(
+                    result_img.getchannel("A").getextrema(), expected_alpha
+                )
+
+    def test_painterly_la_mode(self):
+        """Verifies that LA (Grayscale + Alpha) images preserve their alpha channel."""
+        la_image = Image.new("LA", (24, 24), (100, 128))
+        for effect in (apply_oil_painting, apply_cartoonify):
+            result = effect(la_image, intensity=5)
+            self.assertIn("A", result.getbands())
+            self.assertEqual(result.getchannel("A").getextrema(), (128, 128))
+
+    def test_painterly_preserves_metadata_info(self):
+        """Verifies that image.info metadata (e.g. dpi, icc_profile) is retained."""
+        img = self.image.copy()
+        img.info["dpi"] = (300, 300)
+        img.info["icc_profile"] = b"dummy_icc_data"
+
+        for effect in (apply_oil_painting, apply_cartoonify):
+            result = effect(img, intensity=5)
+            self.assertEqual(result.info.get("dpi"), (300, 300))
+            self.assertEqual(result.info.get("icc_profile"), b"dummy_icc_data")
+
+    def test_painterly_zero_alpha_scenario(self):
+        """Verifies that all-zero alpha RGBA images are processed without error."""
+        zero_alpha_img = Image.new("RGBA", (24, 24), (0, 0, 0, 0))
+        for effect in (apply_oil_painting, apply_cartoonify):
+            result = effect(zero_alpha_img, intensity=5)
+            self.assertEqual(result.mode, "RGBA")
+            self.assertEqual(result.getchannel("A").getextrema(), (0, 0))
+
     def test_cartoonify_creates_edges_and_preserves_dimensions(self):
         result = apply_cartoonify(self.image, 50)
         self.assertEqual(result.mode, "RGB")

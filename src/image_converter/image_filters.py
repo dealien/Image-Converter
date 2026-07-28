@@ -1110,9 +1110,14 @@ def _prepare_painterly_image(
 
 
 def _restore_painterly_mode(
-    image: Image.Image, original_mode: str, alpha_channel: Image.Image | None
+    image: Image.Image,
+    original_mode: str,
+    alpha_channel: Image.Image | None,
+    original_info: dict | None = None,
 ) -> Image.Image:
-    """Restore alpha or grayscale mode after applying a painterly effect."""
+    """Restore alpha, metadata, or grayscale mode after applying a painterly effect."""
+    if original_info:
+        image.info.update(original_info)
     if alpha_channel is not None:
         image.putalpha(alpha_channel)
         return image
@@ -1149,7 +1154,7 @@ def apply_oil_painting(image: Image.Image, intensity: int = 50) -> Image.Image:
         channel_axis=-1,
     )
     result = Image.fromarray(img_as_ubyte(filtered), mode="RGB")
-    return _restore_painterly_mode(result, image.mode, alpha_channel)
+    return _restore_painterly_mode(result, image.mode, alpha_channel, image.info)
 
 
 def apply_cartoonify(image: Image.Image, intensity: int = 50) -> Image.Image:
@@ -1185,4 +1190,4 @@ def apply_cartoonify(image: Image.Image, intensity: int = 50) -> Image.Image:
     cartoon = filtered.copy()
     cartoon[sobel(rgb2gray(pixels)) > 0.05] = 0.0
     result = Image.fromarray(img_as_ubyte(cartoon), mode="RGB")
-    return _restore_painterly_mode(result, image.mode, alpha_channel)
+    return _restore_painterly_mode(result, image.mode, alpha_channel, image.info)
