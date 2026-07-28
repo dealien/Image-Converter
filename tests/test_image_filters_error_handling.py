@@ -13,17 +13,17 @@ from image_converter.image_filters import (
 
 
 def test_adjust_brightness_mode_conversion():
-    """Verifies adjust_brightness handles non-RGB/L mode image conversion properly."""
+    """Verifies adjust_brightness preserves HSV image mode."""
     img = Image.new("HSV", (10, 10))
     res = adjust_brightness(img, 50)
-    assert res.mode == "RGB"
+    assert res.mode == "HSV"
 
 
 def test_adjust_contrast_mode_conversion():
-    """Verifies adjust_contrast handles non-RGB/L mode image conversion properly."""
+    """Verifies adjust_contrast preserves HSV image mode."""
     img = Image.new("HSV", (10, 10))
     res = adjust_contrast(img, 50)
-    assert res.mode == "RGB"
+    assert res.mode == "HSV"
 
 
 def test_adjust_saturation_mode_conversion():
@@ -105,12 +105,13 @@ def test_apply_posterize_rgba():
     assert res.getpixel((0, 0))[3] == 128
 
 
-def test_combined_brightness_lut_unsupported_mode():
-    """Verifies _get_combined_brightness_lut raises ValueError for unsupported mode."""
+def test_combined_brightness_lut_cmyk():
+    """Verifies _get_combined_brightness_lut supports CMYK mode."""
     from image_converter.image_filters import _get_combined_brightness_lut
 
-    with pytest.raises(ValueError, match="Unsupported mode: CMYK"):
-        _get_combined_brightness_lut(50, "CMYK")
+    res_cmyk = _get_combined_brightness_lut(50, "CMYK")
+    assert isinstance(res_cmyk, tuple)
+    assert len(res_cmyk) == 256 * 4
 
 
 def test_combined_brightness_lut_rgb_la():
@@ -151,12 +152,13 @@ def test_rotate_image_non_orthogonal():
     assert res2.size == (20, 10)
 
 
-def test_combined_contrast_lut_unsupported_mode():
-    """Verifies _get_combined_contrast_lut raises ValueError for unsupported mode."""
+def test_combined_contrast_lut_cmyk():
+    """Verifies _get_combined_contrast_lut supports CMYK mode."""
     from image_converter.image_filters import _get_combined_contrast_lut
 
-    with pytest.raises(ValueError, match="Unsupported mode: CMYK"):
-        _get_combined_contrast_lut(50, 128, "CMYK")
+    res_cmyk = _get_combined_contrast_lut(50, 128, "CMYK")
+    assert isinstance(res_cmyk, tuple)
+    assert len(res_cmyk) == 256 * 4
 
 
 def test_combined_contrast_lut_rgb_la():
