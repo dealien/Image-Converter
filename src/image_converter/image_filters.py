@@ -7,6 +7,7 @@ edge detection, color balance, hue rotation, posterization, borders, and rotatio
 
 import functools
 
+import numpy as np
 from PIL import Image, ImageColor, ImageEnhance, ImageFilter, ImageOps
 
 
@@ -22,8 +23,6 @@ def _generate_vignette_mask(mask_size: int, intensity: int) -> Image.Image:
         Image.Image: The generated base mask image.
 
     """
-    import numpy as np
-
     center = mask_size / 2.0
     factor = (intensity / 100.0) / (2.0 * center**2)
 
@@ -433,10 +432,10 @@ def grayscale(image: Image.Image) -> Image.Image:
 
 
 def _kovalevsky_scan(
-    array_to_scan: "numpy.ndarray",  # noqa: F821
-    output_map: "numpy.ndarray",  # noqa: F821
-    threshold: int,  # noqa: F821
-) -> None:  # noqa: F821
+    array_to_scan: np.ndarray,
+    output_map: np.ndarray,
+    threshold: int,
+) -> None:
     """Perform a 1D Kovalevsky edge detection scan.
 
     Args:
@@ -445,8 +444,6 @@ def _kovalevsky_scan(
         threshold: The threshold for edge detection.
 
     """
-    import numpy as np
-
     n, m, _ = array_to_scan.shape
     if m >= 6:
         # Chunk rows to cap peak memory while maintaining vectorized speed
@@ -494,7 +491,6 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
     try:
         # Not every system has scikit-image installed, and it's not a required
         # dependency for the main functionality
-        import numpy as np
         from skimage import feature, filters
     except ImportError:
         raise ImportError("scikit-image and numpy are required for edge detection.")
@@ -1183,7 +1179,6 @@ def apply_oil_painting(image: Image.Image, intensity: int = 50) -> Image.Image:
     if intensity == 0:
         return image
 
-    import numpy as np
     from skimage import img_as_ubyte
     from skimage.restoration import denoise_bilateral
 
@@ -1214,7 +1209,6 @@ def apply_cartoonify(image: Image.Image, intensity: int = 50) -> Image.Image:
     if intensity == 0:
         return image
 
-    import numpy as np
     from skimage import img_as_ubyte
     from skimage.color import rgb2gray
     from skimage.filters import sobel
