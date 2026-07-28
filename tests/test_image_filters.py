@@ -1071,6 +1071,20 @@ class TestPainterlyEffects(unittest.TestCase):
         self.assertEqual(result.mode, "RGBA")
         self.assertEqual(result.getchannel("A").getextrema(), (128, 128))
 
+    def test_painterly_effects_preserve_palette_transparency(self):
+        palette_image = Image.new("P", (24, 24), 0)
+        palette_image.putpalette([0, 0, 0, 255, 255, 255] + [0] * 762)
+        palette_image.info["transparency"] = 0
+        for x in range(12, 24):
+            for y in range(24):
+                palette_image.putpixel((x, y), 1)
+
+        for effect in (apply_oil_painting, apply_cartoonify):
+            result = effect(palette_image, 50)
+            self.assertEqual(result.mode, "RGBA")
+            alpha_extrema = result.getchannel("A").getextrema()
+            self.assertEqual(alpha_extrema, (0, 255))
+
     def test_cartoonify_creates_edges_and_preserves_dimensions(self):
         result = apply_cartoonify(self.image, 50)
         self.assertEqual(result.mode, "RGB")

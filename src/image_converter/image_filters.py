@@ -1100,7 +1100,12 @@ def _prepare_painterly_image(
     image: Image.Image,
 ) -> tuple[Image.Image, Image.Image | None]:
     """Return an RGB working image and the original alpha channel, if present."""
-    alpha_channel = image.getchannel("A") if "A" in image.getbands() else None
+    if "A" in image.getbands():
+        alpha_channel = image.getchannel("A")
+    elif image.info.get("transparency") is not None:
+        alpha_channel = image.convert("RGBA").getchannel("A")
+    else:
+        alpha_channel = None
     return image.convert("RGB"), alpha_channel
 
 
