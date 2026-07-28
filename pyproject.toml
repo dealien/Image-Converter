@@ -27,7 +27,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-cov",
-    "ruff",
+    "ruff==0.16.0",
 ]
 docs = [
     "mkdocs==1.6.1",
@@ -46,10 +46,14 @@ where = ["src"]
 [tool.ruff]
 line-length = 88
 
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["E501", "E402", "B904", "B905", "B007"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_testing.py"]
-addopts = "--cov=. --cov-report=term-missing --cov-report=html --cov-report=xml"
+addopts = "--cov=. --cov-report=term-missing --cov-report=html --cov-report=xml --cov-report=lcov:lcov.info"
 
 [tool.coverage.run]
 source = ["."]

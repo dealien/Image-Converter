@@ -1,11 +1,10 @@
+import io
 import os
 import shutil
 import unittest
 from unittest.mock import patch
-import io
 
 # Add the project root to the Python path
-
 from image_converter.file_management import move_images_to_subdirectory  # noqa: E402
 
 

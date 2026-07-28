@@ -1,7 +1,8 @@
+import argparse
 import unittest
 from unittest.mock import patch
+
 from PIL import Image
-import argparse
 
 from image_converter import processing
 

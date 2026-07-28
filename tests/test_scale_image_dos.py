@@ -1,6 +1,6 @@
+import sys
 import unittest
 from unittest.mock import MagicMock
-import sys
 
 # Try to import Image; if it fails, we're in a restricted environment and should mock it
 try:

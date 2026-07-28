@@ -1,8 +1,8 @@
 import unittest
+
 from PIL import Image
 
 # Add the parent directory to the path so we can import the flip_image module
-
 from image_converter.flip_image import flip_image  # noqa: E402
 
 

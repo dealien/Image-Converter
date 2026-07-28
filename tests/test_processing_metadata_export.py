@@ -1,6 +1,6 @@
 import argparse
 import unittest
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import MagicMock, mock_open, patch
 
 
 class TestProcessingMetadataExport(unittest.TestCase):

@@ -4,5 +4,11 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.useEnvironmentsExtension": false
+    "python.useEnvironmentsExtension": false,
+    "basedpyright.analysis.typeCheckingMode": "off",
+    "coverlens.testRunner.mode": "custom",
+    "coverlens.testRunner.customCommand": ".\\.venv\\Scripts\\python.exe -m pytest --cov=. --cov-report=lcov:lcov.info",
+    "coverlens.coverageFiles": [
+        "**/lcov.info"
+    ]
 }

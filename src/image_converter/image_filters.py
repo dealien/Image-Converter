@@ -6,7 +6,8 @@ edge detection, color balance, hue rotation, posterization, borders, and rotatio
 """
 
 import functools
-from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageColor
+
+from PIL import Image, ImageColor, ImageEnhance, ImageFilter, ImageOps
 
 
 @functools.lru_cache(maxsize=128)
@@ -119,14 +120,185 @@ def _get_brightness_lut(brightness: int) -> list[int]:
 _IDENTITY_LUT = list(range(256))
 
 
+MODE_SUPPORT_MATRIX: dict[str, list[str]] = {
+    "adjust_brightness": [
+        "1",
+        "L",
+        "P",
+        "PA",
+        "LA",
+        "La",
+        "RGB",
+        "RGBA",
+        "RGBX",
+        "RGBa",
+        "CMYK",
+        "YCbCr",
+        "LAB",
+        "HSV",
+        "I;16",
+    ],
+    "adjust_contrast": [
+        "1",
+        "L",
+        "P",
+        "PA",
+        "LA",
+        "La",
+        "RGB",
+        "RGBA",
+        "RGBX",
+        "RGBa",
+        "CMYK",
+        "YCbCr",
+        "LAB",
+        "HSV",
+        "I;16",
+    ],
+    "apply_posterize": [
+        "1",
+        "L",
+        "P",
+        "PA",
+        "LA",
+        "La",
+        "RGB",
+        "RGBA",
+        "RGBX",
+        "RGBa",
+        "CMYK",
+        "YCbCr",
+        "LAB",
+        "HSV",
+    ],
+    "apply_color_balance": [
+        "L",
+        "P",
+        "PA",
+        "LA",
+        "La",
+        "RGB",
+        "RGBA",
+        "RGBX",
+        "RGBa",
+        "CMYK",
+        "YCbCr",
+        "LAB",
+        "HSV",
+    ],
+    "invert_colors": [
+        "1",
+        "L",
+        "P",
+        "PA",
+        "LA",
+        "La",
+        "RGB",
+        "RGBA",
+        "RGBX",
+        "RGBa",
+        "CMYK",
+        "YCbCr",
+        "LAB",
+        "HSV",
+    ],
+    "rotate_hue": [
+        "RGB",
+        "RGBA",
+        "RGBa",
+        "RGBX",
+        "LA",
+        "La",
+        "P",
+        "PA",
+        "HSV",
+        "YCbCr",
+        "LAB",
+    ],
+}
+
+
+@functools.lru_cache(maxsize=256)
+def _get_brightness_lut_16(brightness: int) -> tuple[int, ...]:
+    """Create a cached 16-bit Look-Up Table (LUT) for brightness adjustment.
+
+    Args:
+        brightness (int): The brightness adjustment level (-100 to 100).
+
+    Returns:
+        tuple[int, ...]: A tuple of 65,536 mapped 16-bit values.
+
+    """
+    factor = 1.0 + (brightness / 100.0)
+    return tuple(max(0, min(65535, int(round(i * factor)))) for i in range(65536))
+
+
 @functools.lru_cache(maxsize=1024)
-def _get_combined_contrast_lut(contrast: int, mean: int, mode: str) -> tuple[int, ...]:
+def _get_contrast_lut_16(contrast: int, mean: int) -> tuple[int, ...]:
+    """Create a cached 16-bit Look-Up Table (LUT) for contrast adjustment.
+
+    Args:
+        contrast (int): The contrast adjustment level (-100 to 100).
+        mean (int): The mean luminance serving as the anchor.
+
+    Returns:
+        tuple[int, ...]: A tuple of 65,536 mapped 16-bit values.
+
+    """
+    factor = 1.0 + (contrast / 100.0)
+    return tuple(
+        max(0, min(65535, int(round((i - mean) * factor + mean)))) for i in range(65536)
+    )
+
+
+def _apply_palette_lut(
+    image: Image.Image,
+    lut_r: list[int],
+    lut_g: list[int] | None = None,
+    lut_b: list[int] | None = None,
+) -> Image.Image:
+    """Apply LUT mapping to an indexed palette image.
+
+    Args:
+        image (Image.Image): The input palette image (mode 'P' or 'PA').
+        lut_r (list[int]): Mapped values for red / default channel.
+        lut_g (list[int], optional): Mapped values for green channel.
+        lut_b (list[int], optional): Mapped values for blue channel.
+
+    Returns:
+        Image.Image: The image with updated palette.
+
+    """
+    palette = image.getpalette()
+    if not palette:
+        return image.convert("RGBA" if "A" in image.getbands() else "RGB")
+
+    lut_g = lut_g or lut_r
+    lut_b = lut_b or lut_r
+
+    new_palette = []
+    for i in range(0, len(palette), 3):
+        r = lut_r[palette[i]]
+        g = lut_g[palette[i + 1]]
+        b = lut_b[palette[i + 2]]
+        new_palette.extend([r, g, b])
+
+    img_out = image.copy()
+    img_out.putpalette(new_palette)
+    return img_out
+
+
+@functools.lru_cache(maxsize=1024)
+def _get_combined_contrast_lut(
+    contrast: int, mean: int, mode: str, num_bands: int = 1
+) -> tuple[int, ...]:
     """Create a cached Look-Up Table (LUT) for adjusting the contrast across channels.
 
     Args:
         contrast (int): The contrast adjustment level (-100 to 100).
         mean (int): The mean luminance of the image (0-255) serving as the anchor.
-        mode (str): The image mode (e.g., 'RGB', 'RGBA', 'L', 'LA').
+        mode (str): The image mode (e.g., 'RGB', 'RGBA', 'CMYK', 'YCbCr', 'LAB', 'HSV').
+        num_bands (int): The number of image bands.
 
     Returns:
         tuple[int, ...]: A fully concatenated, immutable LUT for all channels.
@@ -138,41 +310,60 @@ def _get_combined_contrast_lut(contrast: int, mean: int, mode: str) -> tuple[int
         max(0, min(255, int(round((i - mean) * factor + mean)))) for i in range(256)
     ]
 
-    if mode == "L":
+    if mode in ("L", "1"):
         return tuple(lut_channel)
-    elif mode == "LA":
+    elif mode in ("LA", "La"):
         return tuple(lut_channel + _IDENTITY_LUT)
     elif mode == "RGB":
         return tuple(lut_channel * 3)
-    elif mode == "RGBA":
+    elif mode in ("RGBA", "RGBa", "RGBX"):
         return tuple(lut_channel * 3 + _IDENTITY_LUT)
+    elif mode == "CMYK":
+        return tuple(lut_channel * 4)
+    elif mode in ("YCbCr", "LAB"):
+        return tuple(lut_channel + _IDENTITY_LUT * 2)
+    elif mode == "HSV":
+        return tuple(_IDENTITY_LUT * 2 + lut_channel)
     else:
-        raise ValueError(f"Unsupported mode: {mode}")
+        if "A" in mode or "a" in mode:
+            return tuple(lut_channel * max(1, num_bands - 1) + _IDENTITY_LUT)
+        return tuple(lut_channel * num_bands)
 
 
 @functools.lru_cache(maxsize=1024)
-def _get_combined_brightness_lut(brightness: int, mode: str) -> tuple[int, ...]:
+def _get_combined_brightness_lut(
+    brightness: int, mode: str, num_bands: int = 1
+) -> tuple[int, ...]:
     """Create a cached Look-Up Table (LUT) for adjusting the brightness across channels.
 
     Args:
         brightness (int): The brightness adjustment level (-100 to 100).
-        mode (str): The image mode (e.g., 'RGB', 'RGBA', 'L', 'LA').
+        mode (str): The image mode (e.g., 'RGB', 'RGBA', 'CMYK', 'YCbCr', 'LAB', 'HSV').
+        num_bands (int): The number of image bands.
 
     Returns:
         tuple[int, ...]: A fully concatenated, immutable LUT for all channels.
 
     """
     lut_channel = _get_brightness_lut(brightness)
-    if mode == "L":
+    if mode in ("L", "1"):
         return tuple(lut_channel)
-    elif mode == "LA":
+    elif mode in ("LA", "La"):
         return tuple(lut_channel + _IDENTITY_LUT)
     elif mode == "RGB":
         return tuple(lut_channel * 3)
-    elif mode == "RGBA":
+    elif mode in ("RGBA", "RGBa", "RGBX"):
         return tuple(lut_channel * 3 + _IDENTITY_LUT)
+    elif mode == "CMYK":
+        return tuple(lut_channel * 4)
+    elif mode in ("YCbCr", "LAB"):
+        return tuple(lut_channel + _IDENTITY_LUT * 2)
+    elif mode == "HSV":
+        return tuple(_IDENTITY_LUT * 2 + lut_channel)
     else:
-        raise ValueError(f"Unsupported mode: {mode}")
+        if "A" in mode or "a" in mode:
+            return tuple(lut_channel * max(1, num_bands - 1) + _IDENTITY_LUT)
+        return tuple(lut_channel * num_bands)
 
 
 # ⚡ Bolt: Pre-compute a static Look-Up Table (LUT) for RGBA color inversion.
@@ -207,16 +398,23 @@ def invert_colors(image: Image.Image) -> Image.Image:
         Image.Image: The image with inverted colors.
 
     """
-    if image.mode == "RGBA":
-        # ⚡ Bolt: Fast path for RGBA using a Look-Up Table (LUT)
-        # Using a pre-computed static LUT (_RGBA_INVERT_LUT) eliminates
-        # redundant list allocations. Bypasses the overhead of `image.split()`
-        # and `Image.merge()` while preserving the original alpha channel.
-        # ~45% faster execution time.
+    if image.mode in ("1", "RGB", "L"):
+        return ImageOps.invert(image)
+
+    _INVERT_LUT = [255 - i for i in range(256)]
+
+    if image.mode in ("P", "PA") and image.getpalette():
+        return _apply_palette_lut(image, _INVERT_LUT)
+
+    if image.mode in ("RGBA", "RGBa", "RGBX"):
         return image.point(_RGBA_INVERT_LUT)
 
-    if image.mode in ("RGB", "L"):
-        return ImageOps.invert(image)
+    if image.mode in ("LA", "La"):
+        return image.point(_INVERT_LUT + _IDENTITY_LUT)
+
+    if image.mode in ("CMYK", "YCbCr", "LAB", "HSV"):
+        lut = _INVERT_LUT * len(image.getbands())
+        return image.point(lut)
 
     return ImageOps.invert(image.convert("RGB"))
 
@@ -296,9 +494,8 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
     try:
         # Not every system has scikit-image installed, and it's not a required
         # dependency for the main functionality
-        from skimage import feature, filters
-
         import numpy as np
+        from skimage import feature, filters
     except ImportError:
         raise ImportError("scikit-image and numpy are required for edge detection.")
 
@@ -351,6 +548,35 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
         return edge_image
 
 
+def _get_image_mean_luminance(image: Image.Image) -> int:
+    """Extract mean luminance of an image safely across all modes.
+
+    Args:
+        image (Image.Image): The input image.
+
+    Returns:
+        int: The mean luminance value.
+
+    """
+    from PIL import ImageStat
+
+    if image.mode in ("L", "1"):
+        return int(round(ImageStat.Stat(image).mean[0]))
+    elif image.mode.startswith("I") or image.mode == "F":
+        return int(round(ImageStat.Stat(image).mean[0]))
+    elif image.mode in ("LAB", "LA", "La"):
+        return int(round(ImageStat.Stat(image.getchannel("L")).mean[0]))
+    elif image.mode == "YCbCr":
+        return int(round(ImageStat.Stat(image.getchannel("Y")).mean[0]))
+    elif image.mode in ("P", "PA") and image.getpalette():
+        return int(round(ImageStat.Stat(image.convert("RGB").convert("L")).mean[0]))
+    else:
+        try:
+            return int(round(ImageStat.Stat(image.convert("L")).mean[0]))
+        except Exception:
+            return int(round(ImageStat.Stat(image).mean[0]))
+
+
 def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
     """Adjust the brightness of an image.
 
@@ -373,16 +599,19 @@ def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
     if brightness == 0:
         return image
 
-    # ⚡ Bolt: Fast path for brightness adjustment using a Look-Up Table (LUT).
-    # Using a cached flat LUT natively preserves the alpha channel (by mapping it to itself)
-    # and bypasses the overhead of ImageEnhance, splitting channels, or merging.
-    # ~10x faster execution time.
+    if image.mode in ("P", "PA") and image.getpalette():
+        lut_channel = _get_brightness_lut(brightness)
+        return _apply_palette_lut(image, lut_channel)
 
-    # Convert to standard modes if necessary
-    if image.mode not in ("L", "RGB", "RGBA", "LA"):
-        image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
+    if image.mode.startswith("I;16") or image.mode in ("I", "F"):
+        factor = 1.0 + (brightness / 100.0)
+        try:
+            return image.point(lambda i: i * factor)
+        except Exception:
+            pass
 
-    lut = _get_combined_brightness_lut(brightness, image.mode)
+    num_bands = len(image.getbands())
+    lut = _get_combined_brightness_lut(brightness, image.mode, num_bands)
 
     return image.point(lut)
 
@@ -409,23 +638,26 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
     if contrast == 0:
         return image
 
-    # ⚡ Bolt: Fast path for contrast adjustment using a Look-Up Table (LUT).
-    # Using a cached flat LUT natively preserves the alpha channel (by mapping it to itself)
-    # and bypasses the overhead of ImageEnhance, splitting channels, or merging.
-    # ~5x faster execution time.
+    if image.mode in ("P", "PA") and image.getpalette():
+        mean = _get_image_mean_luminance(image)
+        factor = 1.0 + (contrast / 100.0)
+        lut_channel = [
+            max(0, min(255, int(round((i - mean) * factor + mean)))) for i in range(256)
+        ]
+        return _apply_palette_lut(image, lut_channel)
 
-    # Convert to standard modes if necessary
-    if image.mode not in ("L", "RGB", "RGBA", "LA"):
-        image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
+    if image.mode.startswith("I;16") or image.mode in ("I", "F"):
+        mean = _get_image_mean_luminance(image)
+        factor = 1.0 + (contrast / 100.0)
+        offset = mean * (1.0 - factor)
+        try:
+            return image.point(lambda i: i * factor + offset)
+        except Exception:
+            pass
 
-    from PIL import ImageStat
-
-    # Pillow's native ImageEnhance.Contrast anchors the expansion to the mean luminance
-    # of the image. We extract this dynamically to preserve the exact semantics while
-    # using a static 1D map calculation instead of full image matrix math.
-    mean = int(round(ImageStat.Stat(image.convert("L")).mean[0]))
-
-    lut = _get_combined_contrast_lut(contrast, mean, image.mode)
+    mean = _get_image_mean_luminance(image)
+    num_bands = len(image.getbands())
+    lut = _get_combined_contrast_lut(contrast, mean, image.mode, num_bands)
 
     return image.point(lut)
 
@@ -575,15 +807,15 @@ def apply_color_balance(
     if r_f < 0 or g_f < 0 or b_f < 0:
         raise ValueError("Color balance factors must be non-negative.")
 
-    # Convert to RGB if not already
-    if image.mode != "RGB" and image.mode != "RGBA":
-        image = image.convert("RGB")
+    if image.mode in ("P", "PA") and image.getpalette():
+        lut_r = _get_scale_lut(r_f)
+        lut_g = _get_scale_lut(g_f)
+        lut_b = _get_scale_lut(b_f)
+        return _apply_palette_lut(image, lut_r, lut_g, lut_b)
 
-    # Precompute the combined LUT for all channels using cached scaling logic.
     num_bands = len(image.getbands())
     lut = _get_color_balance_lut(r_f, g_f, b_f, num_bands)
 
-    # Apply the LUT directly to the image (faster than split, point with lambda, merge)
     return image.point(lut)
 
 
@@ -608,23 +840,19 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     if degrees == 0:
         return image
 
+    if image.mode == "HSV":
+        shift = int(round((degrees / 360.0) * 256)) % 256
+        lut = _get_hue_rotation_lut(shift)
+        return image.point(lut)
+
     # Store alpha if present (supports RGBA/LA/etc.)
     alpha_channel = image.getchannel("A") if "A" in image.getbands() else None
 
-    # Ensure hue ops always run on RGB data
+    # Ensure hue ops run on RGB base
     rgb_base = image.convert("RGB")
-
     img_hsv = rgb_base.convert("HSV")
 
-    # Hue is 0-255 in PIL HSV. Full circle is 256 steps.
     shift = int(round((degrees / 360.0) * 256)) % 256
-
-    # ⚡ Bolt: Use a cached Look-Up Table (LUT) for H, S, and V channels.
-    # The H channel gets shifted, while S and V retain their original identity mappings.
-    # Caching the LUT avoids recreating three lists of 256 items on each call.
-    # Applying the LUT to the 3-band HSV image directly avoids `img.split()`, the slow
-    # per-pixel lambda execution in `h.point()`, and `Image.merge()`, improving performance
-    # by roughly 5-10% depending on image size.
     lut = _get_hue_rotation_lut(shift)
 
     new_img = img_hsv.point(lut)
@@ -658,31 +886,27 @@ def apply_posterize(image: Image.Image, bits: int) -> Image.Image:
     if not 1 <= bits <= 8:
         raise ValueError("Bits must be between 1 and 8.")
 
-    # ⚡ Bolt: Fast path for posterization using a Look-Up Table (LUT).
-    # Using a flat LUT natively preserves the alpha channel (by mapping it to itself)
-    # and performs the bitwise masking in a single C-level pass, bypassing the heavy
-    # overhead of `image.convert("RGB")`, `ImageOps.posterize()`, and `.putalpha()`.
-    # ~60% faster execution time.
-
-    # To safely apply LUTs, ensure we are working with standard modes
-    if image.mode not in ("L", "RGB", "RGBA", "LA"):
-        image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
-
-    # ⚡ Bolt: Use a cached Look-Up Table (LUT) for the posterize channel mapping.
-    # Avoiding recalculating the bitwise mask and list on every call.
     lut_channel = _get_posterize_channel_lut(bits)
 
-    if image.mode == "L":
+    if image.mode in ("P", "PA") and image.getpalette():
+        return _apply_palette_lut(image, lut_channel)
+
+    num_bands = len(image.getbands())
+    if image.mode in ("L", "1"):
         lut = lut_channel
-    elif image.mode == "LA":
+    elif image.mode in ("LA", "La"):
         lut = lut_channel + _IDENTITY_LUT
     elif image.mode == "RGB":
         lut = lut_channel * 3
-    elif image.mode == "RGBA":
+    elif image.mode in ("RGBA", "RGBa", "RGBX"):
         lut = lut_channel * 3 + _IDENTITY_LUT
+    elif image.mode == "CMYK":
+        lut = lut_channel * 4
     else:
-        # Fallback for any other unexpected modes
-        lut = lut_channel * len(image.getbands())
+        if image.mode in ("RGBA", "LA", "PA", "RGBa", "La"):
+            lut = lut_channel * max(1, num_bands - 1) + _IDENTITY_LUT
+        else:
+            lut = lut_channel * num_bands
 
     return image.point(lut)
 

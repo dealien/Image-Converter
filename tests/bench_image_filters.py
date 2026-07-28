@@ -4,25 +4,25 @@ import numpy as np
 import pytest
 from PIL import Image
 
+from image_converter.flip_image import flip_image
 from image_converter.image_filters import (
-    invert_colors,
-    grayscale,
     adjust_brightness,
     adjust_contrast,
     adjust_saturation,
     apply_blur,
-    apply_sharpen,
-    apply_color_balance,
-    rotate_hue,
-    apply_posterize,
     apply_border,
-    rotate_image,
+    apply_color_balance,
+    apply_posterize,
+    apply_sharpen,
     apply_vignette,
     edge_detection,
+    grayscale,
+    invert_colors,
+    rotate_hue,
+    rotate_image,
 )
-from image_converter.flip_image import flip_image
-from image_converter.scale_image import scale_image
 from image_converter.remove_background import trim
+from image_converter.scale_image import scale_image
 
 
 @pytest.fixture(params=[512, 2000], ids=["512x512", "2000x2000"])
@@ -49,6 +49,18 @@ def rgba_image(rgb_image):
     alpha = Image.new("L", rgba.size, 200)
     rgba.putalpha(alpha)
     return rgba
+
+
+@pytest.fixture
+def cmyk_image(rgb_image):
+    """Create a CMYK version of the test image."""
+    return rgb_image.convert("CMYK")
+
+
+@pytest.fixture
+def palette_image(rgb_image):
+    """Create a Palette (P) version of the test image."""
+    return rgb_image.convert("P")
 
 
 # --- Invert Colors ---
@@ -78,6 +90,14 @@ def test_bench_adjust_brightness_rgb(benchmark, rgb_image):
 
 def test_bench_adjust_brightness_rgba(benchmark, rgba_image):
     benchmark(adjust_brightness, rgba_image, 50)
+
+
+def test_bench_adjust_brightness_cmyk(benchmark, cmyk_image):
+    benchmark(adjust_brightness, cmyk_image, 50)
+
+
+def test_bench_adjust_brightness_palette(benchmark, palette_image):
+    benchmark(adjust_brightness, palette_image, 50)
 
 
 # --- Contrast ---

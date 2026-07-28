@@ -38,7 +38,7 @@ class StoreInOrder(argparse.Action):
 
         """
         if not hasattr(namespace, "ordered_operations"):
-            setattr(namespace, "ordered_operations", [])
+            namespace.ordered_operations = []
         if values is None:
             norm_values = []
         elif isinstance(values, (str, int, float)):
