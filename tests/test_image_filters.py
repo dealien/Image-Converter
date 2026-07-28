@@ -1230,10 +1230,27 @@ class TestPainterlyEffects(unittest.TestCase):
             self.assertEqual(result.getchannel("A").getextrema(), (0, 0))
 
     def test_cartoonify_creates_edges_and_preserves_dimensions(self):
-        result = apply_cartoonify(self.image, 50)
+        result = apply_cartoonify(self.image, 100)
         self.assertEqual(result.mode, "RGB")
         self.assertEqual(result.size, self.image.size)
         self.assertIn((0, 0, 0), result.getdata())
+
+    def test_cartoonify_edge_strength_scales_with_intensity(self):
+        """Verifies that Sobel edge overlay strength increases monotonically with intensity."""
+        from skimage.color import rgb2gray
+        from skimage.filters import sobel
+
+        edge_mask = sobel(rgb2gray(np.asarray(self.image))) > 0.05
+        res_low = np.asarray(apply_cartoonify(self.image, 25))
+        res_mid = np.asarray(apply_cartoonify(self.image, 50))
+        res_high = np.asarray(apply_cartoonify(self.image, 100))
+
+        mean_edge_low = res_low[edge_mask].mean()
+        mean_edge_mid = res_mid[edge_mask].mean()
+        mean_edge_high = res_high[edge_mask].mean()
+
+        self.assertGreater(mean_edge_low, mean_edge_mid)
+        self.assertGreater(mean_edge_mid, mean_edge_high)
 
     def test_effects_return_original_image_at_zero_intensity(self):
         self.assertIs(apply_oil_painting(self.image, 0), self.image)

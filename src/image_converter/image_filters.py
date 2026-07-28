@@ -1225,6 +1225,7 @@ def apply_cartoonify(image: Image.Image, intensity: int = 50) -> Image.Image:
         channel_axis=-1,
     )
     cartoon = filtered.copy()
-    cartoon[sobel(rgb2gray(pixels)) > 0.05] = 0.0
+    edge_mask = sobel(rgb2gray(pixels)) > 0.05
+    cartoon[edge_mask] = filtered[edge_mask] * (1.0 - fraction)
     result = Image.fromarray(img_as_ubyte(cartoon), mode="RGB")
     return _restore_painterly_mode(result, image.mode, alpha_channel, image.info)
