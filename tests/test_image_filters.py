@@ -1,6 +1,7 @@
 import os
 import random
 import unittest
+from typing import Any, cast
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -53,6 +54,8 @@ class TestImageFilters(unittest.TestCase):
             y = random.randint(0, self.height - 1)
             original_pixel = img.getpixel((x, y))
             inverted_pixel = inverted_img.getpixel((x, y))
+            assert isinstance(original_pixel, (tuple, list))
+            assert isinstance(inverted_pixel, (tuple, list))
             expected_inverted_pixel = tuple(255 - v for v in original_pixel)
             self.assertEqual(inverted_pixel, expected_inverted_pixel)
 
@@ -69,6 +72,7 @@ class TestImageFilters(unittest.TestCase):
             y = random.randint(0, self.height - 1)
             original_pixel = img.getpixel((x, y))
             grayscale_pixel = grayscale_img.getpixel((x, y))
+            assert isinstance(original_pixel, (tuple, list))
             # For a grayscale image, R=G=B, so the grayscale value is just the value of R.
             expected_grayscale = original_pixel[0]
             self.assertEqual(grayscale_pixel, expected_grayscale)
@@ -181,11 +185,14 @@ class TestImageAdjustments(unittest.TestCase):
         brightened_image = adjust_brightness(self.test_image, 50)
         original_pixel = self.test_image.getpixel((50, 50))
         brightened_pixel = brightened_image.getpixel((50, 50))
+        assert isinstance(original_pixel, (tuple, list))
+        assert isinstance(brightened_pixel, (tuple, list))
         self.assertGreater(brightened_pixel[0], original_pixel[0])
 
         # Test darkening
         darkened_image = adjust_brightness(self.test_image, -50)
         darkened_pixel = darkened_image.getpixel((50, 50))
+        assert isinstance(darkened_pixel, (tuple, list))
         self.assertLess(darkened_pixel[0], original_pixel[0])
 
         # Test no change
@@ -199,15 +206,15 @@ class TestImageAdjustments(unittest.TestCase):
         with self.assertRaises(ValueError):
             adjust_brightness(self.test_image, -101)
         with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
-            adjust_brightness(self.test_image, "invalid")
+            adjust_brightness(self.test_image, cast(int, "invalid"))
         with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
-            adjust_brightness(self.test_image, 50.5)
+            adjust_brightness(self.test_image, cast(int, 50.5))
         with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
-            adjust_brightness(self.test_image, [50])
+            adjust_brightness(self.test_image, cast(int, [50]))
         with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
-            adjust_brightness(self.test_image, {"value": 50})
+            adjust_brightness(self.test_image, cast(int, {"value": 50}))
         with self.assertRaisesRegex(TypeError, r"^Brightness must be an integer\.$"):
-            adjust_brightness(self.test_image, None)
+            adjust_brightness(self.test_image, cast(int, None))
 
     def test_adjust_brightness_rgba(self):
         """Verifies adjust_brightness preserves alpha channel using the RGBA fast path."""
@@ -225,11 +232,15 @@ class TestImageAdjustments(unittest.TestCase):
 
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = brightened_image.split()
-        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+        self.assertEqual(
+            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+        )
 
         # Check brightness increased on RGB channels
         original_pixel = rgba_image.getpixel((50, 50))
         brightened_pixel = brightened_image.getpixel((50, 50))
+        assert isinstance(original_pixel, (tuple, list))
+        assert isinstance(brightened_pixel, (tuple, list))
         self.assertGreater(brightened_pixel[0], original_pixel[0])
 
     def test_adjust_contrast(self):
@@ -239,6 +250,10 @@ class TestImageAdjustments(unittest.TestCase):
         original_pixel_2 = self.test_image.getpixel((75, 75))
         contrasted_pixel_1 = contrasted_image.getpixel((25, 25))
         contrasted_pixel_2 = contrasted_image.getpixel((75, 75))
+        assert isinstance(original_pixel_1, (tuple, list))
+        assert isinstance(original_pixel_2, (tuple, list))
+        assert isinstance(contrasted_pixel_1, (tuple, list))
+        assert isinstance(contrasted_pixel_2, (tuple, list))
         # With increased contrast, darker pixels get darker and lighter pixels get lighter
         self.assertLess(contrasted_pixel_1[0], original_pixel_1[0])
         self.assertGreater(contrasted_pixel_2[0], original_pixel_2[0])
@@ -247,13 +262,18 @@ class TestImageAdjustments(unittest.TestCase):
         decontrasted_image = adjust_contrast(self.test_image, -50)
         decontrasted_pixel_1 = decontrasted_image.getpixel((25, 25))
         decontrasted_pixel_2 = decontrasted_image.getpixel((75, 75))
+        assert isinstance(decontrasted_pixel_1, (tuple, list))
+        assert isinstance(decontrasted_pixel_2, (tuple, list))
         # With decreased contrast, the difference between pixels should be smaller
         self.assertGreater(decontrasted_pixel_1[0], original_pixel_1[0])
         self.assertLess(decontrasted_pixel_2[0], original_pixel_2[0])
 
         # Test no change
         same_image = adjust_contrast(self.test_image, 0)
-        self.assertEqual(list(same_image.getdata()), list(self.test_image.getdata()))
+        self.assertEqual(
+            list(same_image.get_flattened_data()),
+            list(self.test_image.get_flattened_data()),
+        )
 
         # Test invalid values
         with self.assertRaises(ValueError):
@@ -261,15 +281,15 @@ class TestImageAdjustments(unittest.TestCase):
         with self.assertRaises(ValueError):
             adjust_contrast(self.test_image, -101)
         with self.assertRaises(TypeError):
-            adjust_contrast(self.test_image, "invalid")
+            adjust_contrast(self.test_image, cast(int, "invalid"))
         with self.assertRaises(TypeError):
-            adjust_contrast(self.test_image, 50.5)
+            adjust_contrast(self.test_image, cast(int, 50.5))
         with self.assertRaises(TypeError):
-            adjust_contrast(self.test_image, [50])
+            adjust_contrast(self.test_image, cast(int, [50]))
         with self.assertRaises(TypeError):
-            adjust_contrast(self.test_image, {"value": 50})
+            adjust_contrast(self.test_image, cast(int, {"value": 50}))
         with self.assertRaises(TypeError):
-            adjust_contrast(self.test_image, None)
+            adjust_contrast(self.test_image, cast(int, None))
 
     def test_adjust_contrast_rgba(self):
         """Verifies adjust_contrast preserves alpha channel using the RGBA fast path."""
@@ -287,11 +307,15 @@ class TestImageAdjustments(unittest.TestCase):
 
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = contrasted_image.split()
-        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+        self.assertEqual(
+            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+        )
 
         # Check contrast changes on RGB
         original_pixel = rgba_image.getpixel((25, 25))
         contrasted_pixel = contrasted_image.getpixel((25, 25))
+        assert isinstance(original_pixel, (tuple, list))
+        assert isinstance(contrasted_pixel, (tuple, list))
         self.assertLess(contrasted_pixel[0], original_pixel[0])
 
     def test_adjust_saturation(self):
@@ -299,6 +323,8 @@ class TestImageAdjustments(unittest.TestCase):
         saturated_image = adjust_saturation(self.test_image, 50)
         original_pixel = self.test_image.getpixel((50, 50))
         saturated_pixel = saturated_image.getpixel((50, 50))
+        assert isinstance(original_pixel, (tuple, list))
+        assert isinstance(saturated_pixel, (tuple, list))
         # Saturation increases the difference between R, G, B values
         self.assertGreater(
             abs(saturated_pixel[0] - saturated_pixel[1]),
@@ -308,6 +334,7 @@ class TestImageAdjustments(unittest.TestCase):
         # Test decreasing saturation
         desaturated_image = adjust_saturation(self.test_image, -50)
         desaturated_pixel = desaturated_image.getpixel((50, 50))
+        assert isinstance(desaturated_pixel, (tuple, list))
         # Saturation decreases the difference between R, G, B values
         self.assertLess(
             abs(desaturated_pixel[0] - desaturated_pixel[1]),
@@ -316,7 +343,10 @@ class TestImageAdjustments(unittest.TestCase):
 
         # Test no change
         same_image = adjust_saturation(self.test_image, 0)
-        self.assertEqual(list(same_image.getdata()), list(self.test_image.getdata()))
+        self.assertEqual(
+            list(same_image.get_flattened_data()),
+            list(self.test_image.get_flattened_data()),
+        )
 
         # Test invalid values
         with self.assertRaises(ValueError):
@@ -324,15 +354,15 @@ class TestImageAdjustments(unittest.TestCase):
         with self.assertRaises(ValueError):
             adjust_saturation(self.test_image, -101)
         with self.assertRaises(TypeError):
-            adjust_saturation(self.test_image, "invalid")
+            adjust_saturation(self.test_image, cast(int, "invalid"))
         with self.assertRaises(TypeError):
-            adjust_saturation(self.test_image, 50.5)
+            adjust_saturation(self.test_image, cast(int, 50.5))
         with self.assertRaises(TypeError):
-            adjust_saturation(self.test_image, [50])
+            adjust_saturation(self.test_image, cast(int, [50]))
         with self.assertRaises(TypeError):
-            adjust_saturation(self.test_image, {"value": 50})
+            adjust_saturation(self.test_image, cast(int, {"value": 50}))
         with self.assertRaises(TypeError):
-            adjust_saturation(self.test_image, None)
+            adjust_saturation(self.test_image, cast(int, None))
 
     def test_adjust_saturation_rgba(self):
         # Create an RGBA image for testing
@@ -349,7 +379,9 @@ class TestImageAdjustments(unittest.TestCase):
 
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = saturated_image.split()
-        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+        self.assertEqual(
+            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+        )
 
 
 class TestImageBlurAndSharpen(unittest.TestCase):
@@ -371,15 +403,19 @@ class TestImageBlurAndSharpen(unittest.TestCase):
         # Check that sharp edges are softened
         # In the original image, pixel (9, 0) is black (0,0,0) and (10, 0) is white (255,255,255)
         # After blur, they should be closer in value.
-        p1 = blurred_image.getpixel((9, 0))[0]
-        p2 = blurred_image.getpixel((10, 0))[0]
+        p1_val = blurred_image.getpixel((9, 0))
+        p2_val = blurred_image.getpixel((10, 0))
+        assert isinstance(p1_val, (tuple, list))
+        assert isinstance(p2_val, (tuple, list))
+        p1 = p1_val[0]
+        p2 = p2_val[0]
         diff = abs(p1 - p2)
         # Original difference is 255. Blurred diff should be significantly less.
         self.assertLess(diff, 200)
 
         # Test invalid values
         with self.assertRaisesRegex(TypeError, r"^Radius must be a number\.$"):
-            apply_blur(self.test_image, "invalid")
+            apply_blur(self.test_image, cast(int, "invalid"))
         with self.assertRaises(ValueError):
             apply_blur(self.test_image, -1)
 
@@ -392,7 +428,7 @@ class TestImageBlurAndSharpen(unittest.TestCase):
 
         # Calculate total horizontal gradient (sum of absolute differences)
         def calculate_horizontal_gradient(img):
-            data = list(img.getdata())
+            data = list(img.get_flattened_data())
             width, height = img.size
             total_gradient = 0
             for y in range(height):
@@ -414,15 +450,15 @@ class TestImageBlurAndSharpen(unittest.TestCase):
         with self.assertRaises(ValueError):
             apply_sharpen(self.test_image, -1)
         with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
-            apply_sharpen(self.test_image, "invalid")
+            apply_sharpen(self.test_image, cast(int, "invalid"))
         with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
-            apply_sharpen(self.test_image, 50.5)
+            apply_sharpen(self.test_image, cast(int, 50.5))
         with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
-            apply_sharpen(self.test_image, [50])
+            apply_sharpen(self.test_image, cast(int, [50]))
         with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
-            apply_sharpen(self.test_image, {"value": 50})
+            apply_sharpen(self.test_image, cast(int, {"value": 50}))
         with self.assertRaisesRegex(TypeError, r"^Sharpness must be an integer\.$"):
-            apply_sharpen(self.test_image, None)
+            apply_sharpen(self.test_image, cast(int, None))
 
     def test_apply_sharpen_rgba(self):
         """Verifies apply_sharpen preserves alpha channel using the RGBA fast path."""
@@ -440,11 +476,13 @@ class TestImageBlurAndSharpen(unittest.TestCase):
 
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = sharpened_image.split()
-        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+        self.assertEqual(
+            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+        )
 
         # Verify sharpening occurred on RGB (compare difference)
         def calculate_horizontal_gradient(img):
-            data = list(img.convert("RGB").getdata())
+            data = list(img.convert("RGB").get_flattened_data())
             width, height = img.size
             total_gradient = 0
             for y in range(height):
@@ -477,7 +515,7 @@ class TestImageColorOps(unittest.TestCase):
 
         # Test invalid values
         with self.assertRaises(TypeError):
-            apply_color_balance(self.test_image, "a", 1, 1)
+            apply_color_balance(self.test_image, cast(float, "a"), 1, 1)
         with self.assertRaisesRegex(
             ValueError, r"^Color balance factors must be non-negative\.$"
         ):
@@ -491,7 +529,9 @@ class TestImageColorOps(unittest.TestCase):
         # Enhance Red to overflow
         red_enhanced = apply_color_balance(self.test_image, 10.0, 1.0, 1.0)
         # 100 * 10 = 1000 -> clamped to 255
-        self.assertEqual(red_enhanced.getpixel((0, 0))[0], 255)
+        px = red_enhanced.getpixel((0, 0))
+        assert isinstance(px, (tuple, list))
+        self.assertEqual(px[0], 255)
 
     def test_color_balance_rgba(self):
         # Create an RGBA image for testing
@@ -507,11 +547,15 @@ class TestImageColorOps(unittest.TestCase):
         self.assertEqual(red_enhanced.mode, "RGBA")
 
         # Check that the RGB values are correctly scaled
-        self.assertEqual(red_enhanced.getpixel((0, 0))[:3], (200, 100, 100))
+        px_cb = red_enhanced.getpixel((0, 0))
+        assert isinstance(px_cb, (tuple, list))
+        self.assertEqual(px_cb[:3], (200, 100, 100))
 
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = red_enhanced.split()
-        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+        self.assertEqual(
+            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+        )
 
     def test_apply_color_balance_4_plus_bands(self):
         # Create an RGBA image for testing 4+ bands edge case
@@ -527,7 +571,9 @@ class TestImageColorOps(unittest.TestCase):
 
         # Verify alpha channel is preserved
         _, _, _, result_alpha = color_balanced.split()
-        self.assertEqual(list(result_alpha.getdata()), list(alpha.getdata()))
+        self.assertEqual(
+            list(result_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+        )
 
     def test_posterize(self):
         # Create a gradient image
@@ -539,7 +585,7 @@ class TestImageColorOps(unittest.TestCase):
             img, bits=1
         )  # Reduce to 1 bit (2 levels per channel)
 
-        unique_colors = len(set(posterized.getdata()))
+        unique_colors = len(set(posterized.get_flattened_data()))
         self.assertLess(
             unique_colors, 10
         )  # Should be very few colors (actually 2^3=8 max for full RGB, but 2 for grayscale-ish)
@@ -555,16 +601,18 @@ class TestImageColorOps(unittest.TestCase):
 
         # Rotate 120 degrees -> Green
         green_img = rotate_hue(red_img, 120)
-        pixel = green_img.getpixel((0, 0))
+        pixel_g = green_img.getpixel((0, 0))
+        assert isinstance(pixel_g, (tuple, list))
         # Hue rotation isn't perfectly precise with 8-bit HSV, but red->green should have dominant G
-        self.assertGreater(pixel[1], pixel[0])
-        self.assertGreater(pixel[1], pixel[2])
+        self.assertGreater(pixel_g[1], pixel_g[0])
+        self.assertGreater(pixel_g[1], pixel_g[2])
 
         # Rotate 240 degrees -> Blue
         blue_img = rotate_hue(red_img, 240)
-        pixel = blue_img.getpixel((0, 0))
-        self.assertGreater(pixel[2], pixel[0])
-        self.assertGreater(pixel[2], pixel[1])
+        pixel_b = blue_img.getpixel((0, 0))
+        assert isinstance(pixel_b, (tuple, list))
+        self.assertGreater(pixel_b[2], pixel_b[0])
+        self.assertGreater(pixel_b[2], pixel_b[1])
 
     def test_hue_rotation_preserves_alpha(self):
         # Create an RGBA image with transparency
@@ -575,7 +623,9 @@ class TestImageColorOps(unittest.TestCase):
 
         # Check if alpha is preserved
         self.assertEqual(rotated_img.mode, "RGBA")
-        self.assertEqual(rotated_img.getpixel((0, 0))[3], 128)
+        pixel_r = rotated_img.getpixel((0, 0))
+        assert isinstance(pixel_r, (tuple, list))
+        self.assertEqual(pixel_r[3], 128)
 
     def test_posterize_preserves_alpha(self):
         # Create an RGBA image with transparency
@@ -586,14 +636,18 @@ class TestImageColorOps(unittest.TestCase):
 
         # Check if alpha is preserved
         self.assertEqual(posterized_img.mode, "RGBA")
-        self.assertEqual(posterized_img.getpixel((0, 0))[3], 128)
+        pixel_p = posterized_img.getpixel((0, 0))
+        assert isinstance(pixel_p, (tuple, list))
+        self.assertEqual(pixel_p[3], 128)
 
     def test_posterize_la_mode(self):
         """Verifies that LA mode preserves alpha when posterized."""
         la_img = Image.new("LA", (10, 10), (100, 128))
         posterized_img = apply_posterize(la_img, bits=4)
         self.assertEqual(posterized_img.mode, "LA")
-        self.assertEqual(posterized_img.getpixel((0, 0))[1], 128)
+        pixel_l = posterized_img.getpixel((0, 0))
+        assert isinstance(pixel_l, (tuple, list))
+        self.assertEqual(pixel_l[1], 128)
 
     def test_posterize_non_standard_mode(self):
         """Verifies that non-standard modes like CMYK are posterized natively preserving mode."""
@@ -656,6 +710,7 @@ class TestExtendedImageModeLUTs(unittest.TestCase):
         posterized = apply_posterize(img, bits=4)
         self.assertEqual(posterized.mode, "LAB")
         pixel = posterized.getpixel((0, 0))
+        assert isinstance(pixel, (tuple, list))
         self.assertEqual(len(pixel), 3)
 
     def test_mode_1_invert(self):
@@ -914,6 +969,8 @@ class TestImageVignette(unittest.TestCase):
         vignetted = apply_vignette(self.test_image, 100)
         center_pixel = vignetted.getpixel((50, 50))
         corner_pixel = vignetted.getpixel((0, 0))
+        assert isinstance(center_pixel, (tuple, list))
+        assert isinstance(corner_pixel, (tuple, list))
 
         # Center should remain white (or very close)
         self.assertGreater(center_pixel[0], 240)
@@ -923,7 +980,10 @@ class TestImageVignette(unittest.TestCase):
 
     def test_vignette_zero_intensity(self):
         vignetted = apply_vignette(self.test_image, 0)
-        self.assertEqual(list(vignetted.getdata()), list(self.test_image.getdata()))
+        self.assertEqual(
+            list(vignetted.get_flattened_data()),
+            list(self.test_image.get_flattened_data()),
+        )
 
     def test_vignette_rgba(self):
         rgba_image = self.test_image.copy().convert("RGBA")
@@ -934,7 +994,9 @@ class TestImageVignette(unittest.TestCase):
 
         self.assertEqual(vignetted.mode, "RGBA")
         _, _, _, new_alpha = vignetted.split()
-        self.assertEqual(list(new_alpha.getdata()), list(alpha.getdata()))
+        self.assertEqual(
+            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+        )
 
     def test_vignette_invalid_args(self):
         with self.assertRaises(ValueError):
@@ -942,7 +1004,7 @@ class TestImageVignette(unittest.TestCase):
         with self.assertRaises(ValueError):
             apply_vignette(self.test_image, 110)
         with self.assertRaises(TypeError):
-            apply_vignette(self.test_image, "invalid")
+            apply_vignette(self.test_image, cast(int, "invalid"))
 
 
 class TestImageFiltersEdgeCases(unittest.TestCase):
@@ -965,7 +1027,7 @@ class TestImageFiltersEdgeCases(unittest.TestCase):
 
         img = Image.new("RGB", (10, 10))
         original_skimage = sys.modules.get("skimage")
-        sys.modules["skimage"] = None
+        sys.modules["skimage"] = cast(Any, None)
         try:
             with self.assertRaisesRegex(
                 ImportError, r"scikit-image and numpy are required for edge detection\."
@@ -1051,7 +1113,7 @@ class TestImageFiltersEdgeCases(unittest.TestCase):
 
         # Under old behavior, 150 degrees would pass 106 to this function.
         # Our newly refactored shift variable will compute 107. We test this mathematically:
-        shift = int(round((150 / 360.0) * 256)) % 256
+        shift = round((150 / 360.0) * 256) % 256
         self.assertEqual(shift, 107)
 
     def test_all_filters_preserve_palette_transparency(self):
@@ -1233,7 +1295,7 @@ class TestPainterlyEffects(unittest.TestCase):
         result = apply_cartoonify(self.image, 100)
         self.assertEqual(result.mode, "RGB")
         self.assertEqual(result.size, self.image.size)
-        self.assertIn((0, 0, 0), result.getdata())
+        self.assertIn((0, 0, 0), list(result.get_flattened_data()))
 
     def test_cartoonify_edge_strength_scales_with_intensity(self):
         """Verifies that Sobel edge overlay strength increases monotonically with intensity."""
@@ -1261,4 +1323,4 @@ class TestPainterlyEffects(unittest.TestCase):
             with self.assertRaises(ValueError):
                 effect(self.image, 101)
             with self.assertRaises(TypeError):
-                effect(self.image, "50")
+                effect(self.image, cast(int, "50"))

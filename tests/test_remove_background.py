@@ -2,6 +2,7 @@
 
 import os
 import unittest
+from typing import Iterable, cast
 from unittest.mock import patch
 
 from PIL import Image, ImageChops
@@ -90,7 +91,14 @@ class TestRemoveBackground(unittest.TestCase):
         self.assertEqual(output_img.mode, "RGBA")
 
         # Check that some pixels are transparent
-        self.assertTrue(any(pixel[3] == 0 for pixel in output_img.getdata()))
+        self.assertTrue(
+            any(
+                pixel[3] == 0
+                for pixel in cast(
+                    Iterable[tuple[int, ...]], output_img.get_flattened_data()
+                )
+            )
+        )
 
     def test_trim_single_band_image(self):
         """Test trim on an image with a single band (e.g. mode 'L') to ensure bg_color is converted to tuple."""

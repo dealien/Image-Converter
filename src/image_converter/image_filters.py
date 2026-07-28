@@ -6,6 +6,7 @@ edge detection, color balance, hue rotation, posterization, borders, and rotatio
 """
 
 import functools
+from typing import Any, cast
 
 import numpy as np
 from PIL import Image, ImageColor, ImageEnhance, ImageFilter, ImageOps
@@ -46,7 +47,7 @@ def _generate_scaled_lut(factor: float) -> list[int]:
         list[int]: A list of 256 mapped values.
 
     """
-    return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
+    return [max(0, min(255, round(i * factor))) for i in range(256)]
 
 
 @functools.lru_cache(maxsize=1024)
@@ -229,7 +230,7 @@ def _get_brightness_lut_16(brightness: int) -> tuple[int, ...]:
 
     """
     factor = 1.0 + (brightness / 100.0)
-    return tuple(max(0, min(65535, int(round(i * factor)))) for i in range(65536))
+    return tuple(max(0, min(65535, round(i * factor))) for i in range(65536))
 
 
 @functools.lru_cache(maxsize=1024)
@@ -246,7 +247,7 @@ def _get_contrast_lut_16(contrast: int, mean: int) -> tuple[int, ...]:
     """
     factor = 1.0 + (contrast / 100.0)
     return tuple(
-        max(0, min(65535, int(round((i - mean) * factor + mean)))) for i in range(65536)
+        max(0, min(65535, round((i - mean) * factor + mean))) for i in range(65536)
     )
 
 
@@ -306,7 +307,7 @@ def _get_combined_contrast_lut(
     factor = 1.0 + (contrast / 100.0)
 
     lut_channel = [
-        max(0, min(255, int(round((i - mean) * factor + mean)))) for i in range(256)
+        max(0, min(255, round((i - mean) * factor + mean))) for i in range(256)
     ]
 
     if mode in ("L", "1"):
@@ -557,20 +558,20 @@ def _get_image_mean_luminance(image: Image.Image) -> int:
     from PIL import ImageStat
 
     if image.mode in ("L", "1"):
-        return int(round(ImageStat.Stat(image).mean[0]))
+        return round(ImageStat.Stat(image).mean[0])
     elif image.mode.startswith("I") or image.mode == "F":
-        return int(round(ImageStat.Stat(image).mean[0]))
+        return round(ImageStat.Stat(image).mean[0])
     elif image.mode in ("LAB", "LA", "La"):
-        return int(round(ImageStat.Stat(image.getchannel("L")).mean[0]))
+        return round(ImageStat.Stat(image.getchannel("L")).mean[0])
     elif image.mode == "YCbCr":
-        return int(round(ImageStat.Stat(image.getchannel("Y")).mean[0]))
+        return round(ImageStat.Stat(image.getchannel("Y")).mean[0])
     elif image.mode in ("P", "PA") and image.getpalette():
-        return int(round(ImageStat.Stat(image.convert("RGB").convert("L")).mean[0]))
+        return round(ImageStat.Stat(image.convert("RGB").convert("L")).mean[0])
     else:
         try:
-            return int(round(ImageStat.Stat(image.convert("L")).mean[0]))
+            return round(ImageStat.Stat(image.convert("L")).mean[0])
         except Exception:
-            return int(round(ImageStat.Stat(image).mean[0]))
+            return round(ImageStat.Stat(image).mean[0])
 
 
 def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
@@ -638,7 +639,7 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
         mean = _get_image_mean_luminance(image)
         factor = 1.0 + (contrast / 100.0)
         lut_channel = [
-            max(0, min(255, int(round((i - mean) * factor + mean)))) for i in range(256)
+            max(0, min(255, round((i - mean) * factor + mean))) for i in range(256)
         ]
         return _apply_palette_lut(image, lut_channel)
 
@@ -803,9 +804,9 @@ def apply_color_balance(
     """
     # Handle float conversion and validation
     try:
-        r_f = float(red_factor)
-        g_f = float(green_factor)
-        b_f = float(blue_factor)
+        r_f = float(cast(Any, red_factor))
+        g_f = float(cast(Any, green_factor))
+        b_f = float(cast(Any, blue_factor))
     except (ValueError, TypeError):
         raise TypeError("Color balance factors must be numbers.")
 
@@ -872,7 +873,7 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
         return image
 
     if image.mode == "HSV":
-        shift = int(round((degrees / 360.0) * 256)) % 256
+        shift = round((degrees / 360.0) * 256) % 256
         lut = _get_hue_rotation_lut(shift)
         return image.point(lut)
 
@@ -883,7 +884,7 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     rgb_base = image.convert("RGB")
     img_hsv = rgb_base.convert("HSV")
 
-    shift = int(round((degrees / 360.0) * 256)) % 256
+    shift = round((degrees / 360.0) * 256) % 256
     lut = _get_hue_rotation_lut(shift)
 
     new_img = img_hsv.point(lut)
@@ -1039,7 +1040,7 @@ def rotate_image(image: Image.Image, angle: int) -> Image.Image:
     """
     # Clamp to nearest 90 degrees
     # 0, 90, 180, 270. 360 -> 0. -90 -> 270.
-    clamped_angle = int(round(angle / 90.0)) * 90 % 360
+    clamped_angle = round(angle / 90.0) * 90 % 360
 
     if clamped_angle == 0:
         return image
@@ -1179,8 +1180,8 @@ def apply_oil_painting(image: Image.Image, intensity: int = 50) -> Image.Image:
     if intensity == 0:
         return image
 
-    from skimage import img_as_ubyte
     from skimage.restoration import denoise_bilateral
+    from skimage.util import img_as_ubyte
 
     working_image, alpha_channel = _prepare_painterly_image(image)
     fraction = intensity / 100.0
@@ -1209,10 +1210,10 @@ def apply_cartoonify(image: Image.Image, intensity: int = 50) -> Image.Image:
     if intensity == 0:
         return image
 
-    from skimage import img_as_ubyte
     from skimage.color import rgb2gray
     from skimage.filters import sobel
     from skimage.restoration import denoise_bilateral
+    from skimage.util import img_as_ubyte
 
     working_image, alpha_channel = _prepare_painterly_image(image)
     pixels = np.asarray(working_image)

@@ -3,6 +3,7 @@
 import os
 import sys
 import unittest
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 from automated_testing import (  # noqa: E402
@@ -172,7 +173,7 @@ class TestMain(unittest.TestCase):
         )
 
         # Test with scalar value
-        action_blur(parser, namespace, 2.5)
+        action_blur(parser, namespace, cast(Any, 2.5))
         self.assertEqual(len(namespace.ordered_operations), 2)
         self.assertEqual(
             namespace.ordered_operations[1], {"dest": "blur", "values": [2.5]}
