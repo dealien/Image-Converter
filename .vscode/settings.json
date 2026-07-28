@@ -4,5 +4,6 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.useEnvironmentsExtension": false
+    "python.useEnvironmentsExtension": false,
+    "basedpyright.analysis.typeCheckingMode": "off"
 }
