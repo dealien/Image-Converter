@@ -1086,3 +1086,98 @@ def apply_vignette(image: Image.Image, intensity: int = 50) -> Image.Image:
         vignetted.putalpha(alpha_channel)
 
     return vignetted
+
+
+def _validate_effect_intensity(intensity: int) -> None:
+    """Validate a painterly-effect intensity value."""
+    if not isinstance(intensity, int):
+        raise TypeError("Intensity must be an integer.")
+    if not 0 <= intensity <= 100:
+        raise ValueError("Intensity must be between 0 and 100.")
+
+
+def _prepare_painterly_image(
+    image: Image.Image,
+) -> tuple[Image.Image, Image.Image | None]:
+    """Return an RGB working image and the original alpha channel, if present."""
+    alpha_channel = image.getchannel("A") if "A" in image.getbands() else None
+    return image.convert("RGB"), alpha_channel
+
+
+def _restore_painterly_mode(
+    image: Image.Image, original_mode: str, alpha_channel: Image.Image | None
+) -> Image.Image:
+    """Restore alpha or grayscale mode after applying a painterly effect."""
+    if alpha_channel is not None:
+        image.putalpha(alpha_channel)
+        return image
+    if original_mode == "L":
+        return image.convert("L")
+    return image
+
+
+def apply_oil_painting(image: Image.Image, intensity: int = 50) -> Image.Image:
+    """Apply a bilateral-filter oil-painting effect.
+
+    Args:
+        image: Input image.
+        intensity: Effect strength from 0 through 100.
+
+    Returns:
+        The processed image, preserving alpha and grayscale modes where possible.
+    """
+    _validate_effect_intensity(intensity)
+    if intensity == 0:
+        return image
+
+    import numpy as np
+    from skimage import img_as_ubyte
+    from skimage.restoration import denoise_bilateral
+
+    working_image, alpha_channel = _prepare_painterly_image(image)
+    fraction = intensity / 100.0
+    filtered = denoise_bilateral(
+        np.asarray(working_image),
+        win_size=max(3, int(3 + fraction * 12) | 1),
+        sigma_color=0.1 + fraction * 0.2,
+        sigma_spatial=max(1.0, fraction * 30.0),
+        channel_axis=-1,
+    )
+    result = Image.fromarray(img_as_ubyte(filtered), mode="RGB")
+    return _restore_painterly_mode(result, image.mode, alpha_channel)
+
+
+def apply_cartoonify(image: Image.Image, intensity: int = 50) -> Image.Image:
+    """Apply bilateral smoothing with dark Sobel edges for a cartoon effect.
+
+    Args:
+        image: Input image.
+        intensity: Effect strength from 0 through 100.
+
+    Returns:
+        The processed image, preserving alpha and grayscale modes where possible.
+    """
+    _validate_effect_intensity(intensity)
+    if intensity == 0:
+        return image
+
+    import numpy as np
+    from skimage import img_as_ubyte
+    from skimage.color import rgb2gray
+    from skimage.filters import sobel
+    from skimage.restoration import denoise_bilateral
+
+    working_image, alpha_channel = _prepare_painterly_image(image)
+    pixels = np.asarray(working_image)
+    fraction = intensity / 100.0
+    filtered = denoise_bilateral(
+        pixels,
+        win_size=max(3, int(3 + fraction * 12) | 1),
+        sigma_color=0.1 + fraction * 0.2,
+        sigma_spatial=max(1.0, fraction * 30.0),
+        channel_axis=-1,
+    )
+    cartoon = filtered.copy()
+    cartoon[sobel(rgb2gray(pixels)) > 0.05] = 0.0
+    result = Image.fromarray(img_as_ubyte(cartoon), mode="RGB")
+    return _restore_painterly_mode(result, image.mode, alpha_channel)

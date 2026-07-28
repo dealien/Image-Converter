@@ -221,6 +221,20 @@ def main():
         help="Apply vignette effect with intensity (0-100).",
     )
     parser.add_argument(
+        "--oil-painting",
+        dest="oil_painting",
+        action=StoreInOrder,
+        type=int,
+        help="Apply oil painting effect with intensity (0-100).",
+    )
+    parser.add_argument(
+        "--cartoonify",
+        dest="cartoonify",
+        action=StoreInOrder,
+        type=int,
+        help="Apply cartoonify effect with intensity (0-100).",
+    )
+    parser.add_argument(
         "--rotate",
         dest="rotate",
         action=StoreInOrder,

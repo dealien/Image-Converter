@@ -12,7 +12,9 @@ from image_converter.image_filters import (
     adjust_saturation,
     apply_blur,
     apply_border,
+    apply_cartoonify,
     apply_color_balance,
+    apply_oil_painting,
     apply_posterize,
     apply_sharpen,
     apply_vignette,
@@ -1051,3 +1053,37 @@ class TestImageFiltersEdgeCases(unittest.TestCase):
         # Our newly refactored shift variable will compute 107. We test this mathematically:
         shift = int(round((150 / 360.0) * 256)) % 256
         self.assertEqual(shift, 107)
+
+
+class TestPainterlyEffects(unittest.TestCase):
+    """Tests for the oil-painting and cartoonify filters."""
+
+    def setUp(self):
+        self.image = Image.new("RGB", (24, 24))
+        for x in range(24):
+            for y in range(24):
+                self.image.putpixel((x, y), (255, 255, 255) if x < 12 else (20, 20, 20))
+
+    def test_oil_painting_preserves_rgba_alpha(self):
+        image = self.image.convert("RGBA")
+        image.putalpha(128)
+        result = apply_oil_painting(image, 50)
+        self.assertEqual(result.mode, "RGBA")
+        self.assertEqual(result.getchannel("A").getextrema(), (128, 128))
+
+    def test_cartoonify_creates_edges_and_preserves_dimensions(self):
+        result = apply_cartoonify(self.image, 50)
+        self.assertEqual(result.mode, "RGB")
+        self.assertEqual(result.size, self.image.size)
+        self.assertIn((0, 0, 0), result.getdata())
+
+    def test_effects_return_original_image_at_zero_intensity(self):
+        self.assertIs(apply_oil_painting(self.image, 0), self.image)
+        self.assertIs(apply_cartoonify(self.image, 0), self.image)
+
+    def test_effects_validate_intensity(self):
+        for effect in (apply_oil_painting, apply_cartoonify):
+            with self.assertRaises(ValueError):
+                effect(self.image, 101)
+            with self.assertRaises(TypeError):
+                effect(self.image, "50")

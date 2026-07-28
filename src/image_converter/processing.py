@@ -32,7 +32,9 @@ from .image_filters import (
     adjust_saturation,
     apply_blur,
     apply_border,
+    apply_cartoonify,
     apply_color_balance,
+    apply_oil_painting,
     apply_posterize,
     apply_sharpen,
     apply_vignette,
@@ -473,6 +475,22 @@ def handle_vignette(image: Image.Image, image_name, values, args) -> Image.Image
     return apply_vignette(image, values[0])
 
 
+def handle_oil_painting(image: Image.Image, image_name, values, args) -> Image.Image:
+    """Handle the 'oil_painting' operation."""
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Applying oil painting with intensity {values[0]}...[/]"
+    )
+    return apply_oil_painting(image, values[0])
+
+
+def handle_cartoonify(image: Image.Image, image_name, values, args) -> Image.Image:
+    """Handle the 'cartoonify' operation."""
+    console.print(
+        f"  [bright_yellow]›[/] [yellow]Applying cartoonify with intensity {values[0]}...[/]"
+    )
+    return apply_cartoonify(image, values[0])
+
+
 # --- Core Processing Function ---
 
 
@@ -767,6 +785,8 @@ def process_images_and_save(images_data, ordered_operations, cli_args):
         "border": handle_border,
         "rotate": handle_rotate,
         "vignette": handle_vignette,
+        "oil_painting": handle_oil_painting,
+        "cartoonify": handle_cartoonify,
         "view_metadata": handle_view_metadata,
         "export_metadata": handle_export_metadata,
         "strip_metadata": handle_strip_metadata,

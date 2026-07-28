@@ -51,6 +51,8 @@ image-converter [file_path] [options]
 - `--hue-rotation [degrees]`: Rotate hue by specified degrees (0-360).
 - `--posterize [bits]`: Reduce color depth to N bits (1-8).
 - `--vignette [intensity]`: Apply vignette effect with specified intensity (0-100).
+- `--oil-painting [intensity]`: Apply oil painting effect with specified intensity (0-100).
+- `--cartoonify [intensity]`: Apply cartoonify effect with specified intensity (0-100).
 - `--edge-detection [method]`: Apply edge detection (`sobel`, `canny`, `kovalevsky`).
 - `--threshold [value]`: Threshold for the Kovalevsky edge detection method (0-255).
 
