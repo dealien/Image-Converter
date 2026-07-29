@@ -1160,6 +1160,7 @@ def _restore_painterly_mode(
         image.info.update(original_info)
     if alpha_channel is not None:
         image.putalpha(alpha_channel)
+        image.info.pop("transparency", None)
         return image
     if original_mode == "L":
         return image.convert("L")

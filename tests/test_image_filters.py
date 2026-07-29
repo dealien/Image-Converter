@@ -1,3 +1,4 @@
+import io
 import os
 import random
 import unittest
@@ -1241,6 +1242,10 @@ class TestPainterlyEffects(unittest.TestCase):
             self.assertEqual(result.mode, "RGBA")
             alpha_extrema = result.getchannel("A").getextrema()
             self.assertEqual(alpha_extrema, (0, 255))
+            self.assertNotIn("transparency", result.info)
+            buffer = io.BytesIO()
+            result.save(buffer, format="PNG")
+            self.assertGreater(len(buffer.getvalue()), 0)
 
     def test_painterly_preserves_palette_transparency(self):
         """Verifies that Palette images with transparency metadata retain their alpha."""
@@ -1263,6 +1268,7 @@ class TestPainterlyEffects(unittest.TestCase):
                 self.assertEqual(
                     result_img.getchannel("A").getextrema(), expected_alpha
                 )
+                self.assertNotIn("transparency", result_img.info)
 
     def test_painterly_la_mode(self):
         """Verifies that LA (Grayscale + Alpha) images preserve their alpha channel."""
