@@ -234,7 +234,7 @@ class TestImageAdjustments(unittest.TestCase):
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = brightened_image.split()
         self.assertEqual(
-            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+            list(cast(Any, new_alpha.getdata())), list(cast(Any, alpha.getdata()))
         )
 
         # Check brightness increased on RGB channels
@@ -272,8 +272,8 @@ class TestImageAdjustments(unittest.TestCase):
         # Test no change
         same_image = adjust_contrast(self.test_image, 0)
         self.assertEqual(
-            list(same_image.get_flattened_data()),
-            list(self.test_image.get_flattened_data()),
+            list(cast(Any, same_image.getdata())),
+            list(cast(Any, self.test_image.getdata())),
         )
 
         # Test invalid values
@@ -309,7 +309,7 @@ class TestImageAdjustments(unittest.TestCase):
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = contrasted_image.split()
         self.assertEqual(
-            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+            list(cast(Any, new_alpha.getdata())), list(cast(Any, alpha.getdata()))
         )
 
         # Check contrast changes on RGB
@@ -345,8 +345,8 @@ class TestImageAdjustments(unittest.TestCase):
         # Test no change
         same_image = adjust_saturation(self.test_image, 0)
         self.assertEqual(
-            list(same_image.get_flattened_data()),
-            list(self.test_image.get_flattened_data()),
+            list(cast(Any, same_image.getdata())),
+            list(cast(Any, self.test_image.getdata())),
         )
 
         # Test invalid values
@@ -381,7 +381,7 @@ class TestImageAdjustments(unittest.TestCase):
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = saturated_image.split()
         self.assertEqual(
-            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+            list(cast(Any, new_alpha.getdata())), list(cast(Any, alpha.getdata()))
         )
 
 
@@ -429,7 +429,7 @@ class TestImageBlurAndSharpen(unittest.TestCase):
 
         # Calculate total horizontal gradient (sum of absolute differences)
         def calculate_horizontal_gradient(img):
-            data = list(img.get_flattened_data())
+            data = list(cast(Any, img.getdata()))
             width, height = img.size
             total_gradient = 0
             for y in range(height):
@@ -478,12 +478,12 @@ class TestImageBlurAndSharpen(unittest.TestCase):
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = sharpened_image.split()
         self.assertEqual(
-            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+            list(cast(Any, new_alpha.getdata())), list(cast(Any, alpha.getdata()))
         )
 
         # Verify sharpening occurred on RGB (compare difference)
         def calculate_horizontal_gradient(img):
-            data = list(img.convert("RGB").get_flattened_data())
+            data = list(cast(Any, img.convert("RGB").getdata()))
             width, height = img.size
             total_gradient = 0
             for y in range(height):
@@ -555,7 +555,7 @@ class TestImageColorOps(unittest.TestCase):
         # Check that the alpha channel is preserved
         _, _, _, new_alpha = red_enhanced.split()
         self.assertEqual(
-            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+            list(cast(Any, new_alpha.getdata())), list(cast(Any, alpha.getdata()))
         )
 
     def test_apply_color_balance_4_plus_bands(self):
@@ -573,7 +573,7 @@ class TestImageColorOps(unittest.TestCase):
         # Verify alpha channel is preserved
         _, _, _, result_alpha = color_balanced.split()
         self.assertEqual(
-            list(result_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+            list(cast(Any, result_alpha.getdata())), list(cast(Any, alpha.getdata()))
         )
 
     def test_posterize(self):
@@ -586,7 +586,7 @@ class TestImageColorOps(unittest.TestCase):
             img, bits=1
         )  # Reduce to 1 bit (2 levels per channel)
 
-        unique_colors = len(set(posterized.get_flattened_data()))
+        unique_colors = len(set(cast(Any, posterized.getdata())))
         self.assertLess(
             unique_colors, 10
         )  # Should be very few colors (actually 2^3=8 max for full RGB, but 2 for grayscale-ish)
@@ -982,8 +982,8 @@ class TestImageVignette(unittest.TestCase):
     def test_vignette_zero_intensity(self):
         vignetted = apply_vignette(self.test_image, 0)
         self.assertEqual(
-            list(vignetted.get_flattened_data()),
-            list(self.test_image.get_flattened_data()),
+            list(cast(Any, vignetted.getdata())),
+            list(cast(Any, self.test_image.getdata())),
         )
 
     def test_vignette_rgba(self):
@@ -996,7 +996,7 @@ class TestImageVignette(unittest.TestCase):
         self.assertEqual(vignetted.mode, "RGBA")
         _, _, _, new_alpha = vignetted.split()
         self.assertEqual(
-            list(new_alpha.get_flattened_data()), list(alpha.get_flattened_data())
+            list(cast(Any, new_alpha.getdata())), list(cast(Any, alpha.getdata()))
         )
 
     def test_vignette_invalid_args(self):
@@ -1301,7 +1301,7 @@ class TestPainterlyEffects(unittest.TestCase):
         result = apply_cartoonify(self.image, 100)
         self.assertEqual(result.mode, "RGB")
         self.assertEqual(result.size, self.image.size)
-        self.assertIn((0, 0, 0), list(result.get_flattened_data()))
+        self.assertIn((0, 0, 0), list(cast(Any, result.getdata())))
 
     def test_cartoonify_edge_strength_scales_with_intensity(self):
         """Verifies that Sobel edge overlay strength increases monotonically with intensity."""

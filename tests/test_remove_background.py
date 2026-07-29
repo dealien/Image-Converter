@@ -94,9 +94,7 @@ class TestRemoveBackground(unittest.TestCase):
         self.assertTrue(
             any(
                 pixel[3] == 0
-                for pixel in cast(
-                    Iterable[tuple[int, ...]], output_img.get_flattened_data()
-                )
+                for pixel in cast(Iterable[tuple[int, ...]], output_img.getdata())
             )
         )
 
