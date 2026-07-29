@@ -603,6 +603,44 @@ def prompt_for_rotation_options(
     return {"dest": "rotate", "values": [int(angle_str) if angle_str else 90]}
 
 
+def prompt_for_oil_painting_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """Prompts the user for oil painting intensity.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'oil_painting'.
+    """
+    val_str = _ask_text(
+        "Enter oil painting intensity (0-100)",
+        default_val=50,
+        validate=_validate_number(0, 100, allow_empty=True),
+    )
+    return {"dest": "oil_painting", "values": [int(val_str) if val_str else 50]}
+
+
+def prompt_for_cartoonify_options(
+    extra_args: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """Prompts the user for a cartoonify intensity.
+
+    Args:
+        extra_args (dict, optional): Shared extra arguments dictionary. Defaults to None.
+
+    Returns:
+        dict: The operation dictionary for 'cartoonify'.
+    """
+    val_str = _ask_text(
+        "Enter cartoonify intensity (0-100)",
+        default_val=50,
+        validate=_validate_number(0, 100, allow_empty=True),
+    )
+    return {"dest": "cartoonify", "values": [int(val_str) if val_str else 50]}
+
+
 # --- Main Menu Configuration ---
 
 AVAILABLE_MANIPULATIONS = [
@@ -655,6 +693,16 @@ AVAILABLE_MANIPULATIONS = [
         "handler": prompt_for_vignette_options,
     },
     {"dest": "rotate", "name": "Rotate Image", "handler": prompt_for_rotation_options},
+    {
+        "dest": "oil_painting",
+        "name": "Apply Oil Painting",
+        "handler": prompt_for_oil_painting_options,
+    },
+    {
+        "dest": "cartoonify",
+        "name": "Apply Cartoonify",
+        "handler": prompt_for_cartoonify_options,
+    },
 ]
 
 # --- Menu Logic ---
@@ -818,6 +866,8 @@ def select_manipulations(
                 "Apply Posterize",
                 "Add Border",
                 "Apply Vignette",
+                "Apply Oil Painting",
+                "Apply Cartoonify",
             ],
         ),
     }

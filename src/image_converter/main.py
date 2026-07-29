@@ -52,23 +52,13 @@ class StoreInOrder(argparse.Action):
 # --- Main Execution ---
 
 
-def main():
-    """Run the main entry point for the image conversion CLI application.
+def create_parser() -> argparse.ArgumentParser:
+    """Create and configure the command-line argument parser.
 
-    Parse command-line arguments and execute the specified image processing
-    pipeline. If no arguments are provided or the `--menu` flag is used, it
-    launches the interactive menu interface. By default, the program searches
-    for images in the `Base Images/` directory if no specific file path is given.
+    Returns:
+        argparse.ArgumentParser: The configured argument parser object.
+
     """
-    # If --menu is used or no arguments are provided, start the menu.
-
-    if "--menu" in sys.argv or len(sys.argv) == 1:
-        # Import dynamically to prevent circular dependency issues with tests
-        from .menu import interactive_menu
-
-        interactive_menu()
-        return
-
     parser = argparse.ArgumentParser(
         description="A versatile command-line image manipulation tool."
     )
@@ -221,6 +211,20 @@ def main():
         help="Apply vignette effect with intensity (0-100).",
     )
     parser.add_argument(
+        "--oil-painting",
+        dest="oil_painting",
+        action=StoreInOrder,
+        type=int,
+        help="Apply oil painting effect with intensity (0-100).",
+    )
+    parser.add_argument(
+        "--cartoonify",
+        dest="cartoonify",
+        action=StoreInOrder,
+        type=int,
+        help="Apply cartoonify effect with intensity (0-100).",
+    )
+    parser.add_argument(
         "--rotate",
         dest="rotate",
         action=StoreInOrder,
@@ -312,7 +316,27 @@ def main():
         type=int,
         help="Output quality (1-100) per format. Evaluated in order of --format arguments.",
     )
+    return parser
 
+
+def main():
+    """Run the main entry point for the image conversion CLI application.
+
+    Parse command-line arguments and execute the specified image processing
+    pipeline. If no arguments are provided or the `--menu` flag is used, it
+    launches the interactive menu interface. By default, the program searches
+    for images in the `Base Images/` directory if no specific file path is given.
+    """
+    # If --menu is used or no arguments are provided, start the menu.
+
+    if "--menu" in sys.argv or len(sys.argv) == 1:
+        # Import dynamically to prevent circular dependency issues with tests
+        from .menu import interactive_menu
+
+        interactive_menu()
+        return
+
+    parser = create_parser()
     args = parser.parse_args()
 
     # Check if any action was specified (operations or explicit formats)

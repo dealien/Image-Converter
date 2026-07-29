@@ -22,6 +22,7 @@ This is a versatile Python project designed to streamline everyday workflows for
   - Apply Edge Detection (Sobel, Canny, Kovalevsky).
   - Apply Gaussian Blur or Sharpening.
   - Apply Vignette effect.
+  - Apply Oil Painting or Cartoonify effect.
   - Posterize (reduce color depth).
 - 🔄 **Transformations:** Flip images (horizontally, vertically, or both), add borders, and rotate by 90-degree increments.
 - 💾 **Advanced Exporting:** Convert images native to modern formats like `AVIF` or `HEIC`, controlling export qualities individually or grouped. Includes options to flatten alpha transparency for formats that don't support it.
@@ -109,6 +110,8 @@ image-converter [file_path] [options]
 - `--hue-rotation [degrees]`: Rotate hue by specified degrees (0-360).
 - `--posterize [bits]`: Reduce color depth to N bits (1-8).
 - `--vignette [intensity]`: Apply vignette effect with specified intensity (0-100).
+- `--oil-painting [intensity]`: Apply oil painting effect with specified intensity (0-100).
+- `--cartoonify [intensity]`: Apply cartoonify effect with specified intensity (0-100).
 - `--edge-detection [method]`: Apply edge detection (`sobel`, `canny`, `kovalevsky`).
 - `--threshold [value]`: Threshold for the Kovalevsky edge detection method (0-255).
 

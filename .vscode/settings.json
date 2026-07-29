@@ -6,6 +6,10 @@
     "python.testing.pytestEnabled": true,
     "python.useEnvironmentsExtension": false,
     "basedpyright.analysis.typeCheckingMode": "off",
+    "basedpyright.analysis.extraPaths": [
+        "src",
+        "tests"
+    ],
     "coverlens.testRunner.mode": "custom",
     "coverlens.testRunner.customCommand": ".\\.venv\\Scripts\\python.exe -m pytest --cov=. --cov-report=lcov:lcov.info",
     "coverlens.coverageFiles": [

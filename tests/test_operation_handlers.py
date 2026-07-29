@@ -82,6 +82,28 @@ class TestOperationHandlers(unittest.TestCase):
         self.assertEqual(result, "grayscale_image_delegated")
 
     @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.apply_oil_painting")
+    def test_handle_oil_painting(self, mock_effect, mock_print):
+        mock_effect.return_value = "oil_painted_image"
+        result = processing.handle_oil_painting(
+            self.image, self.image_name, [50], self.args
+        )
+        mock_print.assert_called_once()
+        mock_effect.assert_called_once_with(self.image, 50)
+        self.assertEqual(result, "oil_painted_image")
+
+    @patch("image_converter.processing.console.print")
+    @patch("image_converter.processing.apply_cartoonify")
+    def test_handle_cartoonify(self, mock_effect, mock_print):
+        mock_effect.return_value = "cartoon_image"
+        result = processing.handle_cartoonify(
+            self.image, self.image_name, [50], self.args
+        )
+        mock_print.assert_called_once()
+        mock_effect.assert_called_once_with(self.image, 50)
+        self.assertEqual(result, "cartoon_image")
+
+    @patch("image_converter.processing.console.print")
     @patch("image_converter.processing.adjust_brightness")
     def test_handle_brightness(self, mock_adjust, mock_print):
         mock_adjust.return_value = "bright_image"

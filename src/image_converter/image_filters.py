@@ -6,7 +6,9 @@ edge detection, color balance, hue rotation, posterization, borders, and rotatio
 """
 
 import functools
+from typing import Any, cast
 
+import numpy as np
 from PIL import Image, ImageColor, ImageEnhance, ImageFilter, ImageOps
 
 
@@ -22,8 +24,6 @@ def _generate_vignette_mask(mask_size: int, intensity: int) -> Image.Image:
         Image.Image: The generated base mask image.
 
     """
-    import numpy as np
-
     center = mask_size / 2.0
     factor = (intensity / 100.0) / (2.0 * center**2)
 
@@ -47,7 +47,7 @@ def _generate_scaled_lut(factor: float) -> list[int]:
         list[int]: A list of 256 mapped values.
 
     """
-    return [max(0, min(255, int(round(i * factor)))) for i in range(256)]
+    return [max(0, min(255, round(i * factor))) for i in range(256)]
 
 
 @functools.lru_cache(maxsize=1024)
@@ -230,7 +230,7 @@ def _get_brightness_lut_16(brightness: int) -> tuple[int, ...]:
 
     """
     factor = 1.0 + (brightness / 100.0)
-    return tuple(max(0, min(65535, int(round(i * factor)))) for i in range(65536))
+    return tuple(max(0, min(65535, round(i * factor))) for i in range(65536))
 
 
 @functools.lru_cache(maxsize=1024)
@@ -247,7 +247,7 @@ def _get_contrast_lut_16(contrast: int, mean: int) -> tuple[int, ...]:
     """
     factor = 1.0 + (contrast / 100.0)
     return tuple(
-        max(0, min(65535, int(round((i - mean) * factor + mean)))) for i in range(65536)
+        max(0, min(65535, round((i - mean) * factor + mean))) for i in range(65536)
     )
 
 
@@ -307,7 +307,7 @@ def _get_combined_contrast_lut(
     factor = 1.0 + (contrast / 100.0)
 
     lut_channel = [
-        max(0, min(255, int(round((i - mean) * factor + mean)))) for i in range(256)
+        max(0, min(255, round((i - mean) * factor + mean))) for i in range(256)
     ]
 
     if mode in ("L", "1"):
@@ -433,10 +433,10 @@ def grayscale(image: Image.Image) -> Image.Image:
 
 
 def _kovalevsky_scan(
-    array_to_scan: "numpy.ndarray",  # noqa: F821
-    output_map: "numpy.ndarray",  # noqa: F821
-    threshold: int,  # noqa: F821
-) -> None:  # noqa: F821
+    array_to_scan: np.ndarray,
+    output_map: np.ndarray,
+    threshold: int,
+) -> None:
     """Perform a 1D Kovalevsky edge detection scan.
 
     Args:
@@ -445,8 +445,6 @@ def _kovalevsky_scan(
         threshold: The threshold for edge detection.
 
     """
-    import numpy as np
-
     n, m, _ = array_to_scan.shape
     if m >= 6:
         # Chunk rows to cap peak memory while maintaining vectorized speed
@@ -494,7 +492,6 @@ def edge_detection(image: Image.Image, method: str, threshold: int = 50) -> Imag
     try:
         # Not every system has scikit-image installed, and it's not a required
         # dependency for the main functionality
-        import numpy as np
         from skimage import feature, filters
     except ImportError:
         raise ImportError("scikit-image and numpy are required for edge detection.")
@@ -561,20 +558,20 @@ def _get_image_mean_luminance(image: Image.Image) -> int:
     from PIL import ImageStat
 
     if image.mode in ("L", "1"):
-        return int(round(ImageStat.Stat(image).mean[0]))
+        return round(ImageStat.Stat(image).mean[0])
     elif image.mode.startswith("I") or image.mode == "F":
-        return int(round(ImageStat.Stat(image).mean[0]))
+        return round(ImageStat.Stat(image).mean[0])
     elif image.mode in ("LAB", "LA", "La"):
-        return int(round(ImageStat.Stat(image.getchannel("L")).mean[0]))
+        return round(ImageStat.Stat(image.getchannel("L")).mean[0])
     elif image.mode == "YCbCr":
-        return int(round(ImageStat.Stat(image.getchannel("Y")).mean[0]))
+        return round(ImageStat.Stat(image.getchannel("Y")).mean[0])
     elif image.mode in ("P", "PA") and image.getpalette():
-        return int(round(ImageStat.Stat(image.convert("RGB").convert("L")).mean[0]))
+        return round(ImageStat.Stat(image.convert("RGB").convert("L")).mean[0])
     else:
         try:
-            return int(round(ImageStat.Stat(image.convert("L")).mean[0]))
+            return round(ImageStat.Stat(image.convert("L")).mean[0])
         except Exception:
-            return int(round(ImageStat.Stat(image).mean[0]))
+            return round(ImageStat.Stat(image).mean[0])
 
 
 def adjust_brightness(image: Image.Image, brightness: int) -> Image.Image:
@@ -642,7 +639,7 @@ def adjust_contrast(image: Image.Image, contrast: int) -> Image.Image:
         mean = _get_image_mean_luminance(image)
         factor = 1.0 + (contrast / 100.0)
         lut_channel = [
-            max(0, min(255, int(round((i - mean) * factor + mean)))) for i in range(256)
+            max(0, min(255, round((i - mean) * factor + mean))) for i in range(256)
         ]
         return _apply_palette_lut(image, lut_channel)
 
@@ -685,21 +682,24 @@ def adjust_saturation(image: Image.Image, saturation: int) -> Image.Image:
         return image
     factor = 1.0 + (saturation / 100.0)
 
-    if image.mode == "RGBA":
-        # Fast path for RGBA: enhance directly and restore original alpha
+    if "A" in image.getbands():
         alpha = image.getchannel("A")
-        enhanced = ImageEnhance.Color(image).enhance(factor)
-        enhanced.putalpha(alpha)
-        return enhanced
+    elif image.info.get("transparency") is not None:
+        alpha = image.convert("RGBA").getchannel("A")
+    else:
+        alpha = None
 
     # No-op for grayscale to preserve mode and avoid unintended conversion
     if image.mode == "L":
         return image
 
-    # Convert other modes to 'RGB'
-    if image.mode != "RGB":
-        image = image.convert("RGB")
-    return ImageEnhance.Color(image).enhance(factor)
+    working = image.convert("RGB") if image.mode != "RGB" else image
+    enhanced = ImageEnhance.Color(working).enhance(factor)
+    if image.info:
+        enhanced.info.update(image.info)
+    if alpha is not None:
+        enhanced.putalpha(alpha)
+    return enhanced
 
 
 def apply_blur(image: Image.Image, radius: int) -> Image.Image:
@@ -723,7 +723,22 @@ def apply_blur(image: Image.Image, radius: int) -> Image.Image:
         raise ValueError("Radius must be non-negative.")
     if radius == 0:
         return image
-    return image.filter(ImageFilter.GaussianBlur(radius))
+    if "A" in image.getbands():
+        alpha = image.getchannel("A")
+    elif image.info.get("transparency") is not None:
+        alpha = image.convert("RGBA").getchannel("A")
+    else:
+        alpha = None
+
+    working = (
+        image.convert("RGB") if image.mode not in ("RGB", "RGBA", "L", "LA") else image
+    )
+    blurred = working.filter(ImageFilter.GaussianBlur(radius))
+    if image.info:
+        blurred.info.update(image.info)
+    if alpha is not None:
+        blurred.putalpha(alpha)
+    return blurred
 
 
 def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
@@ -751,17 +766,20 @@ def apply_sharpen(image: Image.Image, sharpness: int) -> Image.Image:
     # Map 0-100 to a factor (e.g., 1.0 to 2.0)
     factor = 1.0 + (sharpness / 100.0)
 
-    if image.mode == "RGBA":
-        # Fast path for RGBA: enhance directly and restore original alpha
+    if "A" in image.getbands():
         alpha = image.getchannel("A")
-        enhanced = ImageEnhance.Sharpness(image).enhance(factor)
+    elif image.info.get("transparency") is not None:
+        alpha = image.convert("RGBA").getchannel("A")
+    else:
+        alpha = None
+
+    working = image.convert("RGB") if image.mode not in ("RGB", "L") else image
+    enhanced = ImageEnhance.Sharpness(working).enhance(factor)
+    if image.info:
+        enhanced.info.update(image.info)
+    if alpha is not None:
         enhanced.putalpha(alpha)
-        return enhanced
-
-    if image.mode not in ("RGB", "L"):
-        image = image.convert("RGB")
-
-    return ImageEnhance.Sharpness(image).enhance(factor)
+    return enhanced
 
 
 def apply_color_balance(
@@ -786,9 +804,9 @@ def apply_color_balance(
     """
     # Handle float conversion and validation
     try:
-        r_f = float(red_factor)
-        g_f = float(green_factor)
-        b_f = float(blue_factor)
+        r_f = float(cast(Any, red_factor))
+        g_f = float(cast(Any, green_factor))
+        b_f = float(cast(Any, blue_factor))
     except (ValueError, TypeError):
         raise TypeError("Color balance factors must be numbers.")
 
@@ -813,10 +831,24 @@ def apply_color_balance(
         lut_b = _get_scale_lut(b_f)
         return _apply_palette_lut(image, lut_r, lut_g, lut_b)
 
+    if image.mode in ("LA", "La"):
+        alpha = image.getchannel("A")
+        rgba = image.convert("RGBA")
+        num_bands = len(rgba.getbands())
+        lut = _get_color_balance_lut(r_f, g_f, b_f, num_bands)
+        res = rgba.point(lut)
+        if image.info:
+            res.info.update(image.info)
+        res.putalpha(alpha)
+        return res
+
     num_bands = len(image.getbands())
     lut = _get_color_balance_lut(r_f, g_f, b_f, num_bands)
 
-    return image.point(lut)
+    res = image.point(lut)
+    if image.info:
+        res.info.update(image.info)
+    return res
 
 
 def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
@@ -841,7 +873,7 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
         return image
 
     if image.mode == "HSV":
-        shift = int(round((degrees / 360.0) * 256)) % 256
+        shift = round((degrees / 360.0) * 256) % 256
         lut = _get_hue_rotation_lut(shift)
         return image.point(lut)
 
@@ -852,7 +884,7 @@ def rotate_hue(image: Image.Image, degrees: int) -> Image.Image:
     rgb_base = image.convert("RGB")
     img_hsv = rgb_base.convert("HSV")
 
-    shift = int(round((degrees / 360.0) * 256)) % 256
+    shift = round((degrees / 360.0) * 256) % 256
     lut = _get_hue_rotation_lut(shift)
 
     new_img = img_hsv.point(lut)
@@ -1008,7 +1040,7 @@ def rotate_image(image: Image.Image, angle: int) -> Image.Image:
     """
     # Clamp to nearest 90 degrees
     # 0, 90, 180, 270. 360 -> 0. -90 -> 270.
-    clamped_angle = int(round(angle / 90.0)) * 90 % 360
+    clamped_angle = round(angle / 90.0) * 90 % 360
 
     if clamped_angle == 0:
         return image
@@ -1054,7 +1086,12 @@ def apply_vignette(image: Image.Image, intensity: int = 50) -> Image.Image:
 
     width, height = image.size
 
-    alpha_channel = image.getchannel("A") if "A" in image.getbands() else None
+    if "A" in image.getbands():
+        alpha_channel = image.getchannel("A")
+    elif image.info.get("transparency") is not None:
+        alpha_channel = image.convert("RGBA").getchannel("A")
+    else:
+        alpha_channel = None
 
     # Needs to be RGB/L for composite
     if image.mode not in ("RGB", "L"):
@@ -1082,7 +1119,115 @@ def apply_vignette(image: Image.Image, intensity: int = 50) -> Image.Image:
     black_bg = Image.new(working_image.mode, (width, height), 0)
     vignetted = Image.composite(working_image, black_bg, full_mask)
 
-    if alpha_channel:
+    if image.info:
+        vignetted.info.update(image.info)
+
+    if alpha_channel is not None:
         vignetted.putalpha(alpha_channel)
 
     return vignetted
+
+
+def _validate_effect_intensity(intensity: int) -> None:
+    """Validate a painterly-effect intensity value."""
+    if not isinstance(intensity, int):
+        raise TypeError("Intensity must be an integer.")
+    if not 0 <= intensity <= 100:
+        raise ValueError("Intensity must be between 0 and 100.")
+
+
+def _prepare_painterly_image(
+    image: Image.Image,
+) -> tuple[Image.Image, Image.Image | None]:
+    """Return an RGB working image and the original alpha channel, if present."""
+    if "A" in image.getbands():
+        alpha_channel = image.getchannel("A")
+    elif image.info.get("transparency") is not None:
+        alpha_channel = image.convert("RGBA").getchannel("A")
+    else:
+        alpha_channel = None
+    return image.convert("RGB"), alpha_channel
+
+
+def _restore_painterly_mode(
+    image: Image.Image,
+    original_mode: str,
+    alpha_channel: Image.Image | None,
+    original_info: dict | None = None,
+) -> Image.Image:
+    """Restore alpha, metadata, or grayscale mode after applying a painterly effect."""
+    if original_info:
+        image.info.update(original_info)
+    if alpha_channel is not None:
+        image.putalpha(alpha_channel)
+        image.info.pop("transparency", None)
+        return image
+    if original_mode == "L":
+        return image.convert("L")
+    return image
+
+
+def apply_oil_painting(image: Image.Image, intensity: int = 50) -> Image.Image:
+    """Apply a bilateral-filter oil-painting effect.
+
+    Args:
+        image: Input image.
+        intensity: Effect strength from 0 through 100.
+
+    Returns:
+        The processed image, preserving alpha and grayscale modes where possible.
+    """
+    _validate_effect_intensity(intensity)
+    if intensity == 0:
+        return image
+
+    from skimage.restoration import denoise_bilateral
+    from skimage.util import img_as_ubyte
+
+    working_image, alpha_channel = _prepare_painterly_image(image)
+    fraction = intensity / 100.0
+    filtered = denoise_bilateral(
+        np.asarray(working_image),
+        win_size=max(3, int(3 + fraction * 12) | 1),
+        sigma_color=0.1 + fraction * 0.2,
+        sigma_spatial=max(1.0, fraction * 30.0),
+        channel_axis=-1,
+    )
+    result = Image.fromarray(img_as_ubyte(filtered), mode="RGB")
+    return _restore_painterly_mode(result, image.mode, alpha_channel, image.info)
+
+
+def apply_cartoonify(image: Image.Image, intensity: int = 50) -> Image.Image:
+    """Apply bilateral smoothing with dark Sobel edges for a cartoon effect.
+
+    Args:
+        image: Input image.
+        intensity: Effect strength from 0 through 100.
+
+    Returns:
+        The processed image, preserving alpha and grayscale modes where possible.
+    """
+    _validate_effect_intensity(intensity)
+    if intensity == 0:
+        return image
+
+    from skimage.color import rgb2gray
+    from skimage.filters import sobel
+    from skimage.restoration import denoise_bilateral
+    from skimage.util import img_as_ubyte
+
+    working_image, alpha_channel = _prepare_painterly_image(image)
+    pixels = np.asarray(working_image)
+    fraction = intensity / 100.0
+    filtered = denoise_bilateral(
+        pixels,
+        win_size=max(3, int(3 + fraction * 12) | 1),
+        sigma_color=0.1 + fraction * 0.2,
+        sigma_spatial=max(1.0, fraction * 30.0),
+        channel_axis=-1,
+    )
+    cartoon = filtered.copy()
+    edge_mask = sobel(rgb2gray(pixels)) > 0.05
+    cartoon[edge_mask] = filtered[edge_mask] * (1.0 - fraction)
+    result = Image.fromarray(img_as_ubyte(cartoon), mode="RGB")
+    return _restore_painterly_mode(result, image.mode, alpha_channel, image.info)

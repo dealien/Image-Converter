@@ -80,3 +80,7 @@ exclude_lines = [
     "break",
 ]
 show_missing = true
+
+[tool.pyrefly]
+project-includes = ["src", "tests"]
+search-path = ["src", "tests"]

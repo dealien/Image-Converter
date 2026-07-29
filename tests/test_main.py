@@ -3,8 +3,14 @@
 import os
 import sys
 import unittest
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
+from automated_testing import (  # noqa: E402
+    ValidationError,
+    validate_command,
+    validate_commands,
+)
 from PIL import Image, ImageChops
 
 # Import the image filter functions to create an expected image
@@ -12,11 +18,51 @@ from image_converter.image_filters import grayscale, invert_colors  # noqa: E402
 
 # Add the project root to the Python path
 # Import the main function that we want to test
-from image_converter.main import main  # noqa: E402
+from image_converter.main import create_parser, main  # noqa: E402
 
 
 class TestMain(unittest.TestCase):
     """Test suite for the main application entry point and CLI argument parsing."""
+
+    def test_create_parser(self):
+        """Test that create_parser returns an ArgumentParser and parses valid arguments."""
+        parser = create_parser()
+        args = parser.parse_args(
+            ["input.png", "--oil-painting", "50", "--cartoonify", "30"]
+        )
+        self.assertEqual(args.file, "input.png")
+        self.assertEqual(len(args.ordered_operations), 2)
+        self.assertEqual(
+            args.ordered_operations[0], {"dest": "oil_painting", "values": [50]}
+        )
+        self.assertEqual(
+            args.ordered_operations[1], {"dest": "cartoonify", "values": [30]}
+        )
+
+    def test_validate_command_valid(self):
+        """Test validate_command with valid command argument list."""
+        validate_command(["tests/test_images/*", "--oil-painting", "50"])
+
+    def test_validate_command_invalid(self):
+        """Test validate_command raises ValidationError for invalid CLI arguments."""
+        with self.assertRaises(ValidationError):
+            validate_command(["tests/test_images/*", "--unknown-flag"])
+
+    def test_validate_commands_success(self):
+        """Test validate_commands succeeds with valid command list."""
+        commands = [
+            ["tests/test_images/*", "--oil-painting", "50"],
+            ["tests/test_images/*", "--cartoonify", "50"],
+        ]
+        validate_commands(commands)
+
+    def test_validate_commands_failure(self):
+        """Test validate_commands aborts with SystemExit on invalid command."""
+        commands = [
+            ["tests/test_images/*", "--invalid-flag"],
+        ]
+        with self.assertRaises(SystemExit):
+            validate_commands(commands)
 
     # Patch the function where it is looked up: in the 'processing' module
     @patch("image_converter.processing.remove_background")
@@ -127,7 +173,7 @@ class TestMain(unittest.TestCase):
         )
 
         # Test with scalar value
-        action_blur(parser, namespace, 2.5)
+        action_blur(parser, namespace, cast(Any, 2.5))
         self.assertEqual(len(namespace.ordered_operations), 2)
         self.assertEqual(
             namespace.ordered_operations[1], {"dest": "blur", "values": [2.5]}
