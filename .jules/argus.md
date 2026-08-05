@@ -57,3 +57,7 @@
 ## 2024-05-27 - Test skip save logic for read-only operations
 **Learning:** When testing the skip save logic for read-only operations in `process_images_and_save`, you must properly mock `rich.progress.Progress` by hooking into the context manager using `.return_value.__enter__.return_value`. Testing UI state outputs is easiest by tracking `call_args_list` directly on the mocked `Progress` update method since `process_images_and_save` drives updates directly using the returned context object.
 **Action:** When testing components utilizing Rich's context manager (like `Progress`), ensure `__enter__` returns a fully functional MagicMock configured to track calls such as `.update()` or `.advance()`, then iterate through `call_args_list` to assert string patterns without worrying about layout objects.
+
+## 2024-08-01 - Ignore Dead Code and Private Unreachable Logic for Coverage
+**Learning:** When encountering untested private functions (like `_get_brightness_lut_16` or `_get_contrast_lut_16` in `src/image_converter/image_filters.py`) that are not directly invoked by the public API or are part of dead code paths (e.g. they were written but then the calling logic bypassed them via `lambda` functions or other means), writing tests for them just to boost coverage is an anti-pattern.
+**Action:** Do not write tests for unused private implementation details or dead code. Ignore them for coverage purposes rather than testing unreachable paths or modifying the source to make them testable.
