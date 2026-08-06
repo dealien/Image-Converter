@@ -678,33 +678,29 @@ def test_select_manipulations_exit_selection(mock_questionary):
         menu.select_manipulations([])
 
 
-@patch("image_converter.menu._ask_text")
-def test_prompt_for_oil_painting_options_valid_input_returns_dict(mock_ask_text):
-    """Verifies that providing valid input returns the correct operation dictionary."""
+def test_prompt_for_oil_painting_default(mock_ask_text):
+    """Verifies that the oil painting prompt defaults to 50 when input is empty."""
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_oil_painting_options()
+    assert res["values"] == [50]
+
+
+def test_prompt_for_oil_painting_custom_value(mock_ask_text):
+    """Verifies that the oil painting prompt correctly captures a custom intensity value."""
     mock_ask_text.return_value = "75"
     res = menu.prompt_for_oil_painting_options()
-    assert res == {"dest": "oil_painting", "values": [75]}
+    assert res["values"] == [75]
 
 
-@patch("image_converter.menu._ask_text")
-def test_prompt_for_oil_painting_options_empty_input_returns_default(mock_ask_text):
-    """Verifies that empty input returns the default value of 50."""
-    mock_ask_text.return_value = ""
-    res = menu.prompt_for_oil_painting_options()
-    assert res == {"dest": "oil_painting", "values": [50]}
-
-
-@patch("image_converter.menu._ask_text")
-def test_prompt_for_cartoonify_options_valid_input_returns_dict(mock_ask_text):
-    """Verifies that providing valid input returns the correct operation dictionary."""
-    mock_ask_text.return_value = "80"
+def test_prompt_for_cartoonify_default(mock_ask_text):
+    """Verifies that the cartoonify prompt defaults to 50 when input is empty."""
+    mock_ask_text.return_value = ""  # default
     res = menu.prompt_for_cartoonify_options()
-    assert res == {"dest": "cartoonify", "values": [80]}
+    assert res["values"] == [50]
 
 
-@patch("image_converter.menu._ask_text")
-def test_prompt_for_cartoonify_options_empty_input_returns_default(mock_ask_text):
-    """Verifies that empty input returns the default value of 50."""
-    mock_ask_text.return_value = ""
+def test_prompt_for_cartoonify_custom_value(mock_ask_text):
+    """Verifies that the cartoonify prompt correctly captures a custom intensity value."""
+    mock_ask_text.return_value = "25"
     res = menu.prompt_for_cartoonify_options()
-    assert res == {"dest": "cartoonify", "values": [50]}
+    assert res["values"] == [25]

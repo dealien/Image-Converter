@@ -4,9 +4,7 @@
     "ghcr.io/devcontainers/features/python": {
       "version": "3.13.7"
     },
-    "ghcr.io/itsalljustdata/devcontainers-custom-features/python-virtualenv:1": {
-        "requirementsFile": "${containerWorkspaceFolder}/pyproject.toml"
-    }
+    "ghcr.io/itsalljustdata/devcontainers-custom-features/python-virtualenv:1": {}
   },
   "postCreateCommand": "pip install -e '.[dev,docs]'",
   "customizations": {
