@@ -676,3 +676,35 @@ def test_select_manipulations_exit_selection(mock_questionary):
     mock_questionary.select.return_value.ask.return_value = "EXIT"
     with pytest.raises(KeyboardInterrupt):
         menu.select_manipulations([])
+
+
+@patch("image_converter.menu._ask_text")
+def test_prompt_for_oil_painting_options_valid_input_returns_dict(mock_ask_text):
+    """Verifies that providing valid input returns the correct operation dictionary."""
+    mock_ask_text.return_value = "75"
+    res = menu.prompt_for_oil_painting_options()
+    assert res == {"dest": "oil_painting", "values": [75]}
+
+
+@patch("image_converter.menu._ask_text")
+def test_prompt_for_oil_painting_options_empty_input_returns_default(mock_ask_text):
+    """Verifies that empty input returns the default value of 50."""
+    mock_ask_text.return_value = ""
+    res = menu.prompt_for_oil_painting_options()
+    assert res == {"dest": "oil_painting", "values": [50]}
+
+
+@patch("image_converter.menu._ask_text")
+def test_prompt_for_cartoonify_options_valid_input_returns_dict(mock_ask_text):
+    """Verifies that providing valid input returns the correct operation dictionary."""
+    mock_ask_text.return_value = "80"
+    res = menu.prompt_for_cartoonify_options()
+    assert res == {"dest": "cartoonify", "values": [80]}
+
+
+@patch("image_converter.menu._ask_text")
+def test_prompt_for_cartoonify_options_empty_input_returns_default(mock_ask_text):
+    """Verifies that empty input returns the default value of 50."""
+    mock_ask_text.return_value = ""
+    res = menu.prompt_for_cartoonify_options()
+    assert res == {"dest": "cartoonify", "values": [50]}
