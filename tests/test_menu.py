@@ -676,3 +676,31 @@ def test_select_manipulations_exit_selection(mock_questionary):
     mock_questionary.select.return_value.ask.return_value = "EXIT"
     with pytest.raises(KeyboardInterrupt):
         menu.select_manipulations([])
+
+
+def test_prompt_for_oil_painting_default(mock_ask_text):
+    """Verifies that the oil painting prompt defaults to 50 when input is empty."""
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_oil_painting_options()
+    assert res["values"] == [50]
+
+
+def test_prompt_for_oil_painting_custom_value(mock_ask_text):
+    """Verifies that the oil painting prompt correctly captures a custom intensity value."""
+    mock_ask_text.return_value = "75"
+    res = menu.prompt_for_oil_painting_options()
+    assert res["values"] == [75]
+
+
+def test_prompt_for_cartoonify_default(mock_ask_text):
+    """Verifies that the cartoonify prompt defaults to 50 when input is empty."""
+    mock_ask_text.return_value = ""  # default
+    res = menu.prompt_for_cartoonify_options()
+    assert res["values"] == [50]
+
+
+def test_prompt_for_cartoonify_custom_value(mock_ask_text):
+    """Verifies that the cartoonify prompt correctly captures a custom intensity value."""
+    mock_ask_text.return_value = "25"
+    res = menu.prompt_for_cartoonify_options()
+    assert res["values"] == [25]
