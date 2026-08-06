@@ -129,6 +129,12 @@ image-converter "path/to/your/image.jpg" --remove-background
 image-converter "path/to/your/images/*.png" --scale 0.5x
 ```
 
+### Convert all images to WebP and JPEG at half quality
+
+```bash
+image-converter "path/to/your/images/*" --format webp --quality 50 --format jpg --quality 50
+```
+
 ### Strip privacy metadata but inject an Author tag
 
 ```bash
