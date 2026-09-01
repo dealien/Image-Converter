@@ -653,7 +653,11 @@ def _process_single_image(
                             background = Image.new(
                                 "RGB", temp_rgba.size, cli_args.flatten
                             )
-                            background.paste(temp_rgba, mask=temp_rgba.split()[3])
+                            # ⚡ Bolt: Fast path for alpha channel extraction.
+                            # `getchannel('A')` is much faster than `split()[3]` because it
+                            # avoids evaluating and allocating memory for the Red, Green, and
+                            # Blue bands that we are just going to throw away anyway.
+                            background.paste(temp_rgba, mask=temp_rgba.getchannel("A"))
                             cached_flattened_image = background
                         save_image = cached_flattened_image
 
