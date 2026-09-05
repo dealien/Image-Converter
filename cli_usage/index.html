@@ -1,0 +1,1059 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../menu_usage/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+    
+    
+      
+        <title>CLI Usage - Image Converter Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#command-line-interface-cli" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Image Converter Documentation" class="md-header__button md-logo" aria-label="Image Converter Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Image Converter Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI Usage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Image Converter Documentation" class="md-nav__button md-logo" aria-label="Image Converter Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Image Converter Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Usage
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata Operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filters-adjustments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filters &amp; Adjustments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remove-the-background-of-a-single-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remove the background of a single image
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scale-all-png-images-in-a-directory-to-50" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale all PNG images in a directory to 50%
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-all-images-to-webp-and-jpeg-at-half-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convert all images to WebP and JPEG at half quality
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strip-privacy-metadata-but-inject-an-author-tag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strip privacy metadata but inject an Author tag
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-specific-metadata-tags-and-delete-gps-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update specific metadata tags and delete GPS data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-metadata-from-a-batch-of-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export metadata from a batch of images
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overwrite-metadata-completely-using-an-exported-json-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overwrite metadata completely using an exported JSON file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chaining-multiple-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chaining Multiple Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-all-images-in-the-base-images-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Process all images in the Base Images directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../menu_usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Menu
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/filters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/utilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilities & Menu
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata Operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filters-adjustments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filters &amp; Adjustments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remove-the-background-of-a-single-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remove the background of a single image
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scale-all-png-images-in-a-directory-to-50" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale all PNG images in a directory to 50%
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-all-images-to-webp-and-jpeg-at-half-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convert all images to WebP and JPEG at half quality
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strip-privacy-metadata-but-inject-an-author-tag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strip privacy metadata but inject an Author tag
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-specific-metadata-tags-and-delete-gps-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update specific metadata tags and delete GPS data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-metadata-from-a-batch-of-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export metadata from a batch of images
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overwrite-metadata-completely-using-an-exported-json-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overwrite metadata completely using an exported JSON file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chaining-multiple-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chaining Multiple Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-all-images-in-the-base-images-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Process all images in the Base Images directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="command-line-interface-cli">Command Line Interface (CLI)</h1>
+<p>The CLI provides a powerful way to process images programmatically or in batches.</p>
+<h2 id="basic-usage">Basic Usage</h2>
+<pre><code class="language-bash">image-converter [file_path] [options]
+</code></pre>
+<ul>
+<li><code>[file_path]</code>: Path to the input image file. You can use wildcards (<code>*</code>) to process multiple files. If no file is specified, the script processes all images in the <code>Base Images/</code> directory.</li>
+</ul>
+<h2 id="core-operations">Core Operations</h2>
+<ul>
+<li><code>-bg</code>, <code>--remove-background</code>: Remove the background from the image.</li>
+<li><code>-s</code>, <code>--scale [value]</code>: Scale the image.</li>
+<li>By factor: <code>1.5x</code></li>
+<li>By dimensions: <code>400px 300px</code></li>
+<li><code>--resample [filter]</code>: Resampling filter for scaling. Choices: <code>nearest</code>, <code>bilinear</code>, <code>bicubic</code>, <code>lanczos</code> (default: <code>bilinear</code>).</li>
+<li><code>-i</code>, <code>--invert</code>: Invert the colors of the image.</li>
+<li><code>-g</code>, <code>--grayscale</code>: Convert the image to grayscale.</li>
+<li><code>--flip [direction]</code>: Flip the image. Choices: <code>horizontal</code>, <code>vertical</code>, <code>both</code>.</li>
+<li><code>--rotate [degrees]</code>: Rotate image by 90-degree increments (0, 90, 180, 270).</li>
+<li><code>--border [thickness] [color] [position]</code>: Add a border (e.g., <code>10 black expand</code>).</li>
+</ul>
+<h2 id="output-options">Output Options</h2>
+<ul>
+<li><code>--format [type]</code>: Output format (e.g. <code>png</code>, <code>jpg</code>, <code>webp</code>, <code>heic</code>, <code>avif</code>). Can be used multiple times.</li>
+<li><code>--quality [value]</code>: Output quality (1-100) per format. Evaluated in order of <code>--format</code> arguments.</li>
+<li><code>--flatten [color]</code>: Composite image against a solid color background (default: <code>white</code>) for output formats that may not consistently support alpha channels (e.g., <code>jpeg</code>, <code>webp</code>).</li>
+</ul>
+<h2 id="metadata-operations">Metadata Operations</h2>
+<ul>
+<li><code>-vm</code>, <code>--view-metadata</code>: Prints the existing metadata to the console.</li>
+<li><code>-em</code>, <code>--export-metadata [file_path]</code>: Exports the image's existing metadata and saves it to a specified JSON file. The <code>[file_path]</code> is optional; if omitted, it defaults to <code>&lt;image&gt;_tags.json</code> (for a single image) or <code>batch_tags.json</code> (for a batch). When processing batches, it outputs a single "Manifest" JSON dictionary.</li>
+<li><code>-sm</code>, <code>--strip-metadata</code>: Removes all privacy metadata (EXIF/IPTC/XMP) from the image. <em>Note: Preserves critical structural data like ICC profiles, DPI, transparency, and EXIF Orientation.</em></li>
+<li><code>-cm</code>, <code>--copy-metadata [source_file]</code>: Extracts metadata from a specified source image and applies it to the current image in the pipeline.</li>
+<li><code>-setm</code>, <code>--set-metadata [input]</code>: Overwrites the image's metadata completely with the provided input (JSON file, inline JSON, or <code>Key=Value</code> pairs). Set <code>Key=None</code> to explicitly delete a tag.</li>
+<li><code>-um</code>, <code>--update-metadata [input]</code>: Merges the provided input with the image's existing metadata. Set <code>Key=None</code> to explicitly delete a tag.</li>
+<li><code>--author [Name]</code>: Quick-access flag to set the Author/Artist tag.</li>
+<li><code>--copyright [Text]</code>: Quick-access flag to set the Copyright tag.</li>
+</ul>
+<h2 id="filters-adjustments">Filters &amp; Adjustments</h2>
+<ul>
+<li><code>--brightness [value]</code>: Adjust brightness (-100 to 100).</li>
+<li><code>--contrast [value]</code>: Adjust contrast (-100 to 100).</li>
+<li><code>--saturation [value]</code>: Adjust saturation (-100 to 100).</li>
+<li><code>--blur [radius]</code>: Apply Gaussian Blur with specified radius.</li>
+<li><code>--sharpen [intensity]</code>: Resulting image sharpness (0-100).</li>
+<li><code>--color-balance [R] [G] [B]</code>: Adjust R, G, B channels (e.g., <code>1.2 0.8 1.0</code>).</li>
+<li><code>--hue-rotation [degrees]</code>: Rotate hue by specified degrees (0-360).</li>
+<li><code>--posterize [bits]</code>: Reduce color depth to N bits (1-8).</li>
+<li><code>--vignette [intensity]</code>: Apply vignette effect with specified intensity (0-100).</li>
+<li><code>--oil-painting [intensity]</code>: Apply oil painting effect with specified intensity (0-100).</li>
+<li><code>--cartoonify [intensity]</code>: Apply cartoonify effect with specified intensity (0-100).</li>
+<li><code>--edge-detection [method]</code>: Apply edge detection (<code>sobel</code>, <code>canny</code>, <code>kovalevsky</code>).</li>
+<li><code>--threshold [value]</code>: Threshold for the Kovalevsky edge detection method (0-255).</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<h3 id="remove-the-background-of-a-single-image">Remove the background of a single image</h3>
+<pre><code class="language-bash">image-converter &quot;path/to/your/image.jpg&quot; --remove-background
+</code></pre>
+<h3 id="scale-all-png-images-in-a-directory-to-50">Scale all PNG images in a directory to 50%</h3>
+<pre><code class="language-bash">image-converter &quot;path/to/your/images/*.png&quot; --scale 0.5x
+</code></pre>
+<h3 id="convert-all-images-to-webp-and-jpeg-at-half-quality">Convert all images to WebP and JPEG at half quality</h3>
+<pre><code class="language-bash">image-converter &quot;path/to/your/images/*&quot; --format webp --quality 50 --format jpg --quality 50
+</code></pre>
+<h3 id="strip-privacy-metadata-but-inject-an-author-tag">Strip privacy metadata but inject an Author tag</h3>
+<pre><code class="language-bash">image-converter &quot;vacation.jpg&quot; --strip-metadata --author &quot;Jane Doe&quot;
+</code></pre>
+<h3 id="update-specific-metadata-tags-and-delete-gps-data">Update specific metadata tags and delete GPS data</h3>
+<pre><code class="language-bash">image-converter &quot;photo.jpg&quot; --update-metadata Artist=&quot;Jane Doe&quot; Copyright=&quot;2026 Dealien&quot; GPSInfo=None
+</code></pre>
+<h3 id="export-metadata-from-a-batch-of-images">Export metadata from a batch of images</h3>
+<p>This will extract the existing metadata from all <code>.jpg</code> files in the <code>images</code> directory and save it to a single "Manifest" file named <code>batch_tags.json</code>.</p>
+<pre><code class="language-bash">image-converter &quot;images/*.jpg&quot; --export-metadata batch_tags.json
+</code></pre>
+<h3 id="overwrite-metadata-completely-using-an-exported-json-file">Overwrite metadata completely using an exported JSON file</h3>
+<p>If you exported a manifest like <code>batch_tags.json</code> and modified it in a text editor, you can re-apply the updated metadata to a batch. This completely overwrites any existing metadata on the images with the structured data from the JSON file.</p>
+<pre><code class="language-bash">image-converter &quot;images/*.jpg&quot; --set-metadata batch_tags.json
+</code></pre>
+<h3 id="chaining-multiple-operations">Chaining Multiple Operations</h3>
+<p>The manipulations are applied sequentially in the order you provide them.</p>
+<pre><code class="language-mermaid">graph LR
+    A[Original Image] --&gt;|--invert| B(Inverted Colors)
+    B --&gt;|--flip vertical| C(Flipped Vertically)
+    C --&gt;|--grayscale| D(Grayscale)
+    D --&gt;|--remove-background| E(Transparent Background)
+    E --&gt;|--invert| F[Final Image]
+</code></pre>
+<p>For example, to take an image, invert its colors, flip it vertically, convert it to grayscale, remove the background, and then invert the colors <em>again</em>, you can run:</p>
+<pre><code class="language-bash">image-converter &quot;image.jpg&quot; --invert --flip vertical --grayscale --remove-background --invert
+</code></pre>
+<h3 id="process-all-images-in-the-base-images-directory">Process all images in the <code>Base Images</code> directory</h3>
+<p>This will first remove the background and then scale the images to fit within 800x600 pixels:</p>
+<pre><code class="language-bash">image-converter * --remove-background --scale 800px 600px
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
