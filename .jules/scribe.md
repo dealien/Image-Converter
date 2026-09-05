@@ -16,3 +16,7 @@
 ## 2025-05-19 - MkDocs Pygments Incompatibility
 **Learning:** Building MkDocs documentation with the `mkdocstrings-python` plugin can fail with an obfuscated `AttributeError: 'NoneType' object has no attribute 'replace'` within Python's built-in `html.escape` function. This crash is triggered by an upstream regression in Pygments version 2.20.0 when formatting syntax-highlighted code blocks with missing optional file names.
 **Action:** When adding or verifying MkDocs documentation for Python API modules, downgrade the `pygments` package to version `2.18.0` if build errors occur, and ensure all required type hints use string literals to avoid import crashes during documentation generation.
+
+## 2025-05-19 - Documenting CLI Handler Functions
+**Learning:** When documenting handler functions for CLI operations (like those in `src/image_converter/processing.py`), they often accept a generic `args` parameter representing parsed command-line arguments. Attempting to type hint this directly in the function signature (e.g., `args: argparse.Namespace`) can cause runtime errors if `argparse` is not explicitly imported in that module.
+**Action:** When adding docstrings and type hints to handler functions, add the type hint for `args` (as `argparse.Namespace`) within the Google-style docstring itself, but omit it from the function signature unless the module already imports the required type, preventing unnecessary import overhead or runtime crashes.

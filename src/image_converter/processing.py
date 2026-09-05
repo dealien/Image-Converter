@@ -475,16 +475,42 @@ def handle_vignette(image: Image.Image, image_name, values, args) -> Image.Image
     return apply_vignette(image, values[0])
 
 
-def handle_oil_painting(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handle the 'oil_painting' operation."""
+def handle_oil_painting(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
+    """Handle the 'oil_painting' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing [intensity]. Expects intensity to be int.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with the oil painting effect applied.
+
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Applying oil painting with intensity {values[0]}...[/]"
     )
     return apply_oil_painting(image, values[0])
 
 
-def handle_cartoonify(image: Image.Image, image_name, values, args) -> Image.Image:
-    """Handle the 'cartoonify' operation."""
+def handle_cartoonify(
+    image: Image.Image, image_name: str, values: list, args
+) -> Image.Image:
+    """Handle the 'cartoonify' operation.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing [intensity]. Expects intensity to be int.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with the cartoonify effect applied.
+
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Applying cartoonify with intensity {values[0]}...[/]"
     )
