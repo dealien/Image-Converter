@@ -1,10 +1,12 @@
-import pytest
-from PIL import Image
 import unittest.mock as mock
+
+from PIL import Image
+
 from image_converter.image_filters import (
-    _get_combined_contrast_lut,
     _get_combined_brightness_lut,
+    _get_combined_contrast_lut,
 )
+
 
 def test_combined_luts_edge_cases():
     """Verifies that dynamically combined LUTs are generated correctly for all edge-case color modes."""
@@ -44,12 +46,12 @@ def test_combined_luts_edge_cases():
 def test_16bit_LUTs_and_mean_fallback():
     """Verifies fallback and generated lengths for 16-bit LUTs and exception paths."""
     from image_converter.image_filters import (
+        _apply_palette_lut,
         _get_brightness_lut_16,
         _get_contrast_lut_16,
         _get_image_mean_luminance,
-        _apply_palette_lut,
         apply_border,
-        edge_detection
+        edge_detection,
     )
 
     lut_b16 = _get_brightness_lut_16(50)
@@ -59,9 +61,11 @@ def test_16bit_LUTs_and_mean_fallback():
     assert len(lut_c16) == 65536
 
     img_rgb = Image.new("RGB", (10, 10))
-    with mock.patch.object(img_rgb, "convert", side_effect=ValueError("convert failed")):
+    with mock.patch.object(
+        img_rgb, "convert", side_effect=ValueError("convert failed")
+    ):
         mean = _get_image_mean_luminance(img_rgb)
-        assert mean == 0 # Default black image
+        assert mean == 0  # Default black image
 
     img_p = Image.new("P", (10, 10))
     img_p.palette = None
