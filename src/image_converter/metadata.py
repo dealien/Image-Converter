@@ -298,7 +298,17 @@ def parse_metadata_input(values: list[str]) -> dict:
 def handle_view_metadata(
     image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
-    """Print the existing metadata to the console."""
+    """Print the existing metadata to the console.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list of values provided via CLI input.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image, unchanged.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Viewing metadata for {image_name}...[/]"
     )
@@ -320,7 +330,17 @@ def handle_view_metadata(
 def handle_export_metadata(
     image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
-    """Export the image's existing metadata to be collected into a JSON file."""
+    """Export the image's existing metadata to be collected into a JSON file.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing the target JSON file path (optional).
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image, unchanged.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Exporting metadata for {image_name}...[/]"
     )
@@ -345,7 +365,17 @@ def handle_export_metadata(
 def handle_strip_metadata(
     image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
-    """Remove privacy metadata but preserve critical structural data (ICC, DPI, Orientation)."""
+    """Remove privacy metadata but preserve critical structural data (ICC, DPI, Orientation).
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list of values provided via CLI input.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with stripped metadata.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Stripping metadata for {image_name}...[/]"
     )
@@ -383,7 +413,17 @@ def handle_strip_metadata(
 def handle_copy_metadata(
     image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
-    """Extract metadata from a specified source image and apply it to the current image."""
+    """Extract metadata from a specified source image and apply it to the current image.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing the source image path.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with copied metadata applied.
+    """
     source_path = values[0] if values else None
     if not source_path:
         console.print(
@@ -415,7 +455,17 @@ def handle_copy_metadata(
 def handle_set_metadata(
     image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
-    """Overwrite the image's metadata completely with the provided input."""
+    """Overwrite the image's metadata completely with the provided input.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing metadata definitions.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with new metadata set.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Setting metadata for {image_name}...[/]"
     )
@@ -435,7 +485,17 @@ def handle_set_metadata(
 def handle_update_metadata(
     image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
-    """Merge the provided input with the image's existing metadata."""
+    """Merge the provided input with the image's existing metadata.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing metadata definitions to update.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with updated metadata.
+    """
     console.print(
         f"  [bright_yellow]›[/] [yellow]Updating metadata for {image_name}...[/]"
     )
@@ -464,7 +524,17 @@ def handle_update_metadata(
 def handle_author(
     image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
-    """Quick-access flag to set the Author/Artist tag."""
+    """Quick-access flag to set the Author/Artist tag.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing the author name.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with updated Author metadata.
+    """
     author_name = values[0] if values else ""
     console.print(
         f"  [bright_yellow]›[/] [yellow]Setting Author to '{author_name}'...[/]"
@@ -479,7 +549,17 @@ def handle_author(
 def handle_copyright(
     image: Image.Image, image_name: str, values: list, args: argparse.Namespace
 ) -> Image.Image:
-    """Quick-access flag to set the Copyright tag."""
+    """Quick-access flag to set the Copyright tag.
+
+    Args:
+        image (Image.Image): The input image.
+        image_name (str): The name of the image file.
+        values (list): A list containing the copyright text.
+        args (argparse.Namespace): The parsed CLI arguments.
+
+    Returns:
+        Image.Image: The image with updated Copyright metadata.
+    """
     copyright_text = values[0] if values else ""
     console.print(
         f"  [bright_yellow]›[/] [yellow]Setting Copyright to '{copyright_text}'...[/]"
