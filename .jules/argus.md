@@ -57,3 +57,7 @@
 ## 2024-05-27 - Test skip save logic for read-only operations
 **Learning:** When testing the skip save logic for read-only operations in `process_images_and_save`, you must properly mock `rich.progress.Progress` by hooking into the context manager using `.return_value.__enter__.return_value`. Testing UI state outputs is easiest by tracking `call_args_list` directly on the mocked `Progress` update method since `process_images_and_save` drives updates directly using the returned context object.
 **Action:** When testing components utilizing Rich's context manager (like `Progress`), ensure `__enter__` returns a fully functional MagicMock configured to track calls such as `.update()` or `.advance()`, then iterate through `call_args_list` to assert string patterns without worrying about layout objects.
+
+## 2024-05-18 - Covering `except Exception: pass` paths for `point(lut)`
+**Learning:** In Pillow, some modes (like "I" or "F") do not support LUT mapping with lists natively (raising `ValueError: point operation not supported for this mode`) or `lambda` functions. Mocking `point` to raise an Exception correctly triggers the `except Exception: pass` fallback logic used in brightness and contrast adjustments for 16-bit or floating-point modes, proving the fallback path executes.
+**Action:** When testing defensive `try...except Exception: pass` blocks where the inner operation is hard to naturally fail, use `unittest.mock.patch.object(obj, 'method', side_effect=Exception)` to simulate the failure and ensure the fallback path is covered.
