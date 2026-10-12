@@ -1176,6 +1176,7 @@ def apply_oil_painting(image: Image.Image, intensity: int = 50) -> Image.Image:
 
     Returns:
         The processed image, preserving alpha and grayscale modes where possible.
+
     """
     _validate_effect_intensity(intensity)
     if intensity == 0:
@@ -1206,6 +1207,7 @@ def apply_cartoonify(image: Image.Image, intensity: int = 50) -> Image.Image:
 
     Returns:
         The processed image, preserving alpha and grayscale modes where possible.
+
     """
     _validate_effect_intensity(intensity)
     if intensity == 0:

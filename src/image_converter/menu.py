@@ -613,6 +613,7 @@ def prompt_for_oil_painting_options(
 
     Returns:
         dict: The operation dictionary for 'oil_painting'.
+
     """
     val_str = _ask_text(
         "Enter oil painting intensity (0-100)",
@@ -632,6 +633,7 @@ def prompt_for_cartoonify_options(
 
     Returns:
         dict: The operation dictionary for 'cartoonify'.
+
     """
     val_str = _ask_text(
         "Enter cartoonify intensity (0-100)",
