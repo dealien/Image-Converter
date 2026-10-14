@@ -27,8 +27,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[dev]
-          pip install pytest-codspeed
+          pip install -c constraints.txt .[dev]
+          pip install -c constraints.txt pytest-codspeed==5.0.3
 
       - name: Run benchmarks
         uses: CodSpeedHQ/action@v4

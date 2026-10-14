@@ -40,7 +40,7 @@ This is a versatile Python project designed to streamline everyday workflows for
 2. Install the package and its requirements using pip:
 
    ```bash
-   pip install .
+   pip install -c constraints.txt .
    ```
 
 ## 🛠️ Usage
