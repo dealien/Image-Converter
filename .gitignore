@@ -95,6 +95,9 @@ gen
 *.db-shm
 *.db-wal
 
+# VS Code & Antigravity project files
+*.code-workspace
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
